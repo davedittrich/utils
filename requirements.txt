@@ -5,3 +5,5 @@ docker
 flake8
 molecule
 yamllint
+pytest
+testinfra
