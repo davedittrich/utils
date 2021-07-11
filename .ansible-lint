@@ -2,6 +2,8 @@
 parseable: true
 skip_list:
   - ANSIBLE0010
+  - command-instead-of-shell
+  - no-handler
 use_default_rules: true
 verbosity: 1
 exclude_paths:
