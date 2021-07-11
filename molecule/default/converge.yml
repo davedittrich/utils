@@ -1,0 +1,27 @@
+---
+- name: Converge
+  hosts: all
+
+  pre_tasks:
+    - name: Ensure package cache is up to date.
+      ansible.builtin.package:
+        update_cache: yes
+      changed_when: false
+      register: task_result
+      until: task_result is success
+      retries: 10
+      delay: 2
+
+    - name: Ensure SSH is installed on instance.
+      ansible.builtin.package:
+        name: ssh
+        state: present
+
+    - name: Set fact with tests path
+      set_fact:
+        tests_path: "{{ lookup('env', 'TESTS_PATH') }}"
+      changed_when: false
+
+  roles: 
+    - davedittrich.utils.ip_in_issue
+    - davedittrich.utils.swapcapslockctrl

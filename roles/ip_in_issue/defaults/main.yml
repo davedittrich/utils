@@ -1,0 +1,7 @@
+---
+_exclude_interface_prefix:
+  - 'veth'
+  - 'br'
+  - 'tun'
+  - 'ip6tnl'
+  - 'docker'

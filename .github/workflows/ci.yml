@@ -1,0 +1,28 @@
+name: Molecule tests
+
+on: [push]
+
+jobs:
+  molecule:
+    runs-on: ubuntu-20.04
+    env:
+      PY_COLORS: 1
+      TOX_PARALLEL_NO_SPINNER: 1
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v1
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ansible docker 'molecule[docker]'
+    - name: Move project to Ansible-required location
+      run: |
+        mkdir -p ~/.ansible/collections/ansible_collections/davedittrich/utils
+        cp -r ./ ~/.ansible/collections/ansible_collections/davedittrich/utils
+    - name: Molecule test
+      run: |
+        molecule test

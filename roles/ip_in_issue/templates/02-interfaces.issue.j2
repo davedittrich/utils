@@ -1,0 +1,10 @@
+{% if issue_interfaces is defined %}
+{% for raw_name in issue_interfaces %}
+{% set interface=hostvars[inventory_hostname]['ansible_%s' | format(raw_name) ] %}
+{% if interface is defined %}
+{% set colon_name=raw_name.replace('_', ':') %}
+{{ colon_name }} ({{ interface['macaddress'] | default('') }}): \4{{ '{' }}{{ colon_name }}{{ '}' }} \6{{ '{' }}{{ colon_name }}{{ '}' }}
+{% endif %}
+{% endfor %}
+
+{% endif %}

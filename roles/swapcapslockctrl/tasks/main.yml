@@ -1,0 +1,35 @@
+---
+# tasks file for davedittrich.utils.swapcapslockctrl
+
+- name: Ensure package cache is up to date.
+  ansible.builtin.package:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: true
+
+- name: Ensure package 'udev' is present.
+  ansible.builtin.package:
+    name: udev
+    state: present
+  become: true
+
+- name: Ensure key remapping file in /etc/udev/hwdb.d/ directory.
+  ansible.builtin.copy:
+    content: |
+        # Match all usb keyboards
+        evdev:input:b0003v*p*
+        # Remap CapsLock <-> Left CTRL
+          KEYBOARD_KEY_70039=leftctrl
+          KEYBOARD_KEY_700E0=capslock
+    dest: /etc/udev/hwdb.d/99-swapcapslockctrl.hwdb
+    owner: root
+    group: root
+    mode: 0o644
+  register: copy
+  become: true
+
+- name: Update udevadm hwdb and trigger update.
+  ansible.builtin.shell:
+    cmd: "udevadm hwdb --update; udevadm trigger"
+  when: copy.changed
+  become: true

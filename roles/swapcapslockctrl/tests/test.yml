@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  remote_user: root
+
+  roles:
+    - role: davedittrich.utils.swapcapslockctrl
+      vars:
+        - ansible_become: true

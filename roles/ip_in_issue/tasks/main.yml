@@ -1,0 +1,124 @@
+---
+# tasks for davedittrich.utils.ip_in_issue
+
+- name: Set fact ``exclude_interface_prefix``.
+  ansible.builtin.set_fact:
+    exclude_interface_prefix: '{{ _exclude_interface_prefix }}'
+  when: exclude_interface_prefix is not defined
+
+- name: Debug ``exclude_interface_prefix``.
+  ansible.builtin.debug:
+    msg: '{{ exclude_interface_prefix }}'
+
+- name: Set fact ``exclude_interface``.
+  ansible.builtin.set_fact:
+    exclude_interface: '{{ exclude_interface | default({}) | combine({ item.0: true }) }}'
+  with_nested:
+    - '{{ ansible_interfaces }}'
+    - '{{ exclude_interface_prefix }}'
+  when: 'item.0.startswith(item.1) or item.0 == "lo"'
+
+- name: Debug ``exclude_interface``.
+  ansible.builtin.debug:
+    msg: '{{ exclude_interface }}'
+
+- name: Set fact ``issue_interfaces``.
+  ansible.builtin.set_fact:
+    issue_interfaces: '{{ issue_interfaces | default([]) + [ item ] }}'
+  with_items: '{{ ansible_interfaces }}'
+  when: 'item not in exclude_interface'
+
+- name: Debug issue interfaces.
+  ansible.builtin.debug:
+    msg: '{{ issue_interfaces }}'
+
+- name: Stat /etc/ssh directory.
+  ansible.builtin.stat:
+    path: /etc/ssh
+  register: st
+
+- name: Record SSH host key fingerprints.
+  block:
+    - name: Find SSH host key fingerprint files.
+      ansible.builtin.find:
+        paths: /etc/ssh
+        recurse: false
+        use_regex: false
+        patterns: 'ssh_host_*_key.pub'
+      register: find_results
+
+    - name: Get SSH host key fingerprints.
+      ansible.builtin.shell: '/usr/bin/ssh-keygen -l -f {{ item.path | quote }}'
+      with_items: '{{ find_results.files }}'
+      register: keygen_results
+      changed_when: false
+
+    - name: Debug keygen_results.results.
+      ansible.builtin.debug:
+        msg: "{{ keygen_results.results }}"
+
+    - name: Set fact with dictionary of SSH key fingerprints.
+      ansible.builtin.set_fact:
+        ssh_fingerprints: "{{ ssh_fingerprints | default({}) | combine({item.0.path: item.1.stdout}) }}"
+      with_together:
+        - "{{ find_results.files }}"
+        - "{{ keygen_results.results }}"
+
+    - name: Debug SSH host fingerprints.
+      ansible.builtin.debug:
+        msg: '{{ ssh_fingerprints }}'
+      changed_when: false
+  when: st.stat.exists
+
+- name: Set fact there are no SSH host fingerprints.
+  ansible.builtin.set_fact:
+    ssh_fingerprints: {}
+  when: not st.stat.exists
+
+- name: Ensure /etc/issue file is customized.
+  ansible.builtin.template:
+    src: issue.j2
+    dest: /etc/issue
+    owner: root
+    group: root
+    mode: 0o644
+  become: true
+
+- name: Find /etc/issue.d templates on control host.
+  ansible.builtin.find:
+    paths: '{{ role_path }}/templates'
+    recurse: false
+    use_regex: false
+    patterns: '*.issue.j2'
+  delegate_to: localhost
+  become: false
+  register: templates_matched
+
+- name: Set fact with template names.
+  ansible.builtin.set_fact:
+    issue_templates: '{{ issue_templates | default([]) + [ item.path ] }}'
+  with_items: '{{ templates_matched.files }}'
+
+- name: Debug template files.
+  ansible.builtin.debug:
+    msg: '{{ issue_templates }}'
+  changed_when: false
+
+- name: Ensure /etc/issue.d directory exists.
+  ansible.builtin.file:
+    path: /etc/issue.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0o755
+  become: true
+
+- name: Ensure /etc/issue.d/*.issue files exists.
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: '/etc/issue.d/{{ item.replace(".j2", "") | basename }}'
+    owner: root
+    group: root
+    mode: 0o644
+  with_items: '{{ issue_templates }}'
+  become: true

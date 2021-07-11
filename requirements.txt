@@ -1,0 +1,7 @@
+ansible
+ansible-core
+ansible-lint
+docker
+flake8
+molecule
+yamllint

@@ -1,0 +1,2 @@
+* Create plugin to get SSH host key fingerprints and store in ``hostvars``.
+* Add conditionals to swapcapslockctrl to handle older OSs
