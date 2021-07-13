@@ -14,7 +14,7 @@ def test_issue_file(host):
     assert f.exists
     assert f.user == 'root'
     assert f.group == 'root'
-    assert r'This is \n.\O' in f.content_string
+    assert r'This is ' in f.content_string
 
 
 def test_issue_d_interfaces(host):
