@@ -55,7 +55,7 @@ jobs:
           echo "COLLECTION_FILE=$collection_file" >> $GITHUB_ENV
 
       - name: Install the collection
-        run: ansible-galaxy collection install "${{ env.collection_file }}"
+        run: ansible-galaxy collection install "${{ env.COLLECTION_FILE }}"
 
       - name: Run role tests
         run: >-
