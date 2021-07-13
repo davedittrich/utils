@@ -28,3 +28,4 @@ build_ignore:
   - '.*.swp'
   - '.github'
   - '.gitignore'
+  - '.*lint'
