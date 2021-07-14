@@ -28,6 +28,11 @@
   register: copy
   become: true
 
+- name: Debug ``copy``.
+  ansible.builtin.debug:
+    msg: '{{ copy }}'
+    verbosity: 2
+
 - name: Update udevadm hwdb and trigger update.
   ansible.builtin.shell:
     cmd: "udevadm hwdb --update; udevadm trigger"

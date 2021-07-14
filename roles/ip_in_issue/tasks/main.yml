@@ -9,6 +9,7 @@
 - name: Debug ``exclude_interface_prefix``.
   ansible.builtin.debug:
     msg: '{{ exclude_interface_prefix }}'
+    verbosity: 2
 
 - name: Set fact ``exclude_interface``.
   ansible.builtin.set_fact:
@@ -21,6 +22,7 @@
 - name: Debug ``exclude_interface``.
   ansible.builtin.debug:
     msg: '{{ exclude_interface }}'
+    verbosity: 2
 
 - name: Set fact ``issue_interfaces``.
   ansible.builtin.set_fact:
@@ -31,6 +33,7 @@
 - name: Debug issue interfaces.
   ansible.builtin.debug:
     msg: '{{ issue_interfaces }}'
+    verbosity: 2
 
 - name: Stat /etc/ssh directory.
   ansible.builtin.stat:
@@ -56,6 +59,7 @@
     - name: Debug keygen_results.results.
       ansible.builtin.debug:
         msg: "{{ keygen_results.results }}"
+        verbosity: 2
 
     - name: Set fact with dictionary of SSH key fingerprints.
       ansible.builtin.set_fact:
@@ -67,6 +71,7 @@
     - name: Debug SSH host fingerprints.
       ansible.builtin.debug:
         msg: '{{ ssh_fingerprints }}'
+        verbosity: 2
       changed_when: false
   when: st.stat.exists
 
@@ -107,6 +112,7 @@
 - name: Debug template files.
   ansible.builtin.debug:
     msg: '{{ issue_templates }}'
+    verbosity: 2
   changed_when: false
 
 - name: Ensure /etc/issue.d directory exists.
