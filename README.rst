@@ -20,12 +20,19 @@ collections, set up an alternate collections directory as follows::
 
     6 directories, 0 files
 
-Then set the ``provisioner`` in ``molecule/default/molecule.yml`` as follows:
+Then set the ``provisioner`` in ``molecule/default/molecule.yml`` as follows::
 
-.. literalinclude:: molecule/default/molecule.yml
-    :start-after: # [molecule.yml-provisioner]
-    :end-before: # ![molecule.yml-provisioner]
-
+    provisioner:
+      name: ansible
+      env:
+        ANSIBLE_COLLECTIONS_PATH: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
+        # Grrr! https://github.com/ansible/ansible/issues/70750
+        ANSIBLE_COLLECTIONS_PATHS: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
+        ANSIBLE_ROLES_PATH: "../../roles"
+        ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
+        TESTS_PATH: "../../tests"
+      playbooks:
+        converge: ${MOLECULE_PLAYBOOK:-converge.yml}
 
 Dave Dittrich <dave.dittrich@gmail.com>
 https://github.com/davedittrich/utils
