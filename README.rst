@@ -22,7 +22,7 @@ collections, set up an alternate collections directory as follows::
 
 Then set the ``provisioner`` in ``molecule/default/molecule.yml`` as follows:
 
-.. literal-include:: molecule/default/molecule.yml
+.. literalinclude:: molecule/default/molecule.yml
      :language: yaml
      :dedent: 4
      :start-after: # [molecule.yml-provisioner]
