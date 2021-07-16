@@ -6,6 +6,9 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    #
+    # Note: NOT DRY. The remainder of this workflow matches release.yml.
+    #
     env:
       ANSIBLE_GALAXY_SERVER: 'https://galaxy.ansible.com/'
       ANSIBLE_GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}

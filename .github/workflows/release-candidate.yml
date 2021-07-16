@@ -2,11 +2,13 @@ name: "release-candidate"
 on:
   push:
     tags: ['v[0-9]+.[0-9]+.rc[0-9]+']
-
 jobs:
   release:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/develop' }}
+    #
+    # Note: NOT DRY. The remainder of this workflow matches release.yml.
+    #
     env:
       ANSIBLE_GALAXY_SERVER: 'https://galaxy-dev.ansible.com/'
       ANSIBLE_GALAXY_API_KEY: ${{ secrets.GALAXYDEV_API_KEY }}
@@ -28,4 +30,3 @@ jobs:
       - name: Run the Ansible Galaxy release playbook
         run: >-
           ansible-playbook -i 'localhost,' build/galaxy_deploy.yml -e "github_tag=${{ github.ref }}"
-
