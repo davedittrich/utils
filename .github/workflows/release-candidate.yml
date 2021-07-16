@@ -1,11 +1,12 @@
 name:  release candidate
 on:
   push:
-    tags: ['v[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+']
+    branches:
+      - develop
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/develop' }}
+    if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, 'rc')
     #
     # Note: NOT DRY. The remainder of this workflow matches release.yml.
     #
