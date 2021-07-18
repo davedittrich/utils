@@ -1,7 +1,9 @@
 name: molecule tests
 
-on: [push]
-
+on:
+  push:
+    branches:
+      - develop
 jobs:
   molecule:
     runs-on: ubuntu-latest
