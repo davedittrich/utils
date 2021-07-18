@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - develop
+jobs:
   release_candidate:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, 'rc')
