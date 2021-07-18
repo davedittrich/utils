@@ -11,7 +11,7 @@ on:
       - 'molecule/ip_in_issue/**'
       - '.github/workflows/ip_in_issue.yml'
 jobs:
-  molecule:
+  ip_in_issue:
     runs-on: ubuntu-latest
     env:
       PY_COLORS: 1

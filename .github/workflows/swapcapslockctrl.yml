@@ -11,7 +11,7 @@ on:
       - 'molecule/swapcapslockctrl/**'
       - '.github/workflows/swapcapslockctrl.yml'
 jobs:
-  molecule:
+  swapcapslockctrl:
     runs-on: ubuntu-latest
     env:
       PY_COLORS: 1
