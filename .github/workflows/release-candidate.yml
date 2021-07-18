@@ -1,4 +1,4 @@
-name: release candidate
+name: "release candidate"
 on:
   push:
     branches:
