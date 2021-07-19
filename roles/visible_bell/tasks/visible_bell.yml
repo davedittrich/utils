@@ -1,0 +1,75 @@
+---
+
+- name: Get user home directory with ``getent``.
+  shell: >
+    getent passwd {{ user }} | awk -F: '{ print $6 }'
+  changed_when: false
+  register: getent
+
+- name: Set fact with user home directory
+  set_fact:
+    homedir: "{{ getent.stdout }}"
+
+- name: Debug ``homedir``.
+  debug:
+    var: homedir
+
+- name: Ensure applications using ``readline`` are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir ~ '/.inputrc' }}"
+    owner: root
+    group: root
+    mode: 0o640
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      set prefer-visible-bell
+    create: true
+  become: true
+
+- name: Ensure ``bash`` shell sessions are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir ~ '/.bashrc' }}"
+    owner: root
+    group: root
+    mode: 0o640
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      set bellstyle visible
+    create: true
+  become: true
+
+- name: Ensure ``csh`` and ``tcsh`` shell sessions are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir ~ '/.cshrc' }}"
+    owner: root
+    group: root
+    mode: 0o640
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      set visiblebell
+    create: true
+  become: true
+
+- name: Ensure ``ex`` family editors are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir ~ '/.exrc' }}"
+    owner: root
+    group: root
+    mode: 0o640
+    marker: '" {mark} ANSIBLE MANAGED BLOCK'
+    block: |
+      set flash
+    create: true
+  become: true
+
+- name: Ensure ``vim`` style editors are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir ~ '/.vimrc' }}"
+    owner: root
+    group: root
+    mode: 0o640
+    marker: '" {mark} ANSIBLE MANAGED BLOCK'
+    block: |
+      set vb t_vb=
+    create: true
+  become: true

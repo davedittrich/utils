@@ -10,42 +10,17 @@
     cache_valid_time: 3600
   become: true
 
-- name: Ensure applications using ``readline`` are quieted.
-  ansible.builtin.blockinfile:
-    path: "{{ ansible_env.HOME ~ '/.inputrc' }}"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK"
-    block: |
-      set prefer-visible-bell
-    create: true
+- name: Set fact with users whose accounts need to be configured
+  set_fact:
+    visible_bell_users: "{{ visible_bell_users | default(['root', ansible_user_id]) | unique }}"
 
-- name: Ensure ``bash`` shell sessions are quieted.
-  ansible.builtin.blockinfile:
-    path: "{{ ansible_env.HOME ~ '/.bashrc' }}"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK"
-    block: |
-      set bellstyle visible
-    create: true
+- name: Debug ``visible_bell_users``.
+  ansible.builtin.debug:
+    msg: '{{ visible_bell_users }}'
+    verbosity: 2
 
-- name: Ensure ``csh`` and ``tcsh`` shell sessions are quieted.
-  ansible.builtin.blockinfile:
-    path: "{{ ansible_env.HOME ~ '/.cshrc' }}"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK"
-    block: |
-      set visiblebell
-    create: true
-
-- name: Ensure ``ex`` family editors are quieted.
-  ansible.builtin.blockinfile:
-    path: "{{ ansible_env.HOME ~ '/.exrc' }}"
-    marker: '" {mark} ANSIBLE MANAGED BLOCK'
-    block: |
-      set flash
-    create: true
-
-- name: Ensure ``vim`` style editors are quieted.
-  ansible.builtin.blockinfile:
-    path: "{{ ansible_env.HOME ~ '/.vimrc' }}"
-    marker: '" {mark} ANSIBLE MANAGED BLOCK'
-    block: |
-      set vb t_vb=
-    create: true
+- name: Ensure quieting applied to intended users.
+  include_tasks: visible_bell.yml
+  vars:
+    user: "{{ item }}"
+  loop: '{{ visible_bell_users }}'
