@@ -9,8 +9,8 @@
   pre_tasks:
     - assert:
         that:
-          - env.ANSIBLE_GALAXY_SERVER != ''
-          - env.ANSIBLE_GALAXY_API_KEY != ''
+          - lookup('env', 'ANSIBLE_GALAXY_SERVER') != ''
+          - lookup('env', 'ANSIBLE_GALAXY_API_KEY') != ''
 
     - name: Ensure the ~/.ansible directory exists.
       file:
@@ -42,8 +42,8 @@
       command: >
         ansible-galaxy collection publish
           "./{{ artifact_name }}"
-          --server {{ env.ANSIBLE_GALAXY_SERVER  }}
-          --api-key ${{ env.ANSIBLE_GALAXY_API_KEY }}
+          --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
+          --api-key ${{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
         chdir=../
       no_log: true
       when: galaxy_yml.changed
