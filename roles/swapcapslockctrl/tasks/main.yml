@@ -34,7 +34,9 @@
     verbosity: 2
 
 - name: Update udevadm hwdb and trigger update.
-  ansible.builtin.shell:
-    cmd: "udevadm hwdb --update; udevadm trigger"
+  ansible.builtin.shell: >
+    udevadm hwdb --update; udevadm trigger
+  args:
+    executable: /bin/bash
   when: copy.changed
   become: true

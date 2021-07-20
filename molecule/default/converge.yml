@@ -3,9 +3,10 @@
   hosts: all
 
   pre_tasks:
+
     - name: Ensure package cache is up to date.
       ansible.builtin.package:
-        update_cache: yes
+        update_cache: true
       changed_when: false
       register: task_result
       until: task_result is success

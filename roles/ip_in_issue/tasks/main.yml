@@ -1,4 +1,5 @@
 ---
+
 # tasks for davedittrich.utils.ip_in_issue
 
 - name: Set fact ``exclude_interface_prefix``.
@@ -51,7 +52,10 @@
       register: find_results
 
     - name: Get SSH host key fingerprints.
-      ansible.builtin.shell: '/usr/bin/ssh-keygen -l -f {{ item.path | quote }}'
+      ansible.builtin.shell: >
+        /usr/bin/ssh-keygen -l -f {{ item.path | quote }}
+      args:
+        executable: /bin/bash
       with_items: '{{ find_results.files }}'
       register: keygen_results
       changed_when: false

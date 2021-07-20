@@ -1,8 +1,11 @@
 ---
 
 - name: Get user home directory with ``getent``.
-  shell: >
+  ansible.builtin.shell: |
+    set -o pipefail
     getent passwd {{ user }} | awk -F: '{ print $6 }'
+  args:
+    executable: /bin/bash
   changed_when: false
   register: getent
 
