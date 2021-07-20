@@ -60,4 +60,4 @@ jobs:
 
       - name: Run the Ansible Galaxy release playbook
         run: >-
-          ansible-playbook -i 'localhost,' build/galaxy_deploy.yml -e "github_tag=${{ github.ref }}"
+          ansible-playbook -i 'localhost,' build/galaxy_deploy.yml -e "github_ref=${{ github.ref }}"

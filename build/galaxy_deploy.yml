@@ -4,14 +4,28 @@
   gather_facts: false
   vars:
     # This should be set via the command line at runtime.
-    tag: "{{ github_tag.split('/')[-1] }}"
+    tag: "{{ github_ref.split('/')[-1].lstrip('v') }}"
 
   pre_tasks:
+    - assert:
+        that:
+          - env.ANSIBLE_GALAXY_SERVER != ''
+          - env.ANSIBLE_GALAXY_API_KEY != ''
+
     - name: Ensure the ~/.ansible directory exists.
       file:
         path: ~/.ansible
         state: directory
+
   tasks:
+    - name: Set fact with artifact name.
+      set_fact:
+        artifact_name: 'davedittrich-utils-{{ tag }}.tar.gz'
+
+    - name: Debug artifact name.
+      debug:
+        msg: '{{ artifact_name }}'
+
     - name: Template out the galaxy.yml file.
       template:
         src: templates/galaxy.yml.j2
@@ -27,7 +41,7 @@
     - name: Publish the collection. # noqa 503
       command: >
         ansible-galaxy collection publish
-          ./davedittrich-utils-{{ tag }}.tar.gz
+          "./{{ artifact_name }}"
           --server {{ env.ANSIBLE_GALAXY_SERVER  }}
           --api-key ${{ env.ANSIBLE_GALAXY_API_KEY }}
         chdir=../
