@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - develop
+  create:
+    tags:
+      - v*
 jobs:
   #
   # Note: NOT DRY. This job matches one in release.yml.
