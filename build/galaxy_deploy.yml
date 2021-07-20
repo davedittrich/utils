@@ -31,5 +31,5 @@
           --server {{ env.ANSIBLE_GALAXY_SERVER  }}
           --api-key ${{ env.ANSIBLE_GALAXY_API_KEY }}
         chdir=../
-      nolog: true
+      no_log: true
       when: galaxy_yml.changed
