@@ -17,8 +17,8 @@
 - name: Ensure applications using ``readline`` are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir ~ '/.inputrc' }}"
-    owner: root
-    group: root
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     block: |
@@ -29,8 +29,8 @@
 - name: Ensure ``bash`` shell sessions are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir ~ '/.bashrc' }}"
-    owner: root
-    group: root
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     block: |
@@ -41,8 +41,8 @@
 - name: Ensure ``csh`` and ``tcsh`` shell sessions are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir ~ '/.cshrc' }}"
-    owner: root
-    group: root
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     block: |
@@ -53,8 +53,8 @@
 - name: Ensure ``ex`` family editors are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir ~ '/.exrc' }}"
-    owner: root
-    group: root
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
     marker: '" {mark} ANSIBLE MANAGED BLOCK'
     block: |
@@ -65,8 +65,8 @@
 - name: Ensure ``vim`` style editors are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir ~ '/.vimrc' }}"
-    owner: root
-    group: root
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
     marker: '" {mark} ANSIBLE MANAGED BLOCK'
     block: |
