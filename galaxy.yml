@@ -1,7 +1,7 @@
 ---
 namespace: davedittrich
 name: utils
-version: 0.0.0
+version: 0.0.4
 # See https://github.com/ansible/galaxy/issues/2438
 readme: README.md
 authors:
@@ -25,9 +25,13 @@ tags:
 # and '.git' are always filtered
 build_ignore:
   - 'molecule'
+  - '.bumpversion.cfg'
   - '*.tar.gz'
+  - '*.bak'
+  - '*.rej'
   - '*.swp'
   - '.*.swp'
   - '.github'
   - '.gitignore'
+  - '*/.gitignore'
   - '.*lint'

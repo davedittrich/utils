@@ -1,0 +1,16 @@
+[
+  {
+    "Variable": "ansible_galaxy_server",
+    "Type": "string",
+    "Prompt": "Ansible Galaxy server URL",
+    "Options": "https://galaxy-dev.ansible.com,https://galaxy.ansible.com,*",
+    "Export": "ANSIBLE_GALAXY_SERVER"
+  },
+  {
+    "Variable": "ansible_galaxy_api_key",
+    "Type": "string",
+    "Prompt": "Ansible Galaxy API key",
+    "Options": "*",
+    "Export": "ANSIBLE_GALAXY_API_KEY"
+  }
+]
