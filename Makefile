@@ -17,11 +17,11 @@ clean:
 	find * -name __pycache__ -exec rmdir {} ';' || true
 
 .PHONY: converge
-converge:
+converge: scenario-exists
 	molecule converge -s $(SCENARIO)
 
 .PHONY: login
-login:
+login: scenario-exists
 	molecule login -s $(SCENARIO)
 
 .PHONY: publish
@@ -37,11 +37,18 @@ publish: $(ARTIFACT)
 		--api-key=$(ANSIBLE_GALAXY_API_KEY)
 
 
+.PHONY: scenario-exists
+scenario-exists:
+	@if [[ ! -d molecule/$(SCENARIO) ]]; then \
+		echo -n "[-] scenario '$(SCENARIO)' does not exist "; \
+		echo "choose from: [$(shell cd molecule && find * -depth 1 -name molecule.yml | cut -d/ -f1)]"; \
+		exit 1; \
+	fi
+
 .PHONY: test
-test:
+test: scenario-exists
 	molecule test -s $(SCENARIO)
 
 .PHONY: version
 version:
 	@echo version $(VERSION)
-
