@@ -18,7 +18,7 @@ def test_issue_file(host):
 
 
 def test_issue_d_interfaces(host):
-    f = host.file(os.path.join("/etc/issue.d/02-interfaces.issue"))
+    f = host.file('/etc/issue.d/02-interfaces.issue')
 
     assert f.exists
     assert f.user == 'root'
@@ -27,7 +27,7 @@ def test_issue_d_interfaces(host):
 
 
 def test_issue_d_fingerprints(host):
-    f = host.file(os.path.join("/etc/issue.d/01-ssh-fingerprints.issue"))
+    f = host.file('/etc/issue.d/01-ssh-fingerprints.issue')
 
     assert f.exists
     assert f.user == 'root'
