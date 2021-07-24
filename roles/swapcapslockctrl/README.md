@@ -4,6 +4,9 @@ davedittrich.utils.swapcapslockctrl
 This role sets up permanent swapping of the Left CTRL key with CapsLock key.
 Everyone knows this is the way God intended the keyboard to be layed out.
 
+https://wiki.archlinux.org/title/Map_scancodes_to_keycodes
+https://github.com/10ne1/carpalx-keyboard
+
 Requirements
 ------------
 
