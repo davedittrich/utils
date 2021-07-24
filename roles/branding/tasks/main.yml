@@ -1,0 +1,34 @@
+---
+# tasks file for davedittrich.utils.branding
+
+# See the following:
+#   https://www.thegeekstuff.com/2012/10/grub-splash-image/
+#   https://www.programmersought.com/article/81266199143/
+#
+# root@instance:/# tree /usr/share/images/desktop-base
+# /usr/share/images/desktop-base
+# |-- default -> desktop-background
+# |-- desktop-background -> /etc/alternatives/desktop-background
+# |-- desktop-background.xml -> /etc/alternatives/desktop-background.xml
+# |-- desktop-lockscreen.xml -> /etc/alternatives/desktop-lockscreen.xml
+# `-- login-background.svg -> /etc/alternatives/desktop-login-background
+#
+# 0 directories, 5 files
+
+- name: Ensure package cache is up to date.
+  ansible.builtin.package:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: true
+
+- name: Ensure ImageMagick is installed.
+  package:
+    name: imagemagick
+    state: present
+  become: true
+
+- name: Ensure quieting applied to intended users.
+  include_tasks: boot_splash.yml
+
+- name: Ensure wallpaper is customized.
+  include_tasks: wallpaper.yml

@@ -1,0 +1,30 @@
+---
+
+# https://linuxmeerkat.wordpress.com/2014/10/17/running-a-gui-application-in-a-docker-container/
+
+- name: Stat /root/custom-splash.jpg
+  ansible.builtin.stat:
+    path: '/root/custom-splash.jpg'
+  register: custom_splash
+
+- name: Ensure `/usr/share/lxde/wallpapers/` exists.
+  file:
+    path: '/usr/share/lxde/wallpapers/'
+    state: directory
+    recurse: true
+    owner: root
+    group: root
+    mode: 0o644
+  become: true
+  when: custom_splash.stat.exists
+
+- name: Ensure custom-splash.jpg is an optional desktop background.
+  ansible.builtin.copy:
+    src: '/root/custom-splash.jpg'
+    dest: '/usr/share/lxde/wallpapers/custom-splash.jpg'
+    remote_src: true
+    owner: root
+    group: root
+    mode: 0o644
+  become: true
+  when: custom_splash.stat.exists
