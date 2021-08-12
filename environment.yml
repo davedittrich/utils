@@ -163,6 +163,7 @@ dependencies:
     - readme-renderer==29.0
     - requests-toolbelt==0.9.1
     - rfc3986==1.5.0
+    - setuptools-scm==6.0.1
     - snowballstemmer==2.1.0
     - soupsieve==2.2.1
     - sphinx==4.1.1
