@@ -84,10 +84,6 @@
     ssh_fingerprints: {}
   when: not st.stat.exists
 
-- name: Ensure facts are gathered for ansible_lsb dictionary.
-  setup:
-  when: ansible_lsb.description is not defined
-
 - name: Ensure /etc/issue file is customized.
   ansible.builtin.template:
     src: issue.j2
@@ -96,7 +92,6 @@
     group: root
     mode: 0o644
   become: true
-  when: ansible_lsb.description is defined
 
 - name: Find /etc/issue.d templates on control host.
   ansible.builtin.find:
