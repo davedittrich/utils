@@ -49,23 +49,29 @@
     line: '\1 logo.nologo'
     state: present
     backrefs: true
-    backup: true
+    backup: false
   become: true
   when: boot_cmdline.stat.exists and not nologo_exists.found
 
-- name: Stat /root/custom-splash.jpg
+  # This task assumes you have already placed the file to use for
+  # the boot splash in `/root`. This was designed for Raspberry Pi
+  # installations created using Hypriot `flash`.
+
+- name: Stat `/root/custom-splash.jpg`
   ansible.builtin.stat:
     path: '/root/custom-splash.jpg'
+  become: true
   register: custom_splash
 
-- name: Stat /dev/fb0 device file.
+- name: Stat `/dev/fb0` device file.
   ansible.builtin.stat:
     path: '/dev/fb0'
+  become: true
   register: framebuffer
 
 - block:
     - name: Ensure `fbi` package is present.
-      package:
+      ansible.builtin.package:
         name: fbi
         state: present
       become: true

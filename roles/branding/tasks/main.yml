@@ -1,4 +1,5 @@
 ---
+
 # tasks file for davedittrich.utils.branding
 
 # See the following:
@@ -15,6 +16,31 @@
 #
 # 0 directories, 5 files
 
+- name: Set fact with users whose accounts need to be configured
+  ansible.builtin.set_fact:
+    branding_users: "{{ branding_users | default(['root', ansible_user_id]) | unique }}"
+
+# See https://shallowsky.com/linux/x-screen-blanking.html
+- name: Set fact with X11 settings to use.
+  ansible.builtin.set_fact:
+    x_settings:
+      - 'xset s off'
+      - 'xset s noblank'
+      - 'xset s noexpose'
+      - 'xset -dpms'
+      - 'setterm -blength 0'
+  when: x_settings is not defined
+
+- name: Debug `x_settings` variable.
+  ansible.builtin.debug:
+    var: x_settings
+    verbosity: 2
+
+- name: Debug `branding_users`.
+  ansible.builtin.debug:
+    msg: '{{ branding_users }}'
+    verbosity: 2
+
 - name: Ensure package cache is up to date.
   ansible.builtin.package:
     update_cache: yes
@@ -22,13 +48,22 @@
   become: true
 
 - name: Ensure ImageMagick is installed.
-  package:
+  ansible.builtin.package:
     name: imagemagick
     state: present
   become: true
 
-- name: Ensure quieting applied to intended users.
+- name: Ensure boot splash is customized.
   include_tasks: boot_splash.yml
 
-- name: Ensure wallpaper is customized.
-  include_tasks: wallpaper.yml
+- name: Ensure customized LXDE is default desktop.
+  include_tasks: lxde-desktop.yml
+  vars:
+    # x_settings: "{{ x_settings }}"
+    users: "{{ branding_users }}"
+
+- name: Ensure clipit history is disabled.
+  include_tasks: clipit-nohistory.yml
+  vars:
+    user: "{{ item }}"
+  loop: '{{ branding_users }}'
