@@ -1,0 +1,178 @@
+---
+
+# tasks for configuring user's LXDE desktop.
+
+- name: Get user home directory with `getent`.
+  ansible.builtin.shell: |
+    set -o pipefail
+    getent passwd {{ user }} | awk -F: '{ print $6 }'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: getent
+
+- name: Set fact with user home directory
+  ansible.builtin.set_fact:
+    homedir: "{{ getent.stdout }}"
+
+- name: Debug `homedir`.
+  ansible.builtin.debug:
+    var: homedir
+
+- name: Ensure `hwinfo` is available.
+  ansible.builtin.package:
+    name: hwinfo
+    state: present
+  become: true
+
+- name: Get display information.
+  ansible.builtin.shell: |
+    set -o pipefail
+    /usr/sbin/hwinfo --monitor --short | sed 's/ //g'
+  args:
+    executable: /bin/bash
+  become: true
+  register: hwinfo
+  changed_when: false
+
+- block:
+  - name: Set fact with display monitor names.
+    ansible.builtin.set_fact:
+      monitors: "{{ monitors|default([]) + hwinfo_line }}"
+    loop: '{{ hwinfo.stdout_lines }}'
+    loop_control:
+      loop_var: hwinfo_line
+    failed_when: hwinfo.stdout_lines|count == 0
+
+  rescue:
+  - name: Set fact with display monitor names.
+    ansible.builtin.set_fact:
+      monitors: []
+
+- name: Debug `monitors`.
+  ansible.builtin.debug:
+    var: monitors
+    verbosity: 0
+
+- name: Ensure `rsync` is available for synchronize.
+  ansible.builtin.package:
+    name: rsync
+    state: present
+  become: true
+
+- name: Stat user's `.config/lxsession/LXDE` directory.
+  ansible.builtin.stat:
+    path: "{{ homedir ~ '.config/lxsession/LXDE' }}"
+  become: true
+  register: lxsession_lxde_dir
+
+# See https://github.com/ansible/ansible/issues/22862
+
+- name: Ensure lxsession LXDE configuration directory exists.
+  ansible.builtin.file:
+    path: "{{ homedir ~ '/.config/lxsession/LXDE' }}"
+    state: directory
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+  become: true
+  become_user: '{{ user }}'
+  when: not lxsession_lxde_dir.stat.exists
+
+# See https://github.com/lxde/lxsession
+
+- name: Ensure `.config/lxsession/LXDE` directory is populated.
+  ansible.builtin.synchronize:
+    src: '/etc/xdg/lxsession/LXDE/'
+    dest: "{{ homedir ~ '/.config/lxsession/LXDE' }}"
+  become: true
+  become_user: '{{ user }}'
+  delegate_to: '{{ inventory_hostname }}'
+  when: not lxsession_lxde_dir.stat.exists
+
+- name: Ensure X11 settings are present in user's LXDE autostart file.
+  ansible.builtin.lineinfile:
+    path: "{{ homedir ~ '/.config/lxsession/LXDE/autostart' }}"
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    regexp: '^@{{ autostart_setting }}$'
+    line: '@{{ autostart_setting }}'
+    state: present
+  become: true
+  become_user: '{{ user }}'
+  loop: '{{ x_settings }}'
+  loop_control:
+    loop_var: autostart_setting
+
+  # LXDE supports multiple monitors by giving each display (starting with `0`
+  # and incrementing by one) its own `pcmanfm` configuration file.
+ 
+  # Trying to affect these configurations using `pcmanfm` directly can fail, since
+  # `pcmanfm` assumes it is running by a logged in user with access to the
+  # X11 displays. There is no option to ignore this when just making configuration
+  # changes, so you get a "Cannot connect to display" failure.  This workaround
+  # hack modifies the files directly using the `ansible.builtin.lineinfile` module.
+
+- name: Stat user's `.config/pcmanfm/LXDE` directory.
+  ansible.builtin.stat:
+    path: "{{ homedir ~ '.config/pcmanfm/LXDE' }}"
+  become: true
+  register: pcmanfm_dir
+
+# - name: Ensure wallpaper is set using `pcmanfm`.  # noqa no-changed-when
+#   ansible.builtin.shell: >
+#     pcmanfm
+#     --set-wallpaper="/usr/share/lxde/wallpapers/custom-wallpaper.png"
+#     --wallpaper-mode="stretch"
+#   args:
+#     executable: /bin/bash
+#   become: true
+#   become_user: '{{ item }}'
+#   changed_when: false
+#   loop: '{{ branding_users }}'
+
+- block:
+  - name: Find desktop items configuration files.
+    ansible.builtin.find:
+      paths: "{{ homedir ~ '/.config/pcmanfm/LXDE' }}"
+      recurse: false
+      use_regex: false
+      patterns: 'desktop-items-*.conf'
+    delegate_to: '{{ inventory_hostname }}'
+    become: false
+    register: desktop_items_conf_matched
+
+  - name: Set fact with desktop items files.
+    ansible.builtin.set_fact:
+      desktop_items_conf: '{{ desktop_items_conf|default([]) + [item.path] }}'
+    loop: '{{ desktop_items_conf_matched.files }}'
+
+  - name: Debug desktop item files list.
+    ansible.builtin.debug:
+      msg: '{{ desktop_items_conf }}'
+      verbosity: 2
+    changed_when: false
+
+  - name: Set fact with setting information.
+    ansible.builtin.set_fact:
+      settings_dict_list:
+        - regexp: '^wallpaper_mode='
+          line: 'wallpaper_mode=stretch'
+        - regexp: '^wallpaper='
+          line: 'wallpaper=/usr/share/lxde/wallpapers/custom-wallpaper.png'
+
+  - name: Ensure pcmanfm desktop settings are customized.
+    ansible.builtin.lineinfile:
+      path: '{{ item.0 }}'
+      owner: '{{ user }}'
+      group: '{{ user }}'
+      mode: 0o640
+      regexp: '{{ item.1.regexp }}'
+      line: '{{ item.1.line }}'
+      state: present
+    become: true
+    become_user: '{{ user }}'
+    loop: '{{ desktop_items_conf|product(settings_dict_list)|list }}'
+
+  when: pcmanfm_dir.stat.exists

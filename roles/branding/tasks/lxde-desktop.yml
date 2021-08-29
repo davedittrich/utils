@@ -1,0 +1,58 @@
+---
+
+# tasks for configuring customized LXDE sessions.
+
+- name: Set fact with LXDE package.
+  ansible.builtin.set_fact:
+    lxde_package: '{{ "task-lxde-desktop" if ansible_distribution == "Debian" else "lxde4" }}'
+
+# Speed up molecule testing.
+- name: Set fact with LXDE package install flag.
+  ansible.builtin.set_fact:
+    install_lxde: '{{ install_lxde | default(true) }}'
+
+- name: Ensure LXDE packages are present.
+  ansible.builtin.package:
+    name:
+      - 'arandr'
+      - 'hwinfo'
+      - '{{ lxde_package }}'
+    state: present
+  become: true
+  when: install_lxde
+
+# https://linuxmeerkat.wordpress.com/2014/10/17/running-a-gui-application-in-a-docker-container/
+
+- name: Stat `/root/custom-splash.jpg`
+  ansible.builtin.stat:
+    path: '/root/custom-splash.jpg'
+  become: true
+  register: custom_splash
+
+- name: Ensure `/usr/share/lxde/wallpapers/` exists.
+  ansible.builtin.file:
+    path: '/usr/share/lxde/wallpapers/'
+    state: directory
+    recurse: true
+    owner: root
+    group: root
+    mode: 0o644
+  become: true
+  when: custom_splash.stat.exists
+
+- name: Ensure `custom-splash.jpg` is an optional desktop background.
+  ansible.builtin.copy:
+    src: '/root/custom-splash.jpg'
+    dest: '/usr/share/lxde/wallpapers/custom-splash.jpg'
+    remote_src: true
+    mode: preserve
+  become: true
+  when: custom_splash.stat.exists
+
+- name: Ensure X11 settings are present in autostart file.
+  include_tasks: x11-config.yml
+  # vars:
+  #   user: "{{ branding_user }}"
+  loop: '{{ branding_users }}'
+  loop_control:
+    loop_var: user
