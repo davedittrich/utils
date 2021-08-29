@@ -2,17 +2,17 @@
 
 # tasks for davedittrich.utils.ip_in_issue
 
-- name: Set fact ``exclude_interface_prefix``.
+- name: Set fact `exclude_interface_prefix`.
   ansible.builtin.set_fact:
     exclude_interface_prefix: '{{ _exclude_interface_prefix }}'
   when: exclude_interface_prefix is not defined
 
-- name: Debug ``exclude_interface_prefix``.
+- name: Debug `exclude_interface_prefix`.
   ansible.builtin.debug:
     msg: '{{ exclude_interface_prefix }}'
     verbosity: 2
 
-- name: Set fact ``exclude_interface``.
+- name: Set fact `exclude_interface`.
   ansible.builtin.set_fact:
     exclude_interface: '{{ exclude_interface | default({}) | combine({ item.0: true }) }}'
   with_nested:
@@ -20,12 +20,12 @@
     - '{{ exclude_interface_prefix }}'
   when: 'item.0.startswith(item.1) or item.0 == "lo"'
 
-- name: Debug ``exclude_interface``.
+- name: Debug `exclude_interface`.
   ansible.builtin.debug:
     msg: '{{ exclude_interface }}'
     verbosity: 2
 
-- name: Set fact ``issue_interfaces``.
+- name: Set fact `issue_interfaces`.
   ansible.builtin.set_fact:
     issue_interfaces: '{{ issue_interfaces | default([]) + [ item ] }}'
   with_items: '{{ ansible_interfaces }}'

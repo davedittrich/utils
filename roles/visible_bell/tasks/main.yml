@@ -11,10 +11,10 @@
   become: true
 
 - name: Set fact with users whose accounts need to be configured
-  set_fact:
+  ansible.builtin.set_fact:
     visible_bell_users: "{{ visible_bell_users | default(['root', ansible_user_id]) | unique }}"
 
-- name: Debug ``visible_bell_users``.
+- name: Debug `visible_bell_users`.
   ansible.builtin.debug:
     msg: '{{ visible_bell_users }}'
     verbosity: 2

@@ -2,21 +2,23 @@
 
 [![CI](https://github.com/davedittrich/utils/workflows/release/badge.svg?event=push)](https://github.com/davedittrich/utils/actions)
 
-Ansible collection for my opinionated development workstation configuration.
+Ansible collection for my opinionated development workstation configuration and
+prototyping Ansible (and non-Ansible) features for other Python packages and
+Ansible collections.
 
-It houses roles, playbooks, and other Ansible content suitable for setting up
-standardized tooling and settings for development workstations or other systems
-like Raspberry Pi servers and training lab cloud instances.
+This collection houses roles, playbooks, and other Ansible content suitable for
+setting up standardized tooling and settings for development workstations or
+other systems like Raspberry Pi servers and training lab cloud instances.
 
 Development is supported by a test-driven design that uses `molecule` to test
 any or all roles, both locally and as GitHub Actions workflows on `push` actions.
 
 The operating system distributions supported at this time are:
 
+* Debian 10 (default distribution)
 * Debian 9
-* Debian 10
-* Ubuntu 18.04 LTS
 * Ubuntu 20.04 LTS
+* Ubuntu 18.04 LTS
 
 To help reduce the amount of time necessary for this testing, several capabilities
 are available:

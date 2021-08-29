@@ -1,11 +1,12 @@
 ---
 
-- name: Stat /boot/config.txt file.
+- name: Stat `/boot/config.txt` file.
   ansible.builtin.stat:
     path: '/boot/config.txt'
+  become: true
   register: boot_config
 
-- name: Ensure splash is disabled in /boot/config.txt.
+- name: Ensure splash is disabled in `/boot/config.txt`.
   ansible.builtin.lineinfile:
     path: '/boot/config.txt'
     owner: 'root'
@@ -17,12 +18,13 @@
   become: true
   when: boot_config.stat.exists
 
-- name: Stat /boot/cmdline.txt file.
+- name: Stat `/boot/cmdline.txt` file.
   ansible.builtin.stat:
     path: '/boot/cmdline.txt'
+  become: true
   register: boot_cmdline
 
-- name: Check for `logo.nologo` presense in /boot/cmdline.txt.
+- name: Check for `logo.nologo` presense in `/boot/cmdline.txt`.
   ansible.builtin.lineinfile:
     path: '/boot/cmdline.txt'
     owner: 'root'
@@ -30,12 +32,14 @@
     mode: 0o640
     regexp: '^(.*) logo.nologo(.*)$'
     state: absent
+    backup: false
+  become: true
   check_mode: true
   changed_when: false
   register: nologo_exists
   when: boot_cmdline.stat.exists
 
-- name: Ensure `logo.nologo` present in /boot/cmdline.txt.
+- name: Ensure `logo.nologo` present in `/boot/cmdline.txt`.
   ansible.builtin.lineinfile:
     path: '/boot/cmdline.txt'
     owner: 'root'
