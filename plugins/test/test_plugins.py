@@ -7,7 +7,7 @@ def _include_in_issue(string, exclude_prefixes=None):
     The loopback interface ('lo') is always excluded.
     """
     if exclude_prefixes is None:
-        # TODO(dittrich): NOT DRY: These are replicated in roles/ip_in_issue/defaults/main.yml
+        # TODO(dittrich): NOT DRY: These are replicated in roles/ip_in_issue/defaults/main.yml  # noqa
         # until I can make them DRY.
         exclude_prefixes = ['br', 'docker', 'tun', 'veth']
     # Always exclude loopback.
@@ -19,6 +19,7 @@ def _include_in_issue(string, exclude_prefixes=None):
             result = False
             continue
     return result
+
 
 class TestModule(object):
     """

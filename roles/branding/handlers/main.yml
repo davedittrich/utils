@@ -1,0 +1,8 @@
+---
+
+- name: enable splashscreen
+  service:
+    name: splashscreen
+    enabled: true
+    state: started
+  become: true

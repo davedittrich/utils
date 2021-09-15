@@ -1,0 +1,69 @@
+---
+
+# tasks file for davedittrich.utils.branding
+
+# See the following:
+#   https://www.thegeekstuff.com/2012/10/grub-splash-image/
+#   https://www.programmersought.com/article/81266199143/
+#
+# root@instance:/# tree /usr/share/images/desktop-base
+# /usr/share/images/desktop-base
+# |-- default -> desktop-background
+# |-- desktop-background -> /etc/alternatives/desktop-background
+# |-- desktop-background.xml -> /etc/alternatives/desktop-background.xml
+# |-- desktop-lockscreen.xml -> /etc/alternatives/desktop-lockscreen.xml
+# `-- login-background.svg -> /etc/alternatives/desktop-login-background
+#
+# 0 directories, 5 files
+
+- name: Set fact with users whose accounts need to be configured
+  ansible.builtin.set_fact:
+    branding_users: "{{ branding_users | default(['root', ansible_user_id]) | unique }}"
+
+# See https://shallowsky.com/linux/x-screen-blanking.html
+- name: Set fact with X11 settings to use.
+  ansible.builtin.set_fact:
+    x_settings:
+      - 'xset s off'
+      - 'xset s noblank'
+      - 'xset s noexpose'
+      - 'xset -dpms'
+      - 'setterm -blength 0'
+  when: x_settings is not defined
+
+- name: Debug `x_settings` variable.
+  ansible.builtin.debug:
+    var: x_settings
+    verbosity: 2
+
+- name: Debug `branding_users`.
+  ansible.builtin.debug:
+    msg: '{{ branding_users }}'
+    verbosity: 2
+
+- name: Ensure package cache is up to date.
+  ansible.builtin.package:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: true
+
+- name: Ensure ImageMagick is installed.
+  ansible.builtin.package:
+    name: imagemagick
+    state: present
+  become: true
+
+- name: Ensure boot splash is customized.
+  include_tasks: boot_splash.yml
+
+- name: Ensure customized LXDE is default desktop.
+  include_tasks: lxde-desktop.yml
+  vars:
+    # x_settings: "{{ x_settings }}"
+    users: "{{ branding_users }}"
+
+- name: Ensure clipit history is disabled.
+  include_tasks: clipit-nohistory.yml
+  vars:
+    user: "{{ item }}"
+  loop: '{{ branding_users }}'

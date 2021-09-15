@@ -7,9 +7,10 @@ lint: |
   set -e
   yamllint .
   ansible-lint
+  flake8
 platforms:
   - name: instance
-    image: "geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2004}-ansible:latest"
+    image: "${MOLECULE_REPO:-geerlingguy}/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-"/sbin/init"}
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -31,5 +32,3 @@ scenario:
   name: visible_bell
 verifier:
   name: testinfra
-  lint:
-    name: flake8

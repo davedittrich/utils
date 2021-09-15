@@ -55,4 +55,3 @@ def test_udev_hwdb_file(host):
     assert f.user == 'root'
     assert f.group == 'root'
     assert r'KEYBOARD_KEY_700E0=capslock' in f.content_string
-

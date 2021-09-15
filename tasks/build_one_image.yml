@@ -1,0 +1,123 @@
+---
+
+- name: Assert `packages` and `repo_name`` are defined.
+  ansible.builtin.assert:
+    that:
+      - '{{ repo_name is defined and repo_name != "" }}'
+    fail_msg: "'repo_name' must be defined in including playbook"
+
+- name: Assert `ubuntu` or `debian` in source_image.
+  ansible.builtin.assert:
+    that:
+      - '{{ "debian" in source_image or "ubuntu" in source_image }}'
+    fail_msg: "only 'debian' and 'ubuntu' geerlinguy images supported right now"
+
+# Include all packages that might be added in roles, based on the
+# operating system distribution used.
+
+- name: Set fact with packages to include (ubuntu)
+  ansible.builtin.set_fact:
+    packages_include:
+      - arandr
+      - fbi
+      - hwinfo
+      - imagemagick
+      - rsync
+      - ssh
+      - tree
+      - udev
+      - xfce4
+  when: "'ubuntu' in source_image"
+
+- name: Set fact with packages to include (ubuntu)
+  ansible.builtin.set_fact:
+    packages_remove:
+      - libreoffice
+  when: "'ubuntu' in source_image"
+
+- name: Set fact with packages to include (debian)
+  ansible.builtin.set_fact:
+    packages_include:
+      - arandr
+      - fbi
+      - hwinfo
+      - imagemagick
+      - rsync
+      - ssh
+      - task-xfce-desktop
+      - tree
+      - udev
+  when: "'debian' in source_image"
+
+- name: Set fact with packages to remove (debian)
+  ansible.builtin.set_fact:
+    packages_remove:
+      - libreoffice
+  when: "'debian' in source_image"
+
+- name: Set fact with converted image name.
+  ansible.builtin.set_fact:
+    my_image: '{{ source_image|replace("geerlingguy", repo_name) }}'
+
+- name: Template out Dockerfile.
+  ansible.builtin.copy:
+    content: |
+      FROM {{ source_image }}
+      ENV DEBIAN_FRONTEND noninteractive
+      RUN apt-get update && \
+        apt-get -y \
+          -o APT::Install-Recommends=false \
+          -o APT::Get::AutomaticRemove=true \
+          -o APT::Acquire::Retries=3 \
+          install {{ packages_include | join(" ") }} && \
+        {% if packages_remove|count > 0 -%}
+        apt purge -y {{ packages_remove | join(" ") }} && \
+        {% endif -%}
+        apt autoremove -y && \
+        apt clean && \
+        rm -rf /var/cache/apt
+    dest: ../docker/Dockerfile
+    owner: '{{ ansible_user_id }}'
+    group: '{{ ansible_user_id }}'
+    mode: 0o600
+  delegate_to: localhost
+
+- name: Remove image {{ my_image }}.
+  community.docker.docker_image:
+    state: absent
+    name: '{{ my_image }}'
+  delegate_to: localhost
+
+- name: Build molecule testing image {{ my_image }}.
+  community.docker.docker_image:
+    build:
+      path: ../docker
+    name: '{{ my_image }}'
+    source: build
+    force_source: true
+    push: false
+  register: docker_build
+  delegate_to: localhost
+
+- name: Debug docker_build
+  debug:
+    var: docker_build
+
+- name: Set fact with log file path.
+  set_fact:
+    log_file: 'build-{{ my_image|replace(repo_name, "")|replace("/", "")|replace(":latest", "") }}.log'
+
+- name: Preserve Docker build log for debugging.
+  copy:
+    content: '{{ docker_build.stdout ~ "\n\n" ~ docker_build.stderr|default("") }}'
+    dest: '../docker/{{ log_file }}'
+    owner: '{{ ansible_user_id }}'
+    group: '{{ ansible_user_id }}'
+    mode: 0o600
+  delegate_to: localhost
+  when: ansible_verbosity > 1
+
+- name: Ensure Dockerfile is removed.
+  file:
+    path: '../docker/Dockerfile'
+    state: absent

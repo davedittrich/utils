@@ -2,11 +2,51 @@
 
 [![CI](https://github.com/davedittrich/utils/workflows/release/badge.svg?event=push)](https://github.com/davedittrich/utils/actions)
 
-Ansible collection for my opinionated development workstation configuration.
+Ansible collection for my opinionated development workstation configuration and
+prototyping Ansible (and non-Ansible) features for other Python packages and
+Ansible collections.
 
-It houses roles, playbooks, and other Ansible content suitable for setting up
-standardized tooling and settings for development workstations or other systems
-like Raspberry Pi servers and training lab cloud instances.
+This collection houses roles, playbooks, and other Ansible content suitable for
+setting up standardized tooling and settings for development workstations or
+other systems like Raspberry Pi servers and training lab cloud instances.
+
+Development is supported by a test-driven design that uses `molecule` to test
+any or all roles, both locally and as GitHub Actions workflows on `push` actions.
+
+The operating system distributions supported at this time are:
+
+* Debian 10 (default distribution)
+* Debian 9
+* Ubuntu 20.04 LTS
+* Ubuntu 18.04 LTS
+
+To help reduce the amount of time necessary for this testing, several capabilities
+are available:
+
+1. Local testing during development is done against *only* Debian 10. Once you
+   have something that appears to pass all tests, you can then chose to run tests
+   against the remaining distributions.
+
+2. Customized Docker images are used to pre-load the many packages that are expected
+   to be on production workstations. This significantly reduces the amount of time
+   necessary to perform frequent tests by *only* performing time-consuming package
+   installations when you chose to do so (not every time a `molecule` instance is
+   created.)
+
+3. GitHub action testing for release candidates on the `develop` branch and
+   releases on the `main` branch are the only ones that test *all* roles
+   against *all* distributions. When you `push` to a feature branch with a
+   name related to the role you are developing (e.g., `feature/branding` for
+   the `davedittrich.utils.branding` role), *only* that role is tested against
+   the distribution matrix. This reduces test time by only testing role-specific
+   changes.
+
+All of this comes at a cost, however. The use of custom Docker containers increases
+disk storage, and there is a *lot* of non-DRY repetition of logic, code, and
+`molecule` configuration settings. This is a side-effect of limitations in modularity
+of GitHub Actions. Some of this repetition can be eliminated by more modularity
+and cross-inclusion of some code, which is a long-term aspirational goal.
+
 
 https://github.com/davedittrich/utils
 

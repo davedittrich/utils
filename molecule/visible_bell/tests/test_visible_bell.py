@@ -5,6 +5,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
 test_user = 'root'
 
+
 def test_inputrc(host):
     f = host.file(os.path.join(host.user(test_user).home, '.inputrc'))
 

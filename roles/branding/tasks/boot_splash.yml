@@ -1,0 +1,104 @@
+---
+
+- name: Stat `/boot/config.txt` file.
+  ansible.builtin.stat:
+    path: '/boot/config.txt'
+  become: true
+  register: boot_config
+
+- name: Ensure splash is disabled in `/boot/config.txt`.
+  ansible.builtin.lineinfile:
+    path: '/boot/config.txt'
+    owner: 'root'
+    group: 'root'
+    mode: 0o640
+    regexp: '^disable_splash='
+    line: 'disable_splash=1'
+    state: present
+  become: true
+  when: boot_config.stat.exists
+
+- name: Stat `/boot/cmdline.txt` file.
+  ansible.builtin.stat:
+    path: '/boot/cmdline.txt'
+  become: true
+  register: boot_cmdline
+
+- name: Check for `logo.nologo` presense in `/boot/cmdline.txt`.
+  ansible.builtin.lineinfile:
+    path: '/boot/cmdline.txt'
+    owner: 'root'
+    group: 'root'
+    mode: 0o640
+    regexp: '^(.*) logo.nologo(.*)$'
+    state: absent
+    backup: false
+  become: true
+  check_mode: true
+  changed_when: false
+  register: nologo_exists
+  when: boot_cmdline.stat.exists
+
+- name: Ensure `logo.nologo` present in `/boot/cmdline.txt`.
+  ansible.builtin.lineinfile:
+    path: '/boot/cmdline.txt'
+    owner: 'root'
+    group: 'root'
+    mode: 0o640
+    regexp: '^(.*)$'
+    line: '\1 logo.nologo'
+    state: present
+    backrefs: true
+    backup: false
+  become: true
+  when: boot_cmdline.stat.exists and not nologo_exists.found
+
+  # This task assumes you have already placed the file to use for
+  # the boot splash in `/root`. This was designed for Raspberry Pi
+  # installations created using Hypriot `flash`.
+
+- name: Stat `/root/custom-splash.jpg`
+  ansible.builtin.stat:
+    path: '/root/custom-splash.jpg'
+  become: true
+  register: custom_splash
+
+- name: Stat `/dev/fb0` device file.
+  ansible.builtin.stat:
+    path: '/dev/fb0'
+  become: true
+  register: framebuffer
+
+- block:
+    - name: Ensure `fbi` package is present.
+      ansible.builtin.package:
+        name: fbi
+        state: present
+      become: true
+
+    - name: Ensure `splashscreen.service` file exists.
+      ansible.builtin.copy:
+        content: |
+          # This service enables a custom splash screen for branding your project.
+          [Unit]
+          Description=Splash screen
+          DefaultDependencies=no
+          After=local-fs.target
+
+          [Service]
+          # Place your project's logo, your favorite meme, or any other PNG file
+          # you want to use for the splash image in /root/custom-splash.jpg.
+          ExecStart=/usr/bin/fbi -d /dev/fb0 --noverbose -a /root/custom-splash.jpg
+          StandardInput=tty
+          StandardOutput=tty
+
+          [Install]
+          WantedBy=sysinit.target
+        dest: '/lib/systemd/system/splashscreen.service'
+        owner: root
+        group: root
+        mode: 0o644
+      become: true
+      notify: enable splashscreen
+
+  when: custom_splash.stat.exists

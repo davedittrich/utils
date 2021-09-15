@@ -1,7 +1,7 @@
 ---
 namespace: davedittrich
 name: utils
-version: 0.0.4
+version: 0.0.5
 # See https://github.com/ansible/galaxy/issues/2438
 readme: README.md
 authors:
@@ -15,6 +15,9 @@ homepage: https://github.com/davedittrich/utils
 issues: https://github.com/davedittrich/utils/issues
 tags:
   - system
+  - swapcapslockctrl
+  - visual_bell
+  - bootsplash
   - issue
   - redhat
   - ubuntu
