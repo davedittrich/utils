@@ -52,7 +52,7 @@
 - name: Ensure clipit configuration is set.
   ansible.builtin.lineinfile:
     path: '{{ homedir ~ "/.config/clipit/clipitrc" }}'
-    regexp:  '^save_history='
+    regexp: '^save_history='
     line: 'save_history=false'
   when: clipitrc.stat.exists
   become: true

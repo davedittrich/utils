@@ -10,15 +10,15 @@ galaxy_info:
   # https://galaxy.ansible.com/api/v1/platforms/
   #
   platforms:
-  - name: Debian
-    versions:
-    - all
-  - name: Ubuntu
-    versions:
-    - all
-  - name: RedHat
-    versions:
-    - all
+    - name: Debian
+      versions:
+      - all
+    - name: Ubuntu
+      versions:
+      - all
+    - name: RedHat
+      versions:
+      - all
   galaxy_tags:
     - collection
     - role
