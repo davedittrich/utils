@@ -1,11 +1,11 @@
 ---
 namespace: davedittrich
 name: utils
-version: 0.0.5
+version: 0.0.9
 # See https://github.com/ansible/galaxy/issues/2438
 readme: README.md
 authors:
-- Dave Dittrich (https://davedittrich.github.io)
+  - Dave Dittrich (https://davedittrich.github.io)
 description: Ansible collection for my opinionated development workstation configuration
 license_file: LICENSE.txt
 dependencies: {}

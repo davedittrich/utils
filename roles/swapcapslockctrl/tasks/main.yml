@@ -33,7 +33,7 @@
     msg: '{{ copy }}'
     verbosity: 2
 
-- name: Update udevadm hwdb and trigger update.
+- name: Update udevadm hwdb and trigger update.  # noqa no-handler
   ansible.builtin.shell: >
     udevadm hwdb --update; udevadm trigger
   args:

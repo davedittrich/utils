@@ -3,7 +3,6 @@
   hosts: all
 
   pre_tasks:
-
     - name: Ensure package cache is up to date.
       ansible.builtin.package:
         update_cache: true
@@ -23,7 +22,7 @@
         tests_path: "{{ lookup('env', 'TESTS_PATH') }}"
       changed_when: false
 
-  roles: 
+  roles:
     - davedittrich.utils.ip_in_issue
     - davedittrich.utils.swapcapslockctrl
     - davedittrich.utils.visible_bell

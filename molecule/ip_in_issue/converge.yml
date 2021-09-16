@@ -5,7 +5,7 @@
   pre_tasks:
     - name: Update package cache.
       ansible.builtin.package:
-        update_cache: yes
+        update_cache: true
       changed_when: false
       register: task_result
       until: task_result is success
@@ -17,5 +17,5 @@
         name: ssh
         state: present
 
-  roles: 
+  roles:
     - davedittrich.utils.ip_in_issue
