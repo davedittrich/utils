@@ -11,22 +11,28 @@
   ansible.builtin.set_fact:
     install_lxde: '{{ install_lxde | default(true) }}'
 
-# These packages are out of date, relying on Python 2, which breaks
-# on Raspbian (HypriotOS).
+# HypriotOS switches the default Python from 2.x to 3.x. This breaks the old
+# and not well-maintained 'wicd' service:
+#
+# Sep 15 23:34:20 hypriot systemd[1]: Starting Wicd a wireless and wired network manager for Linux...
+# Sep 15 23:34:20 hypriot wicd[17037]:   File "/usr/share/wicd/daemon/wicd-daemon.py", line 136
+# Sep 15 23:34:20 hypriot wicd[17037]:     print "--no-autoconnect detected, not autoconnecting..."
+# Sep 15 23:34:20 hypriot wicd[17037]:                                                            ^
+# Sep 15 23:34:20 hypriot wicd[17037]: SyntaxError: Missing parentheses in call to 'print'. Did you mean print("--no-autoconnect detected, not autoconnecting...")?
+# Sep 15 23:34:20 hypriot systemd[1]: wicd.service: Main process exited, code=exited, status=1/FAILURE
+# Sep 15 23:34:20 hypriot systemd[1]: wicd.service: Failed with result 'exit-code'.
+# Sep 15 23:34:20 hypriot systemd[1]: Failed to start Wicd a wireless and wired network manager for Linux.
+#
+# The result is that adding any new packages (like we are about to do next) forces
+# reconfiguration, which restarts services and the 'wicd.service' failure breaks
+# the play. Deleting the packages causes other problems, so just stop and
+# disable it now.
 
-- name: Ensure Wicd packages are absent.
-  ansible.builtin.package:
-    name:
-      - 'python-wicd'
-      - 'wicd'
-      - 'wicd-cli'
-      - 'wicd-curses'
-      - 'wicd-daemon'
-      - 'wicd-gtk'
-      - 'wicd-kde'
-    state: absent
-  become: true
-  when: install_lxde
+- name: Ensure wicd.service is stopped and disabled.
+  service:
+    name: 'wicd'
+    state: stopped
+    enabled: false
 
 - name: Ensure LXDE packages are present.
   ansible.builtin.package:
@@ -46,24 +52,30 @@
   become: true
   register: custom_splash
 
-- name: Ensure `/usr/share/lxde/wallpapers/` exists.
-  ansible.builtin.file:
-    path: '/usr/share/lxde/wallpapers/'
-    state: directory
-    recurse: true
-    owner: root
-    group: root
-    mode: 0o644
-  become: true
-  when: custom_splash.stat.exists
+- block:
+  - name: Ensure `/usr/share/lxde/wallpapers` exists.
+    ansible.builtin.file:
+      path: '/usr/share/lxde/wallpapers'
+      state: directory
+      owner: root
+      group: root
+      mode: 0o755
+    become: true
 
-- name: Ensure `custom-splash.jpg` is an optional desktop background.
-  ansible.builtin.copy:
-    src: '/root/custom-splash.jpg'
-    dest: '/usr/share/lxde/wallpapers/custom-splash.jpg'
-    remote_src: true
-    mode: preserve
-  become: true
+  - name: Ensure `custom-splash.jpg` is an optional desktop background.
+    ansible.builtin.copy:
+      src: '/root/custom-splash.jpg'
+      dest: '/usr/share/lxde/wallpapers/custom-splash.jpg'
+      remote_src: true
+      mode: 0o644
+    become: true
+
+  - name: Ensure `/root/custom-splash.jpg` is absent (mv)
+    ansible.builtin.file:
+      path: '/root/custom-splash.jpg'
+      state: absent
+    become: true
+
   when: custom_splash.stat.exists
 
 - name: Ensure X11 settings are present in autostart file.

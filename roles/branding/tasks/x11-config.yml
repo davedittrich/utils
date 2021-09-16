@@ -54,40 +54,59 @@
     var: monitors
     verbosity: 0
 
-- name: Ensure `rsync` is available for synchronize.
-  ansible.builtin.package:
-    name: rsync
-    state: present
-  become: true
-
-- name: Stat user's `.config/lxsession/LXDE` directory.
+- name: Stat user's `~/.config/lxsession/LXDE` directory.
   ansible.builtin.stat:
-    path: "{{ homedir ~ '.config/lxsession/LXDE' }}"
+    path: "{{ homedir ~ '/.config/lxsession/LXDE' }}"
   become: true
   register: lxsession_lxde_dir
 
 # See https://github.com/ansible/ansible/issues/22862
 
-- name: Ensure lxsession LXDE configuration directory exists.
-  ansible.builtin.file:
-    path: "{{ homedir ~ '/.config/lxsession/LXDE' }}"
-    state: directory
-    owner: '{{ user }}'
-    group: '{{ user }}'
-    mode: 0o640
-  become: true
-  become_user: '{{ user }}'
-  when: not lxsession_lxde_dir.stat.exists
+- block:
+  - name: Ensure lxsession LXDE configuration directory exists.
+    ansible.builtin.file:
+      path: "{{ homedir ~ '/.config/lxsession/LXDE' }}"
+      state: directory
+      owner: '{{ user }}'
+      group: '{{ user }}'
+      mode: 0o750
+    become: true
+    become_user: '{{ user }}'
 
-# See https://github.com/lxde/lxsession
+  # See https://github.com/lxde/lxsession
 
-- name: Ensure `.config/lxsession/LXDE` directory is populated.
-  ansible.builtin.synchronize:
-    src: '/etc/xdg/lxsession/LXDE/'
-    dest: "{{ homedir ~ '/.config/lxsession/LXDE' }}"
-  become: true
-  become_user: '{{ user }}'
-  delegate_to: '{{ inventory_hostname }}'
+  - name: Find lxsession LXDE configuration files.
+    ansible.builtin.find:
+      paths: '/etc/xdg/lxsession/LXDE'
+      recurse: false
+    delegate_to: '{{ inventory_hostname }}'
+    become: false
+    register: lxsession_lxde_conf_matched
+
+  - name: Set fact with lxsession LXDE conf files.
+    ansible.builtin.set_fact:
+      lxsession_lxde_conf: '{{ lxsession_lxde_conf|default([]) + [item.path] }}'
+    loop: '{{ lxsession_lxde_conf_matched.files }}'
+
+  - name: Debug lxsession LXDE conf files list.
+    ansible.builtin.debug:
+      msg: '{{ lxsession_lxde_conf }}'
+      verbosity: 2
+    changed_when: false
+
+  - name: Ensure user's `~/.config/lxsession/LXDE` directory is populated.
+    ansible.builtin.copy:
+      src: '{{ item }}'
+      remote_src: true
+      dest: "{{ homedir ~ '/.config/lxsession/LXDE/' ~ item|basename }}"
+      owner: '{{ user }}'
+      group: '{{ user }}'
+      mode: 0o644
+    loop: '{{ lxsession_lxde_conf }}'
+    become: true
+    become_user: '{{ user }}'
+    delegate_to: '{{ inventory_hostname }}'
+
   when: not lxsession_lxde_dir.stat.exists
 
 - name: Ensure X11 settings are present in user's LXDE autostart file.
@@ -95,7 +114,7 @@
     path: "{{ homedir ~ '/.config/lxsession/LXDE/autostart' }}"
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o640
+    mode: 0o644
     regexp: '^@{{ autostart_setting }}$'
     line: '@{{ autostart_setting }}'
     state: present
@@ -114,9 +133,9 @@
   # changes, so you get a "Cannot connect to display" failure.  This workaround
   # hack modifies the files directly using the `ansible.builtin.lineinfile` module.
 
-- name: Stat user's `.config/pcmanfm/LXDE` directory.
+- name: Stat user's `~/.config/pcmanfm/LXDE` directory.
   ansible.builtin.stat:
-    path: "{{ homedir ~ '.config/pcmanfm/LXDE' }}"
+    path: "{{ homedir ~ '/.config/pcmanfm/LXDE' }}"
   become: true
   register: pcmanfm_dir
 
