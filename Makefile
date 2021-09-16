@@ -137,7 +137,7 @@ test-delegated:
 		echo -n "[-] no SSH configuration `delegated-ssh-config` found"; \
 		exit 1; \
 	fi
-	molecule verify -s delegated
+	molecule test -s delegated
 	# ansible-playbook -i "$(DELEGATED_HOST)," $(PLAYBOOK)
 
 .PHONY: version
