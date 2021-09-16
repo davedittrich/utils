@@ -11,6 +11,23 @@
   ansible.builtin.set_fact:
     install_lxde: '{{ install_lxde | default(true) }}'
 
+# These packages are out of date, relying on Python 2, which breaks
+# on Raspbian (HypriotOS).
+
+- name: Ensure Wicd packages are absent.
+  ansible.builtin.package:
+    name:
+      - 'python-wicd'
+      - 'wicd'
+      - 'wicd-cli'
+      - 'wicd-curses'
+      - 'wicd-daemon'
+      - 'wicd-gtk'
+      - 'wicd-kde'
+    state: absent
+  become: true
+  when: install_lxde
+
 - name: Ensure LXDE packages are present.
   ansible.builtin.package:
     name:
