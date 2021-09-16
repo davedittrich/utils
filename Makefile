@@ -113,32 +113,33 @@ test: scenario-exists
 test-all-distros: scenario-exists
 	set -e; for distro in debian9 debian10 ubuntu1804 ubuntu2004; do MOLECULE_DISTRO=$$distro molecule test -s $(SCENARIO); done
 
-# For information (such that it is) on using the `delgated` driver to test
-# against a remote host, see the following:
-# https://molecule.readthedocs.io/en/latest/configuration.html#delegated
-#
-# Ensure that you have a file `delegated-ssh-config` with settings for
-# the host you want to target for delgated testing, something like this:
-#
-# Host delegated-host
-#     Hostname 192.168.0.1
-#     IdentityFile /path/to/ssh-private-key
-#     Port 22
-#     User ansible-user
+.PHONY: help-delegated-host
+help-delegated-host:
+	@echo "For information (such that it is) on using the `delegated` driver to test"
+	@echo "against a remote host, see the following:"
+	@echo "  https://molecule.readthedocs.io/en/latest/configuration.html#delegated"
+	@echo ""
+	@echo "Ensure that you have a file named './delegated-ssh-config' with settings for"
+	@echo "the host you want to target for delegated testing, something like this:"
+	@echo ""
+	@echo "  Host 192.168.0.1 myhost delegated-host"
+	@echo "      Hostname 192.168.0.1"
+	@echo "      IdentityFile /path/to/ssh-private-key"
+	@echo "      Port 22"
+	@echo "      User ansible-user"
 
 .PHONY: test-delegated
 test-delegated:
-#	@if [[ "$(DELEGATED_HOST)" == "none" ]]; then \
-#		echo -n "[-] no target specified: "; \
-#		echo "use 'make DELEGATED_HOST=IP-OR-NAME test-delegated"; \
-#		exit 1; \
-#	fi
 	@if [[ ! -f delegated-ssh-config ]]; then \
 		echo -n "[-] no SSH configuration `delegated-ssh-config` found"; \
 		exit 1; \
 	fi
+	@if ! grep -q 'delegated-host' delegated-ssh-config; then \
+		echo "[-] no host labelled 'delegated-host' in the ./delegated-ssh-config file"; \
+		$(MAKE) help-delegated-host; \
+		exit 1; \
+	fi
 	molecule test -s delegated
-	# ansible-playbook -i "$(DELEGATED_HOST)," $(PLAYBOOK)
 
 .PHONY: version
 version:
