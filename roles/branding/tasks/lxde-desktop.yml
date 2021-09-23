@@ -49,7 +49,7 @@
 
 # https://linuxmeerkat.wordpress.com/2014/10/17/running-a-gui-application-in-a-docker-container/
 
-- name: Stat `/root/custom-splash.jpg`
+- name: Stat `/root/custom-splash.jpg`.
   ansible.builtin.stat:
     path: '/root/custom-splash.jpg'
   become: true
@@ -73,7 +73,7 @@
         mode: 0o644
       become: true
 
-    - name: Ensure `/root/custom-splash.jpg` is absent (mv)
+    - name: Ensure `/root/custom-splash.jpg` is absent (i.e., mv).
       ansible.builtin.file:
         path: '/root/custom-splash.jpg'
         state: absent

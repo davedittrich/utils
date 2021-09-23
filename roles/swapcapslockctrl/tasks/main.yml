@@ -7,13 +7,13 @@
     cache_valid_time: 3600
   become: true
 
-- name: Ensure package 'udev' is present.
+- name: Ensure package `udev` is present.
   ansible.builtin.package:
     name: udev
     state: present
   become: true
 
-- name: Ensure key remapping file in /etc/udev/hwdb.d/ directory.
+- name: Ensure key remapping file in `/etc/udev/hwdb.d/` directory.
   ansible.builtin.copy:
     content: |
         # Match all usb keyboards

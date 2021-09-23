@@ -12,7 +12,7 @@
   changed_when: false
   register: getent
 
-- name: Set fact with user home directory
+- name: Set fact with user home directory.
   ansible.builtin.set_fact:
     homedir: "{{ getent.stdout }}"
 

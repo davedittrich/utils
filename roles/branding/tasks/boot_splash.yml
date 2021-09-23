@@ -57,7 +57,7 @@
   # the boot splash in `/root`. This was designed for Raspberry Pi
   # installations created using Hypriot `flash`.
 
-- name: Stat `/root/custom-splash.jpg`
+- name: Stat `/root/custom-splash.jpg`.
   ansible.builtin.stat:
     path: '/root/custom-splash.jpg'
   become: true

@@ -15,7 +15,7 @@
 # Include all packages that might be added in roles, based on the
 # operating system distribution used.
 
-- name: Set fact with packages to include (ubuntu)
+- name: Set fact with packages to include (Ubuntu).
   ansible.builtin.set_fact:
     packages_include:
       - arandr
@@ -29,13 +29,13 @@
       - xfce4
   when: "'ubuntu' in source_image"
 
-- name: Set fact with packages to include (ubuntu)
+- name: Set fact with packages to include (Ubuntu).
   ansible.builtin.set_fact:
     packages_remove:
       - libreoffice
   when: "'ubuntu' in source_image"
 
-- name: Set fact with packages to include (debian)
+- name: Set fact with packages to include (Debian).
   ansible.builtin.set_fact:
     packages_include:
       - arandr
@@ -49,7 +49,7 @@
       - udev
   when: "'debian' in source_image"
 
-- name: Set fact with packages to remove (debian)
+- name: Set fact with packages to remove (Debian).
   ansible.builtin.set_fact:
     packages_remove:
       - libreoffice
@@ -82,13 +82,13 @@
     mode: 0o600
   delegate_to: localhost
 
-- name: Remove image {{ my_image }}.
+- name: Remove image `{{ my_image }}`.
   community.docker.docker_image:
     state: absent
     name: '{{ my_image }}'
   delegate_to: localhost
 
-- name: Build molecule testing image {{ my_image }}.
+- name: Build molecule testing image `{{ my_image }}`.
   community.docker.docker_image:
     build:
       path: ../docker
@@ -99,7 +99,7 @@
   register: docker_build
   delegate_to: localhost
 
-- name: Debug docker_build
+- name: Debug `docker_build`.
   debug:
     var: docker_build
 
