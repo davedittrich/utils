@@ -7,6 +7,7 @@ DELEGATED_HOST:=none
 export MOLECULE_DISTRO=debian10
 export MOLECULE_REPO=davedittrich
 PLAYBOOK=playbooks/workstation-setup.yml
+PYTHONPATH=$(shell pwd)/molecule
 SCENARIO:=default
 SHELL=/bin/bash
 VERSION=$(shell grep "version:" galaxy.yml | sed 's/ //g' | cut -d: -f 2)

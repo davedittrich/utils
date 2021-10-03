@@ -1,13 +1,23 @@
+# -*- coding: utf-8 -*-
+
 import os
+import pytest
 import testinfra.utils.ansible_runner
+
+from molecule.shared import (  # noqa
+    ansible_vars,
+    not_in_roles,
+)
+
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
 
-# TODO(dittrich): NOT DRY. Shared with ip_in_issue tests.
-# Figure out how to include in common/ directory.
 
-
+@pytest.mark.skipif(
+    not_in_roles('davedittrich.utils.ip_in_issue'),
+    reason='role davedittrich.utils.ip_in_issue only'
+)
 def test_issue_file(host):
     f = host.file('/etc/issue')
 
@@ -17,6 +27,10 @@ def test_issue_file(host):
     assert len(f.content_string.strip()) > 1
 
 
+@pytest.mark.skipif(
+    not_in_roles('davedittrich.utils.iip_in_issue'),
+    reason='role davedittrich.utils.ip_in_issue only'
+)
 def test_issue_d_interfaces(host):
     f = host.file('/etc/issue.d/02-interfaces.issue')
 
@@ -26,6 +40,10 @@ def test_issue_d_interfaces(host):
     assert r' \4{' in f.content_string
 
 
+@pytest.mark.skipif(
+    not_in_roles('davedittrich.utils.ip_in_issue'),
+    reason='role davedittrich.utils.ip_in_issue only'
+)
 def test_issue_d_fingerprints(host):
     f = host.file('/etc/issue.d/01-ssh-fingerprints.issue')
 
@@ -33,3 +51,6 @@ def test_issue_d_fingerprints(host):
     assert f.user == 'root'
     assert f.group == 'root'
     assert r' SHA256:' in f.content_string
+
+
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

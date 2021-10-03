@@ -112,10 +112,77 @@ provisioner:
     ANSIBLE_COLLECTIONS_PATHS: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
     ANSIBLE_ROLES_PATH: "../../roles"
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
-    TESTS_PATH: "../../tests"
+    PYTHONPATH: "${PWD}"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
 ```
+
+To reduce redundancy in code across multiple scenarios representing individual
+roles in a larger collection, tests, variables, and functions are located in
+the `molecule/shared` directory.  As seen in the code example for the `provisioner`
+section, the `PYTHONPATH` environment variable is set, allowing Python code
+to be able to `import` from this module directory as seen here:
+
+```python
+from molecule.shared import (
+    ansible_vars,
+    not_in_roles,
+    users,
+)
+
+```
+
+The `verifier` phase includes everything from the shared directory by way
+of relative paths, as seen here in a `molecule.yml` file:
+
+```yaml
+verifier:
+  name: testinfra
+  directory: ../shared/tests
+  options:
+    # Add a -v so you see the individual test names.
+    v: true
+  additional_files_or_dirs:
+    - ../shared/*
+```
+
+To further reduce redundancy in hard-coding of elements that are part of tests,
+all variables that were defined during the `converge` phase are dumped so they
+can be used during later phases (specifically, the `verify` phase). Tests
+can be skipped by checking to see if the role for which they apply is in
+the `ansible_roles_names` variable.
+
+```python
+@pytest.mark.skipif(
+    not_in_roles('davedittrich.utils.branding'),
+    reason='role davedittrich.utils.branding only'
+)
+def test_user_homedirs(host):
+    assert 'branding_users' in ansible_vars
+    for user in ansible_vars['branding_users']:
+        homedir = os.path.expanduser(f'~{user}')
+        f = host.file(homedir)
+        if os.path.exists(homedir):
+            assert f.user == user
+            assert f.group == user
+```
+
+* Dump the Ansible variables at the end of the `converge` step for later use.
+* Load the Ansible variables at the start of the `test` step.
+* Use the FQCN to skip tests that are role-specific when the associated role is
+  not in `ansible_roles_names` variable:
+
+```
+. . .
+ansible_role_names: [davedittrich.utils.ip_in_issue]
+. . .
+```
+
+See also:
+
+* `Testing Ansible automation with molecule <https://redhatnordicssa.github.io/how-we-test-our-roles>`_
+* `Question: accessing values of variables as they are being used for provisioning an instance inside Testinfra tests #151 <https://github.com/ansible-community/molecule/issues/151>`_
+
 
 ## Release notes
 

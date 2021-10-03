@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 def _include_in_issue(string, exclude_prefixes=None):
     """
     Test for inclusion of interface in the /etc/issue file.
@@ -30,3 +32,6 @@ class TestModule(object):
         return {
             'include_in_issue': _include_in_issue,
         }
+
+
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

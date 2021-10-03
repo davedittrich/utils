@@ -25,10 +25,22 @@ provisioner:
     ANSIBLE_FORCE_COLOR: true
     ANSIBLE_ROLES_PATH: "../../roles"
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
-    TESTS_PATH: "../../tests"
+    PYTHONPATH: "${PWD}"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+  inventory:
+    hosts:
+      all:
+        vars:
+          visible_bell_users:
+            - 'root'
 scenario:
   name: visible_bell
 verifier:
   name: testinfra
+  directory: ../shared/tests
+  options:
+    # Add a -v so you see the individual test names.
+    v: true
+  additional_files_or_dirs:
+    - ../shared/*
