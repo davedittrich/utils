@@ -1,6 +1,6 @@
-* Add `dotdee` role to set up dropin configuration files (and write
+* Add `dropins` role to set up dropin configuration files (and write
   Medium article about the dropin model.)
 * Use `prepare.yml` to load SSH public keys from `files/` directory.
 * Add conditionals to swapcapslockctrl to handle older OSs
-* Be more DRY regarding getting user home directories (using dictionary
-  in hostvars indexed by user).
+* Add AnyDesk installation.
+* Add Resilio Sync installation.
