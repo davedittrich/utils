@@ -1,82 +1,90 @@
 # -*- coding: utf-8 -*-
 
 import os
-import pytest
-import testinfra.utils.ansible_runner
 
 from molecule.shared import (  # noqa
     ansible_vars,
-    not_in_roles,
+    get_homedir,
+    skip_unless_role,
 )
 
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
-test_user = 'root'
-
-
-@pytest.mark.skipif(
-    not_in_roles('davedittrich.utils.visible_bell'),
-    reason='role davedittrich.utils.visible_bell only'
-)
+@skip_unless_role('davedittrich.utils.visible_bell')
 def test_inputrc(host):
     assert 'visible_bell_users' in ansible_vars
-    f = host.file(os.path.join(host.user(test_user).home, '.inputrc'))
+    for user in ansible_vars['visible_bell_users']:
+        f = host.file(
+            os.path.join(
+                get_homedir(host=host, user=user),
+                '.inputrc'
+            )
+        )
+        assert f.exists
+        assert f.content_string.find(r'set prefer-visible-bell') > -1
 
-    assert f.exists
-    assert f.content_string.find(r'set prefer-visible-bell') > -1
 
-
-@pytest.mark.skipif(
-    not_in_roles('davedittrich.utils.visible_bell'),
-    reason='role davedittrich.utils.visible_bell only'
-)
+@skip_unless_role('davedittrich.utils.visible_bell')
 def test_bashrc(host):
-    f = host.file(os.path.join(host.user(test_user).home, '.bashrc'))
+    assert 'visible_bell_users' in ansible_vars
+    for user in ansible_vars['visible_bell_users']:
+        f = host.file(
+            os.path.join(
+                get_homedir(host=host, user=user),
+                '.bashrc'
+            )
+        )
+        assert f.exists
+        assert f.user == user
+        assert f.group == user
+        assert f.content_string.find(r'set bellstyle visible') > -1
 
-    assert f.exists
-    assert f.user == test_user
-    assert f.group == test_user
-    assert f.content_string.find(r'set bellstyle visible') > -1
 
-
-@pytest.mark.skipif(
-    not_in_roles('davedittrich.utils.visible_bell'),
-    reason='role davedittrich.utils.visible_bell only'
-)
+@skip_unless_role('davedittrich.utils.visible_bell')
 def test_cshrc(host):
-    f = host.file(os.path.join(host.user(test_user).home, '.cshrc'))
+    assert 'visible_bell_users' in ansible_vars
+    for user in ansible_vars['visible_bell_users']:
+        f = host.file(
+            os.path.join(
+                get_homedir(host=host, user=user),
+                '.cshrc'
+            )
+        )
+        assert f.exists
+        assert f.user == user
+        assert f.group == user
+        assert f.content_string.find(r'set visiblebell') > -1
 
-    assert f.exists
-    assert f.user == test_user
-    assert f.group == test_user
-    assert f.content_string.find(r'set visiblebell') > -1
 
-
-@pytest.mark.skipif(
-    not_in_roles('davedittrich.utils.visible_bell'),
-    reason='role davedittrich.utils.visible_bell only'
-)
+@skip_unless_role('davedittrich.utils.visible_bell')
 def test_exrc(host):
-    f = host.file(os.path.join(host.user(test_user).home, '.exrc'))
+    assert 'visible_bell_users' in ansible_vars
+    for user in ansible_vars['visible_bell_users']:
+        f = host.file(
+            os.path.join(
+                get_homedir(host=host, user=user),
+                '.exrc'
+            )
+        )
+        assert f.exists
+        assert f.user == user
+        assert f.group == user
+        assert r'set flash' in f.content_string
 
-    assert f.exists
-    assert f.user == test_user
-    assert f.group == test_user
-    assert r'set flash' in f.content_string
 
-
-@pytest.mark.skipif(
-    not_in_roles('davedittrich.utils.visible_bell'),
-    reason='role davedittrich.utils.visible_bell only'
-)
+@skip_unless_role('davedittrich.utils.visible_bell')
 def test_vimrc(host):
-    f = host.file(os.path.join(host.user(test_user).home, '.vimrc'))
-
-    assert f.exists
-    assert f.user == test_user
-    assert f.group == test_user
-    assert r'set vb t_vb=' in f.content_string
+    assert 'visible_bell_users' in ansible_vars
+    for user in ansible_vars['visible_bell_users']:
+        f = host.file(
+            os.path.join(
+                get_homedir(host=host, user=user),
+                '.vimrc'
+            )
+        )
+        assert f.exists
+        assert f.user == user
+        assert f.group == user
+        assert r'set vb t_vb=' in f.content_string
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

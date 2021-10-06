@@ -1,0 +1,26 @@
+---
+
+- name: Ensure `homedir` dictionary exists.
+  set_fact:
+    homedir: {}
+  when: homedir is not defined
+
+- block:
+    - name: Get user home directory with `getent`.
+      ansible.builtin.shell: |
+        set -o pipefail
+        getent passwd {{ user }} | awk -F: '{ print $6 }'
+      args:
+        executable: /bin/bash
+      changed_when: false
+      register: getent
+
+    - name: Append to `homedir` dictionary.
+      ansible.builtin.set_fact:
+        homedir: "{{ homedir | combine({ user: getent.stdout }) }}"
+
+    - name: Debug `homedir`.
+      ansible.builtin.debug:
+        var: homedir
+
+  when: user not in homedir

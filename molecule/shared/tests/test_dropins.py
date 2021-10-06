@@ -1,33 +1,30 @@
 # -*- coding: utf-8 -*-
 
 import os
-import pytest
-import testinfra.utils.ansible_runner
 
-from molecule.shared import (  # noqa
+from molecule.shared import (
     ansible_vars,
-    not_in_roles,
-    users,
+    get_homedir,
+    skip_unless_role,
 )
 
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
-
-
-@pytest.mark.skipif(
-    not_in_roles('davedittrich.utils.dropins'),
-    reason='role davedittrich.utils.dropins only'
-)
+@skip_unless_role('davedittrich.utils.dropins')
 def test_dropin_directory(host):
-    assert 'branding_users' in ansible_vars
-    for user in ansible_vars['branding_users']:
-        for dropin_file in host_vars.dropin_files:
+    assert 'dropin_users' in ansible_vars
+    assert 'dropin_files' in ansible_vars
+    for user in ansible_vars['dropin_users']:
+        for dropin_file in ansible_vars['dropin_files']:
             dropin_dir_path = os.path.join(
-                user,
+                get_homedir(host=host, user=user),
                 f'{dropin_file}.d'
             )
-            assert dropin_dir_path == ''
+            dropin_dir = host.file(dropin_dir_path)
+            assert dropin_dir.exists
+            assert dropin_dir.is_directory
+            assert len(dropin_dir.listdir()) > 0
+            assert dropin_dir.user == user
+            assert dropin_dir.group == user
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

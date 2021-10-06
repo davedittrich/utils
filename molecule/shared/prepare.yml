@@ -4,38 +4,38 @@
 - name: Prepare
   hosts: all
   tasks:
-  - name: Stat /boot/config.txt file.
+  - name: Stat `/boot/config.txt` file.
     ansible.builtin.stat:
       path: '/boot/config.txt'
     register: boot_config
 
-  - name: Ensure /boot/config.txt file exists in instance.
+  - name: Ensure `/boot/config.txt` file exists in instance.
     ansible.builtin.copy:
       src: 'config.txt'
       dest: '/boot/config.txt'
       owner: root
       group: root
       mode: 0o640
-    when: not boot_config.stat.exists
+    when: boot_config.stat.exists is false
 
-  - name: Stat /boot/cmdline.txt file.
+  - name: Stat `/boot/cmdline.txt` file.
     ansible.builtin.stat:
       path: '/boot/cmdline.txt'
     register: boot_cmdline
 
-  - name: Ensure /boot/cmdline.txt file exists in instance.
+  - name: Ensure `/boot/cmdline.txt` file exists in instance.
     ansible.builtin.copy:
       src: 'cmdline.txt'
       dest: '/boot/cmdline.txt'
       owner: root
       group: root
       mode: 0o640
-    when: not boot_cmdline.stat.exists
+    when: boot_cmdline.stat.exists is false
 
-  - name: Ensure /root/custom-splash.jpg exists.
+  - name: Ensure `/boot/custom-splash.jpg` exists.
     ansible.builtin.copy:
       src: 'Hello_World.jpg'
-      dest: '/root/custom-splash.jpg'
+      dest: '/boot/custom-splash.jpg'
       owner: root
       group: root
       mode: 0o640

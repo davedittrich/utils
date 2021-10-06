@@ -1,22 +1,24 @@
 ---
 dependency:
   name: galaxy
+# [delegated-molecule.yml-driver]
+# See: https://github.com/ansible-community/molecule/issues/1518
 driver:
-  name: docker
+  name: delegated
+  options:
+    managed: false
+    login_cmd_template: 'ssh {instance} -F delegated-ssh-config'
+    ansible_connection_options:
+      connection: ssh
+      ansible_ssh_common_args: -F delegated-ssh-config
+platforms:
+  - name: delegated-host
+# ![delegated-molecule.yml-driver]
 lint: |
   set -e
   yamllint .
   ansible-lint
   flake8
-platforms:
-  - name: instance
-    image: "${MOLECULE_REPO:-geerlingguy}/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-"/sbin/init"}
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    privileged: true
-    pre_build_image: true
-# [molecule.yml-provisioner]
 provisioner:
   name: ansible
   env:
@@ -31,15 +33,8 @@ provisioner:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
     prepare: ../shared/prepare.yml
     destroy: ../shared/destroy.yml
-  inventory:
-    hosts:
-      all:
-        vars:
-          branding_users:
-            - 'root'
-# ![molecule.yml-provisioner]
 scenario:
-  name: default
+  name: delegated
 verifier:
   name: testinfra
   directory: ../shared/tests

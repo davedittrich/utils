@@ -1,0 +1,31 @@
+# -*- coding: utf-8 -*-
+
+import unittest
+
+from molecule.shared import (
+    host,
+    skip_unless_role,
+    testinfra_hosts,
+)
+
+
+class Test_Swapcapslockctrl(unittest.TestCase):
+    """Tests for swapping CapsLock key with Left CTRL key."""
+
+    def setUp(self):
+        self.testinfra_hosts = testinfra_hosts
+        self.host = host
+
+    def tearDown(self):
+        pass
+
+    @skip_unless_role('davedittrich.utils.swapcapslockstrl')
+    def test_udev_hwdb_file(self):
+        f = self.host.file('/etc/udev/hwdb.d/99-swapcapslockctrl.hwdb')
+        self.assertTrue(f.exists)
+        self.assertEqual(f.user, 'root')
+        self.assertEqual(f.group, 'root')
+        self.assertTrue(r'KEYBOARD_KEY_700E0=capslock' in f.content_string)
+
+
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

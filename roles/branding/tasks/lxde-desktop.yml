@@ -29,57 +29,25 @@
 # the play. Deleting the packages causes other problems, so just stop and
 # disable it now.
 
-- name: Ensure wicd.service is stopped and disabled.
-  service:
+- name: Ensure `wicd.service` is masked.
+  ansible.builtin.systemd:
     name: 'wicd'
-    state: stopped
-    enabled: false
+    masked: true
   failed_when: false
   changed_when: false
 
 - name: Ensure LXDE packages are present.
-  ansible.builtin.package:
+  ansible.builtin.apt:
     name:
       - 'arandr'
       - 'hwinfo'
       - '{{ lxde_package }}'
     state: present
+    install_recommends: false
   become: true
   when: install_lxde
 
 # https://linuxmeerkat.wordpress.com/2014/10/17/running-a-gui-application-in-a-docker-container/
-
-- name: Stat `/root/custom-splash.jpg`.
-  ansible.builtin.stat:
-    path: '/root/custom-splash.jpg'
-  become: true
-  register: custom_splash
-
-- block:
-    - name: Ensure `/usr/share/lxde/wallpapers` exists.
-      ansible.builtin.file:
-        path: '/usr/share/lxde/wallpapers'
-        state: directory
-        owner: root
-        group: root
-        mode: 0o755
-      become: true
-
-    - name: Ensure `custom-splash.jpg` is an optional desktop background.
-      ansible.builtin.copy:
-        src: '/root/custom-splash.jpg'
-        dest: '/usr/share/lxde/wallpapers/custom-splash.jpg'
-        remote_src: true
-        mode: 0o644
-      become: true
-
-    - name: Ensure `/root/custom-splash.jpg` is absent (i.e., mv).
-      ansible.builtin.file:
-        path: '/root/custom-splash.jpg'
-        state: absent
-      become: true
-
-  when: custom_splash.stat.exists
 
 - name: Ensure X11 settings are present in autostart file.
   include_tasks: x11-config.yml

@@ -1,0 +1,55 @@
+# -*- coding: utf-8 -*-
+
+import unittest
+import testinfra
+
+from molecule.shared import (
+    host,
+    skip_unless_role,
+    testinfra_hosts,
+)
+
+
+class Test_Ip_In_Issue(unittest.TestCase):
+
+    def setUp(self):
+        self.testinfra_hosts = testinfra_hosts
+        self.host = host
+
+    def tearDown(self):
+        pass
+
+    @skip_unless_role('davedittrich.utils.ip_in_issue')
+    def test_issue_file(self):
+        f = self.host.file('/etc/issue')
+        self.assertTrue(f.exists)
+        self.assertEqual(f.user, 'root')
+        self.assertEqual(f.group, 'root')
+        self.assertTrue(len(f.content_string.strip()) > 1)
+
+    @skip_unless_role('davedittrich.utils.ip_in_issue')
+    def test_issue_d(self):
+        f = self.host.file('/etc/issue.d')
+        self.assertTrue(f.exists)
+        self.assertTrue(f.is_directory)
+        self.assertEqual(f.user, 'root')
+        self.assertEqual(f.group, 'root')
+
+    @skip_unless_role('davedittrich.utils.ip_in_issue')
+    def test_issue_d_interfaces(self):
+        f = self.host.file('/etc/issue.d/02-interfaces.issue')
+        self.assertTrue(f.exists)
+        self.assertTrue(f.user, 'root')
+        self.assertTrue(f.group, 'root')
+        self.assertTrue(r' \4{' in f.content_string)
+
+    @skip_unless_role('davedittrich.utils.ip_in_issue')
+    def test_issue_d_fingerprints(self):
+        f = self.host.file('/etc/issue.d/01-ssh-fingerprints.issue')
+        self.assertTrue(f.exists)
+        self.assertTrue(f.user, 'root')
+        self.assertTrue(f.group, 'root')
+        self.assertTrue(r' SHA256:' in f.content_string)
+
+
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

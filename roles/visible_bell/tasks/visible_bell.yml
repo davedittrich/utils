@@ -1,25 +1,11 @@
 ---
 
-- name: Get user home directory with `getent`.
-  ansible.builtin.shell: |
-    set -o pipefail
-    getent passwd {{ user }} | awk -F: '{ print $6 }'
-  args:
-    executable: /bin/bash
-  changed_when: false
-  register: getent
-
-- name: Set fact with user home directory.
-  ansible.builtin.set_fact:
-    homedir: "{{ getent.stdout }}"
-
-- name: Debug `homedir`.
-  ansible.builtin.debug:
-    var: homedir
+- name: Get user home directories.
+  include_tasks: ../../../tasks/get_homedir.yml
 
 - name: Ensure applications using `readline` are quieted.
   ansible.builtin.blockinfile:
-    path: "{{ homedir ~ '/.inputrc' }}"
+    path: "{{ homedir[user] ~ '/.inputrc' }}"
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o640
@@ -31,7 +17,7 @@
 
 - name: Ensure `bash` shell sessions are quieted.
   ansible.builtin.blockinfile:
-    path: "{{ homedir ~ '/.bashrc' }}"
+    path: "{{ homedir[user] ~ '/.bashrc' }}"
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o640
@@ -43,7 +29,7 @@
 
 - name: Ensure `csh` and `tcsh` shell sessions are quieted.
   ansible.builtin.blockinfile:
-    path: "{{ homedir ~ '/.cshrc' }}"
+    path: "{{ homedir[user] ~ '/.cshrc' }}"
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o640
@@ -55,7 +41,7 @@
 
 - name: Ensure `ex` family editors are quieted.
   ansible.builtin.blockinfile:
-    path: "{{ homedir ~ '/.exrc' }}"
+    path: "{{ homedir[user] ~ '/.exrc' }}"
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o640
@@ -67,7 +53,7 @@
 
 - name: Ensure `vim` style editors are quieted.
   ansible.builtin.blockinfile:
-    path: "{{ homedir ~ '/.vimrc' }}"
+    path: "{{ homedir[user] ~ '/.vimrc' }}"
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o640

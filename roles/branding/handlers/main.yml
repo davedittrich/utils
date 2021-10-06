@@ -1,8 +1,9 @@
 ---
 
 - name: enable splashscreen
-  service:
+  systemd:
     name: splashscreen
+    daemon_reload: true
     enabled: true
-    state: started
+    state: restarted
   become: true

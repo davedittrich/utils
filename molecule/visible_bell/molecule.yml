@@ -28,6 +28,8 @@ provisioner:
     PYTHONPATH: "${PWD}"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+    prepare: ../shared/prepare.yml
+    destroy: ../shared/destroy.yml
   inventory:
     hosts:
       all:

@@ -109,6 +109,7 @@ spotless: clean clean-images
 .PHONY: test
 test: scenario-exists
 	molecule test -s $(SCENARIO)
+	@echo '[+] all tests succeeded'
 
 .PHONY: test-all-distros
 test-all-distros: scenario-exists

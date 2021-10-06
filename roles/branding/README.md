@@ -12,6 +12,11 @@ set up.
 * Customizes LXDE/lxsession X11 settings, etc.
 * Disables `clipit` history saving (for new LXDE installations).
 
+See also:
+
+* https://www.thegeekstuff.com/2012/10/grub-splash-image/
+* https://shop.sb-components.co.uk/blogs/posts/customising-splash-screen-on-your-raspberry-pi
+
 
 Requirements
 ------------

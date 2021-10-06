@@ -16,7 +16,6 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     privileged: true
     pre_build_image: true
-# [molecule.yml-provisioner]
 provisioner:
   name: ansible
   env:
@@ -35,11 +34,10 @@ provisioner:
     hosts:
       all:
         vars:
-          branding_users:
-            - 'root'
-# ![molecule.yml-provisioner]
+          dropin_users:
+            - root
 scenario:
-  name: default
+  name: dropins
 verifier:
   name: testinfra
   directory: ../shared/tests

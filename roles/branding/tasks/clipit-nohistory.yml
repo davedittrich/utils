@@ -3,57 +3,38 @@
 # Ensure clipit history is disabled (to avoid the user being asked
 # about this on first login session).
 
-- name: Get user home directory with `getent`.
-  ansible.builtin.shell: |
-    set -o pipefail
-    getent passwd {{ user }} | awk -F: '{ print $6 }'
-  args:
-    executable: /bin/bash
-  changed_when: false
-  register: getent
-
-- name: Set fact with user home directory.
-  ansible.builtin.set_fact:
-    homedir: "{{ getent.stdout }}"
-
-- name: Debug `homedir`.
-  ansible.builtin.debug:
-    var: homedir
+- name: Get user home directories.
+  include_tasks: ../../../tasks/get_homedir.yml
 
 - name: Stat clipit configuration file.
   ansible.builtin.stat:
-    path: '{{ homedir ~ "/.config/clipit/clipitrc" }}'
+    path: '{{ homedir[user] ~ "/.config/clipit/clipitrc" }}'
   register: clipitrc
   become: true
-  become_user: '{{ user }}'
 
 - name: Ensure clipit configuration path is present.
   ansible.builtin.file:
-    dest: '{{ homedir ~ "/.config/clipit" }}'
+    dest: '{{ homedir[user] ~ "/.config/clipit" }}'
     state: directory
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o750
-    recurse: true
+    recurse: false
   become: true
-  become_user: '{{ user }}'
 
 - name: Ensure clipit configuration is present.
   ansible.builtin.copy:
     src: 'clipitrc'
-    dest: '{{ homedir ~ "/.config/clipit/clipitrc" }}'
+    dest: '{{ homedir[user] ~ "/.config/clipit/clipitrc" }}'
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o750
-  when: not clipitrc.stat.exists
+    mode: 0o640
   become: true
-  become_user: '{{ user }}'
+  when: not clipitrc.stat.exists
 
 - name: Ensure clipit configuration is set.
   ansible.builtin.lineinfile:
-    path: '{{ homedir ~ "/.config/clipit/clipitrc" }}'
+    path: '{{ homedir[user] ~ "/.config/clipit/clipitrc" }}'
     regexp: '^save_history='
     line: 'save_history=false'
-  when: clipitrc.stat.exists
   become: true
-  become_user: '{{ user }}'

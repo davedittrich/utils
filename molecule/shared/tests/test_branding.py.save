@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import os
-import pytest
+# import testinfra.utils.ansible_runner
 
 from molecule.shared import (
     ansible_vars,
     get_homedir,
     skip_unless_role,
 )
+
+
+# testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
+#     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
 
 
 @skip_unless_role('davedittrich.utils.branding')
@@ -61,14 +65,9 @@ def test_wallpaper_image(host):
 
 @skip_unless_role('davedittrich.utils.branding')
 def test_wallpaper_setting(host):
-    if (
-        'monitors' not in ansible_vars
-        or len(ansible_vars['monitors']) == 0
-    ):
-        pytest.xfail('no monitors')
     assert 'branding_users' in ansible_vars
     for user in ansible_vars['branding_users']:
-        homedir = get_homedir(host=host, user=user)
+        homedir = get_homedir(user)
         f = host.file(
             os.path.join(homedir,
                          '.config/pcmanfm/LXDE/desktop-items-0.conf'
@@ -84,7 +83,7 @@ def test_wallpaper_setting(host):
 def test_LXDE_autostart_xset(host):
     assert 'branding_users' in ansible_vars
     for user in ansible_vars['branding_users']:
-        homedir = get_homedir(host=host, user=user)
+        homedir = get_homedir(user)
         f = host.file(os.path.join(homedir,
                       '.config/lxsession/LXDE/autostart'))
         assert f.exists

@@ -1,0 +1,101 @@
+# -*- coding: utf-8 -*-
+
+import os
+import testinfra  # noqa
+import unittest
+
+from molecule.shared import (
+    ansible_vars,
+    get_homedir,
+    host,
+    skip_unless_role,
+    testinfra_hosts
+)
+
+
+class Test_Branding(unittest.TestCase):
+
+    def setUp(self):
+        self.testinfra_hosts = testinfra_hosts
+        self.host = host
+
+    def tearDown(self):
+        pass
+
+    @skip_unless_role('davedittrich.utils.branding')
+    def test_boot_config(self):
+        f = self.host.file('/boot/config.txt')
+        self.assertEqual(f.user, 'root')
+        self.assertEqual(f.group, 'root')
+        self.assertTrue(r'disable_splash=1' in f.content_string)
+
+    @skip_unless_role('davedittrich.utils.branding')
+    def test_boot_cmdline(self):
+        f = self.host.file('/boot/cmdline.txt')
+        self.assertEqual(f.user, 'root')
+        self.assertEqual(f.group, 'root')
+        self.assertTrue(r'logo.nologo' in f.content_string)
+
+    @skip_unless_role('davedittrich.utils.branding')
+    def test_fbi(self):
+        self.assertTrue(self.host.package('fbi').is_installed)
+
+    @skip_unless_role('davedittrich.utils.branding')
+    def test_splashscreen_service(self):
+        splashscreen_service = self.host.service('splashscreen')
+        self.assertTrue(splashscreen_service.is_enabled)
+
+    @skip_unless_role('davedittrich.utils.branding')
+    def test_user_homedirs(self):
+        self.assertTrue('branding_users' in ansible_vars)
+        for user in ansible_vars['branding_users']:
+            homedir = get_homedir(user)
+            f = self.host.file(homedir)
+            self.assertTrue(f.exists)
+            self.assertEqual(f.user, user)
+            self.assertEqual(f.group, user)
+
+    @skip_unless_role('davedittrich.utils.branding')
+    def test_wallpaper_image(self):
+        self.assertTrue('lxde_wallpapers_directory' in ansible_vars)
+        wallpapers_dir = ansible_vars['lxde_wallpapers_directory']
+        f = self.host.file(os.path.join(wallpapers_dir, 'custom-splash.jpg'))
+        self.assertTrue(f.exists)
+        self.assertEqual(f.user, 'root')
+        self.assertEqual(f.group, 'root')
+
+    @skip_unless_role('davedittrich.utils.branding')
+    def test_wallpaper_setting(self):
+        self.assertTrue('branding_users' in ansible_vars)
+        for user in ansible_vars['branding_users']:
+            f = self.host.file(
+                os.path.join(
+                    get_homedir(user),
+                    '.config/pcmanfm/LXDE/desktop-items-0.conf'
+                )
+            )
+            self.assertTrue(f.exists)
+            self.assertEqual(f.user, user)
+            self.assertEqual(f.group, user)
+            self.assertTrue(r'custom-wallpaper.png' in f.content_string)
+
+    @skip_unless_role('davedittrich.utils.branding')
+    def test_LXDE_autostart_xset(self):
+        self.assertTrue('branding_users' in ansible_vars)
+        for user in ansible_vars['branding_users']:
+            f = self.host.file(
+                os.path.join(
+                    get_homedir(user),
+                    '.config/lxsession/LXDE/autostart'
+                )
+            )
+            self.assertTrue(f.exists)
+            self.assertEqual(f.user, user)
+            self.assertEqual(f.group, user)
+            self.assertTrue(r'xset' in f.content_string)
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

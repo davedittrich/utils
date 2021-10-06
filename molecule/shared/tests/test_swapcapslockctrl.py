@@ -1,21 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import os
-import testinfra.utils.ansible_runner
-
-from molecule.shared import (  # noqa
-    ansible_vars,
-    not_in_roles,
+from molecule.shared import (
+    skip_unless_role,
 )
 
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
-
-
+@skip_unless_role('davedittrich.utils.swapcapslockctrl')
 def test_udev_hwdb_file(host):
     f = host.file('/etc/udev/hwdb.d/99-swapcapslockctrl.hwdb')
-
     assert f.exists
     assert f.user == 'root'
     assert f.group == 'root'

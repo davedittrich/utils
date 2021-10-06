@@ -2,6 +2,15 @@
 
 # tasks file for davedittrich.utils.branding
 
+# This role will look for a custom boot splash image in
+# the `/boot` directory, since this is where the HypriotOS
+# `flash` script copies it. If it exists, it will be copied
+# to the wallpapers directory for use as a background image
+# as well as the boot splash image. If you instead apply this
+# role later on, specify a path to the desired boot splash
+# file on the Ansible controller using the `custom_splash`
+# variable and it will be copied from there instead.
+
 # See the following:
 #   https://www.thegeekstuff.com/2012/10/grub-splash-image/
 #   https://www.programmersought.com/article/81266199143/
@@ -19,6 +28,10 @@
 - name: Set fact with users whose accounts need to be configured.
   ansible.builtin.set_fact:
     branding_users: "{{ branding_users | default(['root', ansible_user_id]) | unique }}"
+
+- name: Set fact with LXDE wallpapers directory path.
+  ansible.builtin.set_fact:
+    lxde_wallpapers_directory: "{{ lxde_wallpapers_directory | default('/usr/share/lxde/wallpapers') }}"
 
 # See https://shallowsky.com/linux/x-screen-blanking.html
 - name: Set fact with X11 settings to use.
@@ -52,6 +65,44 @@
     name: imagemagick
     state: present
   become: true
+
+- name: Stat `/boot/custom-splash.jpg`.
+  ansible.builtin.stat:
+    path: '/boot/custom-splash.jpg'
+  become: true
+  register: local_custom_splash
+
+- name: Ensure `boot_splash` is set.
+  ansible.builtin.set_fact:
+    custom_splash: '/boot/custom-splash.jpg'
+  when:
+    - local_custom_splash.stat.exists is true
+    - custom_splash is not defined
+
+- name: Ensure `{{ lxde_wallpapers_directory }}` exists.
+  ansible.builtin.file:
+    path: '{{ lxde_wallpapers_directory }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0o755
+  become: true
+
+- name: Ensure `custom-splash.jpg` is an optional desktop background.
+  ansible.builtin.copy:
+    src: '{{ custom_splash }}'
+    dest: '{{ lxde_wallpapers_directory }}/custom-splash.jpg'
+    remote_src: '{{ local_custom_splash.stat.exists|bool }}'
+    mode: 0o644
+  become: true
+  when: custom_splash is defined
+
+- name: Ensure `/boot/custom-splash.jpg` is absent (i.e., mv).
+  ansible.builtin.file:
+    path: '/boot/custom-splash.jpg'
+    state: absent
+  become: true
+  when: local_custom_splash.stat.exists is true
 
 - name: Ensure boot splash is customized.
   include_tasks: boot_splash.yml

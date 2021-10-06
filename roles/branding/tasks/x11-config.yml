@@ -2,22 +2,20 @@
 
 # tasks for configuring user's LXDE desktop.
 
-- name: Get user home directory with `getent`.
-  ansible.builtin.shell: |
-    set -o pipefail
-    getent passwd {{ user }} | awk -F: '{ print $6 }'
-  args:
-    executable: /bin/bash
-  changed_when: false
-  register: getent
+- name: Stat `/dev/fb0` device file.
+  ansible.builtin.stat:
+    path: '/dev/fb0'
+  register: framebuffer
 
-- name: Set fact with user home directory.
-  ansible.builtin.set_fact:
-    homedir: "{{ getent.stdout }}"
+- name: Ensure virtual framebuffer exists if no `/dev/fb0` device.
+  ansible.builtin.package:
+    name: xvfb
+    state: present
+  become: true
+  when: not framebuffer.stat.exists
 
-- name: Debug `homedir`.
-  ansible.builtin.debug:
-    var: homedir
+- name: Get user home directories.
+  include_tasks: ../../../tasks/get_homedir.yml
 
 - name: Ensure `hwinfo` is available.
   ansible.builtin.package:
@@ -35,19 +33,16 @@
   register: hwinfo
   changed_when: false
 
-- block:
-    - name: Set fact with display monitor names.
-      ansible.builtin.set_fact:
-        monitors: "{{ monitors|default([]) + hwinfo_line }}"
-      loop: '{{ hwinfo.stdout_lines }}'
-      loop_control:
-        loop_var: hwinfo_line
-      failed_when: hwinfo.stdout_lines|count == 0
+- name: Set fact with no display monitor names.
+  ansible.builtin.set_fact:
+    monitors: []
 
-  rescue:
-    - name: Set fact with display monitor names.
-      ansible.builtin.set_fact:
-        monitors: []
+- name: Set fact with display monitor names.
+  ansible.builtin.set_fact:
+    monitors: "{{ monitors|default([]) + hwinfo_line }}"
+  loop: '{{ hwinfo.stdout_lines }}'
+  loop_control:
+    loop_var: hwinfo_line
 
 - name: Debug `monitors`.
   ansible.builtin.debug:
@@ -56,7 +51,7 @@
 
 - name: Stat user's `~/.config/lxsession/LXDE` directory.
   ansible.builtin.stat:
-    path: "{{ homedir ~ '/.config/lxsession/LXDE' }}"
+    path: "{{ homedir[user] ~ '/.config/lxsession/LXDE' }}"
   become: true
   register: lxsession_lxde_dir
 
@@ -65,7 +60,7 @@
 - block:
     - name: Ensure lxsession LXDE configuration directory exists.
       ansible.builtin.file:
-        path: "{{ homedir ~ '/.config/lxsession/LXDE' }}"
+        path: "{{ homedir[user] ~ '/.config/lxsession/LXDE' }}"
         state: directory
         owner: '{{ user }}'
         group: '{{ user }}'
@@ -98,7 +93,7 @@
       ansible.builtin.copy:
         src: '{{ item }}'
         remote_src: true
-        dest: "{{ homedir ~ '/.config/lxsession/LXDE/' ~ item|basename }}"
+        dest: "{{ homedir[user] ~ '/.config/lxsession/LXDE/' ~ item|basename }}"
         owner: '{{ user }}'
         group: '{{ user }}'
         mode: 0o644
@@ -111,7 +106,7 @@
 
 - name: Ensure X11 settings are present in user's LXDE autostart file.
   ansible.builtin.lineinfile:
-    path: "{{ homedir ~ '/.config/lxsession/LXDE/autostart' }}"
+    path: "{{ homedir[user] ~ '/.config/lxsession/LXDE/autostart' }}"
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o644
@@ -135,7 +130,7 @@
 
 - name: Stat user's `~/.config/pcmanfm/LXDE` directory.
   ansible.builtin.stat:
-    path: "{{ homedir ~ '/.config/pcmanfm/LXDE' }}"
+    path: "{{ homedir[user] ~ '/.config/pcmanfm/LXDE' }}"
   become: true
   register: pcmanfm_dir
 
@@ -154,7 +149,7 @@
 - block:
     - name: Find desktop items configuration files.
       ansible.builtin.find:
-        paths: "{{ homedir ~ '/.config/pcmanfm/LXDE' }}"
+        paths: "{{ homedir[user] ~ '/.config/pcmanfm/LXDE' }}"
         recurse: false
         use_regex: false
         patterns: 'desktop-items-*.conf'
