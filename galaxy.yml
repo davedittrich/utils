@@ -1,7 +1,7 @@
 ---
 namespace: davedittrich
 name: utils
-version: 0.0.17
+version: 0.0.20
 # See https://github.com/ansible/galaxy/issues/2438
 readme: README.md
 authors:
@@ -38,3 +38,8 @@ build_ignore:
   - '.gitignore'
   - '*/.gitignore'
   - '.*lint'
+  - '.vscode'
+  - 'delegated-ssh-config'
+  - '.pytest_cache'
+  - 'docker/build*log'
+  - 'diffs*'
