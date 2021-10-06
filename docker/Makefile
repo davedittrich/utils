@@ -1,8 +1,17 @@
 COLLECTION_NAMESPACE=davedittrich
 SHELL=/bin/bash
 
+# By default, only build the debian10 image to save time and space.
 .PHONY: build
-build:
+build: build-default
+
+.PHONY: build-default
+build-default:
+	ansible-playbook -e "target_distros=['debian10']" -vvv ../playbooks/build_test_images.yml
+	$(MAKE) list-images
+
+.PHONY: build-all
+build-all:
 	ansible-playbook -vvv ../playbooks/build_test_images.yml
 	$(MAKE) list-images
 

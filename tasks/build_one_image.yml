@@ -1,15 +1,18 @@
 ---
 
+# Builds a Docker image customized for molecule testing of
+# the `davedittrich.utils` Ansible Collection.
+
 - name: Assert `packages` and `repo_name`` are defined.
   ansible.builtin.assert:
     that:
       - '{{ repo_name is defined and repo_name != "" }}'
     fail_msg: "'repo_name' must be defined in including playbook"
 
-- name: Assert `ubuntu` or `debian` in source_image.
+- name: Assert `ubuntu` or `debian` in target_distro.
   ansible.builtin.assert:
     that:
-      - '{{ "debian" in source_image or "ubuntu" in source_image }}'
+      - '{{ "debian" in target_distro or "ubuntu" in target_distro }}'
     fail_msg: "only 'debian' and 'ubuntu' geerlinguy images supported right now"
 
 # Include all packages that might be added in roles, based on the
@@ -22,18 +25,18 @@
       - fbi
       - hwinfo
       - imagemagick
+      - lxde4
       - rsync
       - ssh
       - tree
       - udev
-      - xfce4
-  when: "'ubuntu' in source_image"
+  when: "'ubuntu' in target_distro"
 
 - name: Set fact with packages to include (Ubuntu).
   ansible.builtin.set_fact:
     packages_remove:
       - libreoffice
-  when: "'ubuntu' in source_image"
+  when: "'ubuntu' in target_distro"
 
 - name: Set fact with packages to include (Debian).
   ansible.builtin.set_fact:
@@ -44,16 +47,20 @@
       - imagemagick
       - rsync
       - ssh
-      - task-xfce-desktop
+      - task-lxde-desktop
       - tree
       - udev
-  when: "'debian' in source_image"
+  when: "'debian' in target_distro"
 
 - name: Set fact with packages to remove (Debian).
   ansible.builtin.set_fact:
     packages_remove:
       - libreoffice
-  when: "'debian' in source_image"
+  when: "'debian' in target_distro"
+
+- name: Set fact with source image name.
+  ansible.builtin.set_fact:
+    source_image: "geerlingguy/docker-{{ target_distro }}-ansible:latest"
 
 - name: Set fact with converted image name.
   ansible.builtin.set_fact:
@@ -82,7 +89,7 @@
     mode: 0o600
   delegate_to: localhost
 
-- name: Remove image `{{ my_image }}`.
+- name: Remove target image `{{ my_image }}`.
   community.docker.docker_image:
     state: absent
     name: '{{ my_image }}'
@@ -116,6 +123,13 @@
     mode: 0o600
   delegate_to: localhost
   when: ansible_verbosity > 1
+
+- name: Remove source image `{{ source_image }}`.
+  community.docker.docker_image:
+    state: absent
+    name: '{{ source_image }}'
+  delegate_to: localhost
+  when: keep_source_image is false
 
 - name: Ensure Dockerfile is removed.
   file:

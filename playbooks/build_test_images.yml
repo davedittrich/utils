@@ -3,12 +3,18 @@
 - hosts: localhost
   gather_facts: false
   vars:
-    source_images:
-      - "geerlingguy/docker-debian10-ansible:latest"
-      - "geerlingguy/docker-debian9-ansible:latest"
-      - "geerlingguy/docker-ubuntu2004-ansible:latest"
-      - "geerlingguy/docker-ubuntu1804-ansible:latest"
+    keep_source_image: true
+    packages:
   tasks:
+    - name: Ensure `target_distros` is defined.
+      ansible.builtin.set_fact:
+        target_distros:
+          - 'debian10'
+          - 'debian9'
+          - 'ubuntu2004'
+          - 'ubuntu1804'
+      when: target_distros is not defined
+
     - name: Ensure `repo_name` is defined.
       ansible.builtin.set_fact:
         repo_name: "{{ lookup('env', 'COLLECTION_NAMESPACE') }}"
@@ -22,6 +28,6 @@
 
     - name: Build custom molecule test image.
       include_tasks: ../tasks/build_one_image.yml
-      loop: '{{ source_images }}'
+      loop: '{{ target_distros }}'
       loop_control:
-        loop_var: source_image
+        loop_var: target_distro
