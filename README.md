@@ -259,6 +259,35 @@ instance                   : ok=1    changed=0    unreachable=0    failed=0    s
   . . .
 ```
 
+You can see the defined scenarios and state information about related instances
+with `molecule list`:
+
+```
+$ molecule list
+INFO     Running branding > list
+INFO     Running default > list
+INFO     Running delegated > list
+INFO     Running dropins > list
+INFO     Running ip_in_issue > list
+INFO     Running swapcapslockctrl > list
+INFO     Running visible_bell > list
+                 ╷             ╷                  ╷                  ╷         ╷
+  Instance Name  │ Driver Name │ Provisioner Name │ Scenario Name    │ Created │ Converged
+╶────────────────┼─────────────┼──────────────────┼──────────────────┼─────────┼───────────╴
+  instance       │ docker      │ ansible          │ branding         │ false   │ false
+  instance       │ docker      │ ansible          │ default          │ true    │ false
+  delegated-host │ delegated   │ ansible          │ delegated        │ unknown │ true
+  instance       │ docker      │ ansible          │ dropins          │ false   │ false
+  instance       │ docker      │ ansible          │ ip_in_issue      │ false   │ false
+  instance       │ docker      │ ansible          │ swapcapslockctrl │ false   │ false
+  instance       │ docker      │ ansible          │ visible_bell     │ false   │ false
+                 ╵             ╵                  ╵                  ╵         ╵
+```
+
+(Hint: The above shows the `default` scenario is running, with the instance `created`,
+but not yet `converged`.)
+
+
 See also:
 
 - `Testing Ansible automation with molecule <https://redhatnordicssa.github.io/how-we-test-our-roles>`\_
