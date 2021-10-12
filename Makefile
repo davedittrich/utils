@@ -16,19 +16,21 @@ VERSION=$(shell grep "version:" galaxy.yml | sed 's/ //g' | cut -d: -f 2)
 help:
 	@echo "make [VARIABLE=value] target [target ...]"
 	@echo "...where 'target' is one or more of:"
-	@echo "  build - build the ansible-galaxy collection"
+	@echo "  build - build version v$(VERSION) of the ansible-galaxy collection"
 	@echo "  build-images - build Docker images from geerlingguy images"
-	@echo "	                with extra packages installed already"
+	@echo "	                with extra packages already installed"
 	@echo "  clean - remove temporary and intermediate files"
 	@echo "  clean-images - remove Docker images"
-	@echo "  converge - molecule converge on scenario"
-	@echo "  login - connect to molecule instance for debugging"
+	@echo "  converge - molecule converge on scenario '$(SCENARIO)'"
+	@echo "  destroy - destroy and clean up scenario '$(SCENARIO)'"
+	@echo "  login - connect to '$(SCENARIO)' molecule instance for debugging"
 	@echo "  publish - publish the artifact to Ansible galaxy (default $(ANSIBLE_GALAXY_SERVER))"
 	@echo "  scenario-exists - checks to ensure the scenario (variable 'SCENARIO') exists."
 	@echo "  spotless - clean, then get rid of as much else as possible"
-	@echo "  test - run molecule tests on scenario on default distro ($(MOLECULE_DISTRO))"
+	@echo "  test - run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO))"
 	@echo "  test-all-distros - run molecule tests on all scenarios (fake 'matrix' like GitHub Actions)"
 	@echo "  test-delegated - run molecule against delegated host ($(DELEGATED_HOST))"
+	@echo "  verify - run tests on scenario '$(SCENARIO)'"
 	@echo "  version - show the current version number from 'galaxy.yml' file"
 	@echo ""
 	@echo "Variables:"
@@ -77,6 +79,14 @@ clean-images:
 .PHONY: converge
 converge: scenario-exists
 	molecule converge -s $(SCENARIO)
+
+.PHONY: destroy
+destroy: scenario-exists
+	molecule destroy -s $(SCENARIO)
+
+.PHONY: verify
+verify: scenario-exists
+	molecule verify -s $(SCENARIO)
 
 .PHONY: login
 login: scenario-exists
