@@ -34,7 +34,7 @@ provisioner:
     hosts:
       all:
         vars:
-          dropin_users:
+          accounts:
             - root
 scenario:
   name: dropins

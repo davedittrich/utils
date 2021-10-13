@@ -1,6 +1,6 @@
 ---
 
-- name: enable splashscreen
+- name: restart splashscreen
   systemd:
     name: splashscreen
     daemon_reload: true

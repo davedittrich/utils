@@ -3,9 +3,6 @@
 # Ensure clipit history is disabled (to avoid the user being asked
 # about this on first login session).
 
-- name: Get user home directories.
-  include_tasks: ../../../tasks/get_homedir.yml
-
 - name: Stat clipit configuration file.
   ansible.builtin.stat:
     path: '{{ homedir[user] ~ "/.config/clipit/clipitrc" }}'

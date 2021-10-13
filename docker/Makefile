@@ -1,4 +1,4 @@
-COLLECTION_NAMESPACE=davedittrich
+export COLLECTION_NAMESPACE=davedittrich
 SHELL=/bin/bash
 
 # By default, only build the debian10 image to save time and space.

@@ -34,7 +34,7 @@
 
   - name: Ensure `/boot/custom-splash.jpg` exists.
     ansible.builtin.copy:
-      src: 'Hello_World.jpg'
+      src: '{{ custom_splash | default("Hello_World.jpg") }}'
       dest: '/boot/custom-splash.jpg'
       owner: root
       group: root

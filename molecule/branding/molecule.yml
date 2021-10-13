@@ -34,7 +34,7 @@ provisioner:
     hosts:
       all:
         vars:
-          branding_users:
+          accounts:
             - 'root'
 scenario:
   name: branding

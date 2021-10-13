@@ -1,5 +1,7 @@
 ---
 
+# Pass in user as `user`.
+
 - name: Ensure `homedir` dictionary exists.
   set_fact:
     homedir: {}

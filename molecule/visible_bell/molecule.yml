@@ -34,7 +34,7 @@ provisioner:
     hosts:
       all:
         vars:
-          visible_bell_users:
+          accounts:
             - 'root'
 scenario:
   name: visible_bell

@@ -12,15 +12,15 @@
 
 - name: Set fact with users whose accounts need to be configured.
   ansible.builtin.set_fact:
-    visible_bell_users: "{{ visible_bell_users | default(['root', ansible_user_id]) | unique }}"
+    accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
 
-- name: Debug `visible_bell_users`.
+- name: Debug `accounts`.
   ansible.builtin.debug:
-    msg: '{{ visible_bell_users }}'
+    msg: '{{ accounts }}'
     verbosity: 2
 
 - name: Ensure quieting applied to intended users.
   include_tasks: visible_bell.yml
   vars:
     user: "{{ item }}"
-  loop: '{{ visible_bell_users }}'
+  loop: '{{ accounts }}'
