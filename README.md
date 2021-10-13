@@ -288,10 +288,13 @@ INFO     Running visible_bell > list
 but not yet `converged`.)
 
 
-See also:
+## See also
 
-- `Testing Ansible automation with molecule <https://redhatnordicssa.github.io/how-we-test-our-roles>`\_
-- `Question: accessing values of variables as they are being used for provisioning an instance inside Testinfra tests #151 <https://github.com/ansible-community/molecule/issues/151>`\_
+- [Testing Ansible automation with molecule](https://redhatnordicssa.github.io/how-we-test-our-roles)
+- [Question: accessing values of variables as they are being used for provisioning an instance inside Testinfra tests #151](https://github.com/ansible-community/molecule/issues/151)
+- [Using Ansible Molecule to test roles in monorepo](https://mariarti0644.medium.com/using-ansible-molecule-to-test-roles-in-monorepo-5f711c716666>)
+- [Continuous Infrastructure with Ansible, Molecule & TravisCI](https://blog.codecentric.de/en/2018/12/continuous-infrastructure-ansible-molecule-travisci/)
+- [Test-driven infrastructure development with Ansible & Molecule](https://blog.codecentric.de/en/2018/12/test-driven-infrastructure-ansible-molecule/), by Jonas Hecht, 2018-12-04
 
 ## Release notes
 
