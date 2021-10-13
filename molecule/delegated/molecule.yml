@@ -33,13 +33,28 @@ provisioner:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
     prepare: ../shared/prepare.yml
     destroy: ../shared/destroy.yml
+  inventory:
+    hosts:
+      all:
+        vars:
+          accounts:
+            - 'root'
+            - 'pirate'
 scenario:
   name: delegated
 verifier:
   name: testinfra
+  additional_files_or_dirs:
+    - ../shared/*
   directory: ../shared/tests
   options:
     # Add a -v so you see the individual test names.
-    v: true
-  additional_files_or_dirs:
-    - ../shared/*
+    # v: true
+    vv: true
+    # The following is necessary to cause `molecule` to run `testinfra` with
+    # elevated permissions using `ssh` to access the remote delegated host.
+    # Failing to do this results in tests requiring `root` read and/or
+    # execute access to directories and files to fail (and thus those tests
+    # will also fail.)
+    # See: https://github.com/ansible-community/molecule/issues/555
+    sudo: true
