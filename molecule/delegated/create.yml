@@ -1,0 +1,15 @@
+---
+
+- name: Create
+  hosts: all
+  tasks:
+    - name: Test connection to delegated-host.
+      command: 'uptime'
+      register: uptime
+      changed_when: false
+
+    - name: Check results.
+      assert:
+        that:
+          - "' up ' in uptime.stdout"
+        fail_msg: '[-] cannot connect to delegated-host'
