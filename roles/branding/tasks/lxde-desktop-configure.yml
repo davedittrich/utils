@@ -1,144 +1,84 @@
 ---
 
-# tasks for configuring user's LXDE desktop.
+# Tasks for configuring user's LXDE desktop.
+# Pass in user account name as `user`.
 
-- name: Stat user's `~/.config/lxsession/LXDE` directory.
-  ansible.builtin.stat:
-    path: "{{ homedir[user] ~ '/.config/lxsession/LXDE' }}"
-  become: true
-  register: lxsession_lxde_dir
+# LXDE supports multiple monitors by giving each display (starting with `0`
+# and incrementing by one) its own `pcmanfm` configuration file.
+# Trying to affect these configurations using `pcmanfm` directly can fail, since
+# `pcmanfm` assumes it is running by a logged in user with access to the
+# X11 display. There is no option to ignore this when just making configuration
+# changes, so you get a "Cannot connect to display" failure.  The workaround
+# hack in this playbook modifies files directly using the `ansible.builtin.lineinfile`
+# module.
 
-- name: Ensure lxsession LXDE configuration directory exists.
-  ansible.builtin.file:
-    path: "{{ homedir[user] ~ '/.config/lxsession/LXDE' }}"
-    state: directory
-    owner: '{{ user }}'
-    group: '{{ user }}'
-    mode: 0o750
-  become: true
-  become_user: '{{ user }}'
-
-# See https://github.com/ansible/ansible/issues/22862
-
-- name: Find lxsession LXDE configuration files.
-  ansible.builtin.find:
-    paths: '/etc/xdg/lxsession/LXDE'
-    recurse: false
-  delegate_to: '{{ inventory_hostname }}'
-  become: false
-  register: lxsession_lxde_conf_matched
-
-- name: Set fact with lxsession LXDE conf files.
+- name: Set fact with user's `~/.config/` directory path.
   ansible.builtin.set_fact:
-    lxsession_lxde_conf: '{{ lxsession_lxde_conf|default([]) + [item.path] }}'
-  loop: '{{ lxsession_lxde_conf_matched.files }}'
+    dot_config_dir: '{{ homedir[user] ~ "/.config/" }}'
 
-- name: Debug lxsession LXDE conf files list.
+- name: Set fact with relative local path.
+  ansible.builtin.set_fact:
+    dot_config_template_dir: '{{ role_path }}/templates/home.config'
+
+    # Place all files (whether actual templates or not) into this
+    # directory tree as if they were templates to handle them all
+    # the same way. This simplifies the playbook logic, even if
+    # slightly more processing is done as a result, and makes it
+    # easier to include new files as needed to customize things.
+
+- name: Find `.config/` templates on control host.
+  ansible.builtin.find:
+    paths: '{{ dot_config_template_dir }}'
+    recurse: true
+    use_regex: false
+    patterns: '*.j2'
+  delegate_to: localhost
+  become: false
+  register: config_templates_matched
+
+- name: Set fact with relative template paths.
+  ansible.builtin.set_fact:
+    config_templates: '{{ config_templates | default([]) + [ item.path|replace(dot_config_template_dir ~ "/", "") ] }}'
+  with_items: '{{ config_templates_matched.files }}'
+
+- name: Debug template files.
   ansible.builtin.debug:
-    msg: '{{ lxsession_lxde_conf }}'
-    verbosity: 2
+    var: config_templates
+    verbosity: 0
   changed_when: false
 
-- name: Ensure user's `~/.config/lxsession/LXDE` directory is populated.
-  ansible.builtin.copy:
-    src: '{{ item }}'
-    remote_src: true
-    dest: "{{ homedir[user] ~ '/.config/lxsession/LXDE/' ~ item|basename }}"
-    owner: '{{ user }}'
-    group: '{{ user }}'
-    mode: 0o644
-  loop: '{{ lxsession_lxde_conf }}'
-  become: true
-  become_user: '{{ user }}'
-  delegate_to: '{{ inventory_hostname }}'
+  # ok: [instance] => {
+  #     "config_templates": [
+  #         "user-dirs.dirs.j2",
+  #         "user-dirs.locale.j2",
+  #         "gtk-3.0/bookmarks.j2",
+  #         "qt5ct/qt5ct.conf.j2",
+  #         "lxterminal/lxterminal.conf.j2",
+  #         "pcmanfm/LXDE/desktop-items-0.conf.j2",
+  #         "openbox/lxde-rc.xml.j2",
+  #         "clipit/disabled.j2",
+  #         "libfm/libfm.conf.j2"
+  #     ]
+  # }
 
-- name: Ensure X11 settings are present in user's LXDE autostart file.
-  ansible.builtin.lineinfile:
-    path: "{{ homedir[user] ~ '/.config/lxsession/LXDE/autostart' }}"
-    owner: '{{ user }}'
-    group: '{{ user }}'
-    mode: 0o644
-    regexp: '^@{{ autostart_setting }}$'
-    line: '@{{ autostart_setting }}'
-    insertbefore: BOF
-    state: present
-  become: true
-  become_user: '{{ user }}'
-  loop: '{{ x_settings }}'
-  loop_control:
-    loop_var: autostart_setting
-
-  # LXDE supports multiple monitors by giving each display (starting with `0`
-  # and incrementing by one) its own `pcmanfm` configuration file.
-
-  # Trying to affect these configurations using `pcmanfm` directly can fail, since
-  # `pcmanfm` assumes it is running by a logged in user with access to the
-  # X11 displays. There is no option to ignore this when just making configuration
-  # changes, so you get a "Cannot connect to display" failure.  This workaround
-  # hack modifies the files directly using the `ansible.builtin.lineinfile` module.
-
-- name: Stat user's `~/.config/pcmanfm/LXDE` directory.
-  ansible.builtin.stat:
-    path: "{{ homedir[user] ~ '/.config/pcmanfm/LXDE' }}"
-  become: true
-  register: pcmanfm_dir
-
-- name: Ensure user's `~/.config/pcmanfm/LXDE` directory exists.
+- name: Ensure user's configuration directories exist.
   ansible.builtin.file:
-    path: "{{ homedir[user] ~ '/.config/pcmanfm/LXDE' }}"
+    path: "{{ dot_config_dir }}/{{ item|dirname }}"
     state: directory
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o750
   become: true
   become_user: '{{ user }}'
-  when: not pcmanfm_dir.stat.exists
+  loop: '{{ config_templates }}'
 
-- name: Stat user's `~/.config/pcmanfm/LXDE/desktop-items-0.conf file.
-  ansible.builtin.stat:
-    path: "{{ homedir[user] ~ '/.config/pcmanfm/LXDE/desktop-items-0.conf' }}"
-  become: true
-  register: desktop_items_0
-
-- name: Set fact with setting information.
-  ansible.builtin.set_fact:
-    wallpaper_settings_dict_list:
-      - regexp: '^wallpaper_mode='
-        line: 'wallpaper_mode=stretch'
-      - regexp: '^#+wallpaper='
-        line: 'wallpaper={{ lxde_wallpapers_directory }}/custom-splash.jpg'
-
-- name: Ensure pcmanfm desktop settings are customized.
-  ansible.builtin.lineinfile:
-    path: "{{ homedir[user] ~ '/.config/pcmanfm/LXDE/desktop-items-0.conf' }}"
-    owner: '{{ user }}'
-    group: '{{ user }}'
-    mode: 0o644
-    regexp: '{{ item.regexp }}'
-    line: '{{ item.line }}'
-    state: present
-  become: true
-  become_user: '{{ user }}'
-  loop: '{{ wallpaper_settings_dict_list }}'
-  when: desktop_items_0.stat.exists
-
-- name: Ensure pcmanfm desktop settings file is present.
+- name: Ensure user's configuration files exist.
   ansible.builtin.template:
-    src: desktop-items-0.conf.j2
-    dest: "{{ homedir[user] ~ '/.config/pcmanfm/LXDE/desktop-items-0.conf' }}"
+    src: '{{ dot_config_template_dir ~ "/" ~ item }}'
+    dest: '{{ dot_config_dir ~ item|replace(".j2", "") }}'
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o644
+    mode: 0o750
   become: true
   become_user: '{{ user }}'
-  when: not desktop_items_0.stat.exists
-
-- name: Ensure user's `~/.config/lxsession/LXDE/desktop.conf` is set.
-  ansible.builtin.copy:
-    src: 'desktop.conf'
-    dest: "{{ homedir[user] ~ '/.config/lxsession/LXDE/desktop.conf' }}"
-    owner: '{{ user }}'
-    group: '{{ user }}'
-    mode: 0o644
-  become: true
-  become_user: '{{ user }}'
+  loop: '{{ config_templates }}'
