@@ -3,6 +3,9 @@
 
 - name: Prepare
   hosts: all
+  vars:
+      accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
+
   tasks:
   - name: Stat `/boot/config.txt` file.
     ansible.builtin.stat:
@@ -40,8 +43,15 @@
       group: root
       mode: 0o640
 
+  - name: Ensure user home directories are mapped.
+    include_tasks: ../../../tasks/get_homedir.yml
+    loop: '{{ accounts }}'
+    loop_control:
+      loop_var: user
+
   - name: Ensure SSH directory exists for `davedittrich.utils.dropin` role.
     ansible.builtin.file:
+      path: '{{ homedir[user] }}/.ssh'
       state: directory
       owner: '{{ user }}'
       group: '{{ user }}'
