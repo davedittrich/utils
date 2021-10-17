@@ -39,3 +39,14 @@
       owner: root
       group: root
       mode: 0o640
+
+  - name: Ensure SSH directory exists for `davedittrich.utils.dropin` role.
+    ansible.builtin.file:
+      state: directory
+      owner: '{{ user }}'
+      group: '{{ user }}'
+      mode: 0o700
+    loop: '{{ accounts }}'
+    loop_control:
+      loop_var: user
+    become: true
