@@ -11,8 +11,9 @@
   ansible.builtin.set_fact:
     install_lxde: '{{ install_lxde | default(true) }}'
 
-- block:
+# NOTE: This entire block is performed with `become: true`
 
+- block:
   # HypriotOS switches the default Python from 2.x to 3.x. This breaks the old
   # and not well-maintained 'wicd' service:
   #
@@ -46,7 +47,6 @@
           - '{{ lxde_package }}'
         state: present
         install_recommends: false
-      become: true
 
     - name: Query alternatives x-session-manager setting.
       ansible.builtin.shell: |
@@ -55,7 +55,6 @@
       args:
         executable: /bin/bash
       register: alternatives_out
-      become: true
       changed_when: false
 
     - name: Ensure LXDE is default X11 session manager.
@@ -64,11 +63,10 @@
       args:
         executable: /bin/bash
       register: update_alternatives_shell
-      failed_when: update_alternatives_shell.rc != 0
+      failed_when: "update_alternatives_shell.rc != 0"
       when: "'startlxde' not in alternatives_out.stdout"
-      become: true
 
-    - name: Set fact with setting information.
+    - name: Set fact with background setting information.
       ansible.builtin.set_fact:
         background_settings_dict_list:
           - regexp: '^#+background='
@@ -79,13 +77,26 @@
     - name: Ensure lightdm login greeter background is customized.
       ansible.builtin.lineinfile:
         path: '/etc/lightdm/lightdm-gtk-greeter.conf'
-        owner: 'root'
-        group: 'root'
-        mode: 0o644
         regexp: '{{ item.regexp }}'
         line: '{{ item.line }}'
         state: present
-      become: true
+      loop: '{{ background_settings_dict_list }}'
+
+    - name: Set fact with wallpaper setting information.
+      ansible.builtin.set_fact:
+        background_settings_dict_list:
+          - regexp: '^#+wallpaper_mode='
+            line: 'wallpaper_mode=stretch'
+          - regexp: '^#+wallpaper='
+            line: 'wallpaper={{ lxde_wallpapers_directory }}/custom-splash.jpg'
+
+    - name: Ensure pcmanfm global wallpaper configuration is customized.
+      ansible.builtin.lineinfile:
+        path: '/etc/xdg/pcmanfm/LXDE/pcmanfm.conf'
+        regexp: '{{ item.regexp }}'
+        line: '{{ item.line }}'
+        state: present
       loop: '{{ background_settings_dict_list }}'
 
   when: install_lxde
+  become: true

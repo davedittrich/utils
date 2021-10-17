@@ -39,7 +39,7 @@
 - name: Set fact with relative template paths.
   ansible.builtin.set_fact:
     config_templates: '{{ config_templates | default([]) + [ item.path|replace(dot_config_template_dir ~ "/", "") ] }}'
-  with_items: '{{ config_templates_matched.files }}'
+  loop: '{{ config_templates_matched.files }}'
 
 - name: Debug template files.
   ansible.builtin.debug:
@@ -63,7 +63,7 @@
 
 - name: Ensure user's configuration directories exist.
   ansible.builtin.file:
-    path: "{{ dot_config_dir }}/{{ item|dirname }}"
+    path: '{{ dot_config_dir ~ item|dirname }}'
     state: directory
     owner: '{{ user }}'
     group: '{{ user }}'
