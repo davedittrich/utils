@@ -65,6 +65,7 @@
           #
         dest: '{{ dropin_path }}'
         mode: 0o640
+      register: copy_result
       when: not file_result.stat.exists
 
     - name: Run `update-dotdee` to create dropin directory.
@@ -91,6 +92,13 @@
       environment:
         D: '{{ dropin_path }}.d'
       when: update_dotdee_result.rc == 0
+
+  rescue:
+    - name: Debug `copy_result` result.
+      ansible.builtin.debug:
+        msg: 'IGNORING => {{ copy_result }}'
+        verbosity: 0
+
 
   when: not dir_result.stat.exists
   become: true
