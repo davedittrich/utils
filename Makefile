@@ -68,7 +68,7 @@ build-images:
 
 .PHONY: clean
 clean:
-	rm davedittrich-utils-*.tar.gz
+	rm davedittrich-utils-*.tar.gz || true
 	find * -name '*.pyc' -delete
 	find * -name __pycache__ -exec rmdir {} ';' || true
 
