@@ -23,6 +23,7 @@
     - davedittrich.utils.swapcapslockctrl
     - davedittrich.utils.visible_bell
     - davedittrich.utils.branding
+    - davedittrich.utils.dropins
 
   post_tasks:
     - name: Dump all variables used to converge for later use.

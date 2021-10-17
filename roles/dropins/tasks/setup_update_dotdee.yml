@@ -1,0 +1,72 @@
+---
+
+# Ensure that `update-dotdee` is installed using `pipx` to be
+# a self-contained virtualenv application.
+#
+# Pass in user account name as `user`.
+
+# Since you can't `become` and `become_user` with `include_tasks`, do it
+# here on the `block` instead to be more DRY in plays.
+
+- block:
+
+    - name: Set fact with full path to `pipx` local dir.
+      ansible.builtin.set_fact:
+        pipx_local_path: '{{ homedir[user] }}/.local`'
+
+    - name: Debug `pipx_local_path`.
+      ansible.builtin.debug:
+        var: pipx_local_path
+        verbosity: 0
+
+    - name: Stat `pipx_local_path`.
+      ansible.builtin.stat:
+        path: '{{ pipx_local_path }}'
+      register: pipx_local_result
+
+    - name: Debug `pipx_local_result` variable.
+      ansible.builtin.debug:
+        var: file_result
+        verbosity: 0
+
+    - name: Ensure `.bashrc` sources `.bash_aliases`.
+      ansible.builtin.blockinfile:
+        path: '{{ homedir[user] ~ "/.bashrc" }}'
+        marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.setup_update_dotdee]"
+        block: |
+          if [ -f ~/.bash_aliases ]; then
+              . ~/.bash_aliases
+          fi
+
+    - name: Ensure `~/.local/bin` is in users' PATH.
+      ansible.builtin.lineinfile:
+        dest: '{{ homedir[user] }}/.bashrc'
+        line: '[[ "$PATH" =~ *{{ homedir[user] }}/.local/bin* ]] || PATH={{ homedir[user] }}/.local/bin:$PATH'
+        insertafter: 'EOF'
+
+    - name: Ensure `pipx` is installed for user.
+      ansible.builtin.shell: |
+        type pipx || python3 -m pip install pipx --user
+      args:
+        creates: '{{ homedir[user] }}/.local/bin/pipx'
+        executable: /bin/bash
+      environment:
+        PATH: '{{ homedir[user] }}/.local/bin:{{ ansible_env.PATH }}'
+      register: result
+      changed_when: "'pipx is' not in result.stdout and 'skipped' not in result.stdout"
+
+    - name: Ensure `updated-dotdee` installed with `pipx`.
+      ansible.builtin.shell: |
+        type update-dotdee || pipx install update-dotdee
+      args:
+        creates:
+          - '{{ homedir[user] }}/.local/bin/update-dotdee'
+        executable: /bin/bash
+      environment:
+        PATH: '{{ homedir[user] }}/.local/bin:{{ ansible_env.PATH }}'
+      register: result
+      # failed_when: "result.rc != 0 'already seems to be installed' not in result.stdout"
+      changed_when: "'update-dotdee is' not in result.stdout"
+
+  become: true
+  become_user: '{{ user }}'

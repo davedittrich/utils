@@ -7,3 +7,4 @@
     - davedittrich.utils.swapcapslockctrl
     - davedittrich.utils.visible_bell
     - davedittrich.utils.branding
+    - davedittrich.utils.dropins
