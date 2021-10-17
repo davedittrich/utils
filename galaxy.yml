@@ -1,7 +1,7 @@
 ---
 namespace: davedittrich
 name: utils
-version: 0.2.4
+version: 0.3.0
 # See https://github.com/ansible/galaxy/issues/2438
 readme: README.md
 authors:
