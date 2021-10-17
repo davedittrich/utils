@@ -28,6 +28,7 @@
     - davedittrich.utils.visible_bell
     - davedittrich.utils.branding
     - davedittrich.utils.dropins
+    - davedittrich.utils.kali_like
 
   post_tasks:
     - name: Dump all variables used to converge for later use.

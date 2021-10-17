@@ -1,0 +1,30 @@
+---
+
+# Tasks file for davedittrich.utils.kali_like role.
+
+- name: Set fact with users whose accounts need to be configured.
+  ansible.builtin.set_fact:
+    accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
+
+- name: Ensure user home directories are mapped.
+  include_tasks: ../../../tasks/get_homedir.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+
+- name: Get serial number for host.
+  ansible.builtin.shell: |
+    awk -F\/ '{print $2}'` /sys/class/dmi/id/board_serial
+  register: result
+
+- name: Set fact with host name based on serial number.
+  ansible.builtin.set_fact:
+    host_serial: 'kali-{{ result.stdout }}'
+
+- name: Debug `host_serial`
+  ansible.builtin.debug:
+    var: host_serial
+    verbosity: 0
+
+  # sed -i "s/kali/kali-$serial/g" /etc/hosts
+  # sed -i "s/kali/kali-$serial/g" /etc/hostname

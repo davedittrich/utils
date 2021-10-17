@@ -1,0 +1,16 @@
+---
+- name: Converge
+  hosts: all
+
+  roles:
+    - davedittrich.utils.kali_like
+
+  post_tasks:
+    - name: Dump all variables used to converge for later use.
+      copy:
+        content: |
+          {{ vars | to_yaml }}
+        dest: /tmp/ansible-vars.yml
+        mode: 0o600
+      changed_when: false
+      delegate_to: localhost
