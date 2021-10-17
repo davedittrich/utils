@@ -3,8 +3,6 @@
 
 - name: Prepare
   hosts: all
-  vars:
-    accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
   tasks:
     - name: Stat `/boot/config.txt` file.
       ansible.builtin.stat:
@@ -41,6 +39,10 @@
         owner: root
         group: root
         mode: 0o640
+
+    - name: Set fact with users whose accounts need to be configured.
+      ansible.builtin.set_fact:
+        accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
 
     - name: Ensure user home directories are mapped.
       include_tasks: ../../tasks/get_homedir.yml
