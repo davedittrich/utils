@@ -59,7 +59,6 @@ This role is applied as follows:
   roles:
     - role: davedittrich.utils.dropins
       vars:
-        users: '{{ users |default(['root', ansible_user_id]) | unique }}'
         dropin_files:
           - '.bash_profile'
           - '.bash_aliases'
