@@ -15,7 +15,6 @@ def test_boot_config(host):
     f = host.file('/boot/config.txt')
     assert f.exists
     assert f.user == 'root'
-    assert f.group == 'root'
     assert r'disable_splash=1' in f.content_string
 
 
@@ -23,12 +22,11 @@ def test_boot_config(host):
 def test_boot_cmdline(host):
     f = host.file('/boot/cmdline.txt')
     assert f.user == 'root'
-    assert f.group == 'root'
     assert r'logo.nologo' in f.content_string
 
 
 @skip_unless_role('davedittrich.utils.branding')
-def test_fbi(host):
+def test_fbi_package(host):
     assert host.package('fbi').is_installed
 
 
@@ -39,13 +37,12 @@ def test_splashscreen_service(host):
 
 
 @skip_unless_role('davedittrich.utils.branding')
-@pytest.mark.parametrize('user', ansible_vars['accounts'])
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_homedir(host, user):
     homedir = get_homedir(host=host, user=user)
     f = host.file(homedir)
     assert f.exists
     assert f.user == user
-    assert f.group == user
 
 
 @skip_unless_role('davedittrich.utils.branding')
@@ -53,7 +50,6 @@ def test_x11_session_manager_is_lxde(host):
     f = host.file('/etc/alternatives/x-session-manager')
     assert f.exists
     assert f.user == 'root'
-    assert f.group == 'root'
     assert r'XDG_CURRENT_DESKTOP="LXDE"' in f.content_string
 
 
@@ -64,24 +60,19 @@ def test_wallpaper_image(host):
     f = host.file(os.path.join(wallpapers_dir, 'custom-splash.jpg'))
     assert f.exists
     assert f.user == 'root'
-    assert f.group == 'root'
 
 
 @skip_unless_role('davedittrich.utils.branding')
-@pytest.mark.parametrize('user', ansible_vars['accounts'])
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_wallpaper_setting(host, user):
-    if (
-        'monitors' not in ansible_vars
-        or ansible_vars['monitors'] == 0
-    ):
+    monitors = int(ansible_vars.get('monitors', 0))
+    if monitors == 0:
         pytest.xfail('no monitors')
-    monitors = int(ansible_vars['monitors'])
     homedir = get_homedir(host=host, user=user)
     d = host.file(os.path.join(homedir, '.config/pcmanfm/LXDE'))
     assert d.exists
     assert d.is_directory
     assert d.user == user
-    assert d.group == user
     for monitor in range(monitors+1):
         f = host.file(
             os.path.join(
@@ -91,7 +82,6 @@ def test_user_wallpaper_setting(host, user):
         )
         assert f.exists
         assert f.user == user
-        assert f.group == user
         assert r'custom-splash.jpg' in f.content_string
 
 
@@ -103,12 +93,11 @@ def test_lightdm_login_background(host):
     f = host.file('/etc/lightdm/lightdm-gtk-greeter.conf')
     assert f.exists
     assert f.user == 'root'
-    assert f.group == 'root'
     assert f'background={login_background}' in f.content_string
 
 
 # @skip_unless_role('davedittrich.utils.branding')
-# @pytest.mark.parametrize('user', ansible_vars['accounts'])
+# @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 # def test_LXDE_desktop_conf(host, user):
 #     homedir = get_homedir(host=host, user=user)
 #     f = host.file(
@@ -116,7 +105,6 @@ def test_lightdm_login_background(host):
 #     )
 #     assert f.exists
 #     assert f.user == user
-#     assert f.group == user
 #     assert r'Beep=0' in f.content_string
 #     assert r'menu_prefix=lxde-' in f.content_string
 
@@ -125,12 +113,12 @@ def test_lightdm_login_background(host):
 # at collection time. For more information on how this works, see:
 #   https://medium.com/opsops/deepdive-into-pytest-parametrization-cb21665c05b9
 
-@pytest.fixture(params=ansible_vars['accounts'])
+@pytest.fixture(params=ansible_vars.get('accounts', []))
 def fixture_users(request):
     return request.param
 
 
-@pytest.fixture(params=ansible_vars['config_templates'])
+@pytest.fixture(params=ansible_vars.get('config_templates', []))
 def fixture_config_files(request):
     return str(request.param).replace('.j2', '')
 
@@ -144,7 +132,6 @@ def test_config_files(host, fixture_users, fixture_config_files):
     f = host.file(config_path)
     assert f.exists
     assert f.user == user
-    assert f.group == user
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

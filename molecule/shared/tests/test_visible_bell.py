@@ -11,7 +11,7 @@ from molecule.shared import (  # noqa
 
 
 @skip_unless_role('davedittrich.utils.visible_bell')
-@pytest.mark.parametrize('user', ansible_vars['accounts'])
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_inputrc(host, user):
     f = host.file(
         os.path.join(
@@ -24,7 +24,7 @@ def test_inputrc(host, user):
 
 
 @skip_unless_role('davedittrich.utils.visible_bell')
-@pytest.mark.parametrize('user', ansible_vars['accounts'])
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_bashrc(host, user):
     f = host.file(
         os.path.join(
@@ -34,12 +34,11 @@ def test_bashrc(host, user):
     )
     assert f.exists
     assert f.user == user
-    assert f.group == user
     assert f.content_string.find(r'set bellstyle visible') > -1
 
 
 @skip_unless_role('davedittrich.utils.visible_bell')
-@pytest.mark.parametrize('user', ansible_vars['accounts'])
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_cshrc(host, user):
     f = host.file(
         os.path.join(
@@ -49,12 +48,11 @@ def test_cshrc(host, user):
     )
     assert f.exists
     assert f.user == user
-    assert f.group == user
     assert f.content_string.find(r'set visiblebell') > -1
 
 
 @skip_unless_role('davedittrich.utils.visible_bell')
-@pytest.mark.parametrize('user', ansible_vars['accounts'])
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_exrc(host, user):
     f = host.file(
         os.path.join(
@@ -64,12 +62,11 @@ def test_exrc(host, user):
     )
     assert f.exists
     assert f.user == user
-    assert f.group == user
     assert r'set flash' in f.content_string
 
 
 @skip_unless_role('davedittrich.utils.visible_bell')
-@pytest.mark.parametrize('user', ansible_vars['accounts'])
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_vimrc(host, user):
     f = host.file(
         os.path.join(
@@ -79,7 +76,6 @@ def test_vimrc(host, user):
     )
     assert f.exists
     assert f.user == user
-    assert f.group == user
     assert r'set vb t_vb=' in f.content_string
 
 
