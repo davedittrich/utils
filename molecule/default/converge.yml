@@ -6,6 +6,7 @@
     - name: Ensure package cache is up to date.
       ansible.builtin.package:
         update_cache: true
+      become: true
       changed_when: false
       register: task_result
       until: task_result is success
@@ -23,12 +24,12 @@
       changed_when: false
 
   roles:
+    - davedittrich.utils.kali_like
+    - davedittrich.utils.branding
     - davedittrich.utils.ip_in_issue
     - davedittrich.utils.swapcapslockctrl
     - davedittrich.utils.visible_bell
-    - davedittrich.utils.branding
     - davedittrich.utils.dropins
-    - davedittrich.utils.kali_like
 
   post_tasks:
     - name: Dump all variables used to converge for later use.
