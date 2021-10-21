@@ -23,6 +23,7 @@ help:
 	@echo "  clean-images - remove Docker images"
 	@echo "  converge - molecule converge on scenario '$(SCENARIO)'"
 	@echo "  destroy - destroy and clean up scenario '$(SCENARIO)'"
+	@echo "  lint - run 'molecule lint'"
 	@echo "  login - connect to '$(SCENARIO)' molecule instance for debugging"
 	@echo "  publish - publish the artifact to Ansible galaxy (default $(ANSIBLE_GALAXY_SERVER))"
 	@echo "  scenario-exists - checks to ensure the scenario (variable 'SCENARIO') exists."
@@ -87,6 +88,10 @@ destroy: scenario-exists
 .PHONY: verify
 verify: scenario-exists
 	molecule verify -s $(SCENARIO)
+
+.PHONY: lint
+lint:
+	molecule lint
 
 .PHONY: login
 login: scenario-exists
