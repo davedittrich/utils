@@ -1,0 +1,143 @@
+---
+
+# Tasks file for davedittrich.utils.kali_like role.
+
+- name: Set fact with users whose accounts need to be configured.
+  ansible.builtin.set_fact:
+    accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
+
+- name: Ensure user home directories are mapped.
+  include_tasks: ../../../tasks/get_homedir.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+
+- name: Set fact with relative local path.
+  ansible.builtin.set_fact:
+    kali_like_script_templates_dir: '{{ role_path }}/templates/scripts/'
+
+- name: Ensure `gawk` is installed.
+  ansible.builtin.apt:
+    name: gawk
+    state: present
+    update_cache: true
+  register: gawk_result
+  become: true
+
+- name: Work around some bug regarding `/usr/bin/awk`.  # noqa no-handler
+  command: update-alternatives --set awk /usr/bin/gawk
+  become: true
+  changed_when: false
+  when: gawk_result.changed
+
+- name: Ensure Kali package pre-requisites are present.
+  ansible.builtin.apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: false
+  vars:
+    packages:
+      - python3-lib2to3
+      - python3-six
+      - xz-utils
+  become: true
+
+- name: Get Kali package signing key .deb file.
+  ansible.builtin.get_url:
+    url: 'http://http.kali.org/kali/pool/main/k/kali-archive-keyring/kali-archive-keyring_2020.2_all.deb'
+    dest: '/tmp/kali-archive-keyring_2020.2_all.deb'
+
+- name: Ensure Kali package signing key is present.
+  ansible.builtin.apt:
+    deb: '/tmp/kali-archive-keyring_2020.2_all.deb'
+    state: present
+    update_cache: false
+  become: true
+
+- name: Add Kali sources to `/etc/apt/sources.list.d/`
+  ansible.builtin.copy:
+    content: 'deb http://http.kali.org/kali kali-rolling main contrib non-free'
+    dest: '/etc/apt/sources.list.d/kali.list'
+    owner: 'root'
+    group: 'root'
+    mode: 0o644
+  become: true
+
+# TODO(dittrich): Is this needed?
+# - name: Ensure key file is absent.
+#   ansible.builtin.file:
+#     dest: 'kali-archive-keyring_2020.2_all.deb'
+#     state: absent
+#   become: true
+
+- name: Ensure required Kali packages are present.
+  ansible.builtin.apt:
+    name: "{{ kali_like_packages }}"
+    state: present
+    update_cache: true
+  become: true
+
+- name: Hush Kali developer login message.
+  command: 'touch ~/.hushlogin'
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+  become: true
+  become_user: '{{ user }}'
+  changed_when: false
+
+- name: Find script templates on control host.
+  ansible.builtin.find:
+    paths: '{{ kali_like_script_templates_dir }}'
+    recurse: false
+    use_regex: false
+    patterns: '*.sh.j2'
+  delegate_to: localhost
+  become: false
+  register: kali_like_script_templates_matched
+
+- name: Set fact with relative template paths.
+  ansible.builtin.set_fact:
+    kali_like_script_templates: '{{ kali_like_script_templates|default([]) + [ item.path|basename ] }}'
+  loop: '{{ kali_like_script_templates_matched.files }}'
+
+- name: Debug `kali_like_script_templates`.
+  ansible.builtin.debug:
+    var: kali_like_script_templates
+    verbosity: 1
+  changed_when: false
+
+- name: Ensure helper scripts are installed for users.
+  include_tasks: install_helper_scripts.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+
+# - name: Ensure Kali desktop-directories files exist
+# TODO(dittrich): Complete this.
+
+- name: Ensure applications-merged directory exists
+  file:
+    dest: '/etc/xdg/menus/applications-merged'
+    state: directory
+    owner: 'root'
+    group: 'root'
+    mode: 0o755
+  become: true
+
+- name: Ensure kali-applications.menu exists.
+  ansible.builtin.copy:
+    src: 'kali-applications.menu'
+    dest: '/etc/xdg/menus/applications-merged/kali-applications.menu'
+    owner: 'root'
+    group: 'root'
+    mode: 0o644
+  become: true
+
+- name: Ensure hostname reflects serial number.
+  include_tasks: serial_hostname.yml
+
+# - name: Ensure kali icons are present
+# TODO(dittrich): Complete this.
+
+# vim: ft=ansible :

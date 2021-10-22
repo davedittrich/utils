@@ -1,0 +1,39 @@
+---
+
+# Tasks for installing helper scripts in user's `~/.local/bin` directory.
+# Pass in user account name as `user`.
+
+- name: Set fact with user's `~/.local/bin` directory path.
+  ansible.builtin.set_fact:
+    dot_local_bin: '{{ homedir[user] ~ "/.local/bin/" }}'
+
+- name: Stat `~/.local/bin` directory.
+  ansible.builtin.stat:
+    path: '{{ dot_local_bin }}'
+  become: true
+  register: dot_local_result
+
+- name: Debug `dot_local_result` variable.
+  ansible.builtin.debug:
+    var: dot_local_result
+    verbosity: 1
+
+- name: Ensure `~/.local/bin` exist.
+  ansible.builtin.file:
+    path: '{{ dot_local_bin }}'
+    state: directory
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o750
+  become: true
+  when: not dot_local_result.stat.exists
+
+- name: Ensure helper files exist.
+  ansible.builtin.template:
+    src: '{{ kali_like_script_templates_dir ~ item }}'
+    dest: '{{ dot_local_bin ~ item|replace(".sh.j2", "") }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o755
+  become: true
+  loop: '{{ kali_like_script_templates }}'
