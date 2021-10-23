@@ -1,0 +1,65 @@
+name: "davedittrich.utils.kali_like"
+on:
+  push:
+    paths:
+      - 'roles/kali_like/**'
+      - 'molecule/kali_like/**'
+      - '.github/workflows/kali_like.yml'
+  pull_request:
+    paths:
+      - 'roles/kali_like/**'
+      - 'molecule/kali_like/**'
+      - '.github/workflows/kali_like.yml'
+jobs:
+  kali_like:
+    runs-on: ubuntu-latest
+    if: contains(github.ref, '/feature/') || contains(github.ref, '/bugfix/')
+    env:
+      PY_COLORS: 1
+      ANSIBLE_FORCE_COLOR: 1
+    strategy:
+      fail-fast: true
+      matrix:
+        molecule_distro:
+          # - { "distro":"centos7", "command":"/usr/sbin/init" }
+          # - { "distro":"centos8", "command":"/usr/sbin/init" }
+          # - { "distro":"fedora33", "command":"/usr/sbin/init" }
+          # - { "distro":"fedora34", "command":"/usr/sbin/init" }
+          - { "distro":"ubuntu1804", "command":"/lib/systemd/systemd" }
+          - { "distro":"ubuntu2004", "command":"/lib/systemd/systemd" }
+          - { "distro":"debian9", "command":"/lib/systemd/systemd" }
+          - { "distro":"debian10", "command":"/lib/systemd/systemd" }
+        collection_role:
+          - kali_like
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          sudo apt install apt-transport-https ca-certificates curl software-properties-common
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sudo sh get-docker.sh
+          python -m pip install --upgrade pip
+          python -m pip install ansible ansible-lint docker flake8 'molecule[docker]' pytest pytest-testinfra yamllint
+
+      - name: Build the collection
+        run: |
+          collection_file=$( basename $(ansible-galaxy collection build -f | awk -F" " '{print $NF}'))
+          echo "COLLECTION_FILE=$collection_file" >> $GITHUB_ENV
+
+      - name: Install the collection
+        run: ansible-galaxy collection install "${{ env.COLLECTION_FILE }}"
+
+      - name: Run role tests
+        run: >-
+          molecule --version &&
+          ansible --version &&
+          MOLECULE_COMMAND=${{ matrix.molecule_distro.command }}
+          MOLECULE_DISTRO=${{ matrix.molecule_distro.distro }}
+          molecule --debug test -s ${{ matrix.collection_role }}
