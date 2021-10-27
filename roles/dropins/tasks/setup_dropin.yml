@@ -23,7 +23,7 @@
 - name: Debug dropin file path.
   ansible.builtin.debug:
     var: dropin_path
-    verbosity: 0
+    verbosity: 1
 
 - name: Stat dropin file.
   ansible.builtin.stat:
@@ -34,7 +34,7 @@
 - name: Debug `file_result` variable.
   ansible.builtin.debug:
     var: file_result
-    verbosity: 0
+    verbosity: 1
 
 - name: Stat dropin directory.
   ansible.builtin.stat:
@@ -45,7 +45,7 @@
 - name: Debug `dir_result` variable.
   ansible.builtin.debug:
     var: dir_result
-    verbosity: 0
+    verbosity: 1
 
 - name: DEBUG
   ansible.builtin.debug:

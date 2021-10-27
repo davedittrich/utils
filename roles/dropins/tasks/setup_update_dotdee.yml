@@ -17,7 +17,7 @@
     - name: Debug `pipx_local_path`.
       ansible.builtin.debug:
         var: pipx_local_path
-        verbosity: 0
+        verbosity: 1
 
     - name: Stat `pipx_local_path`.
       ansible.builtin.stat:
@@ -26,8 +26,8 @@
 
     - name: Debug `pipx_local_result` variable.
       ansible.builtin.debug:
-        var: file_result
-        verbosity: 0
+        var: pipx_local_result
+        verbosity: 1
 
     - name: Ensure `.bashrc` sources `.bash_aliases`.
       ansible.builtin.blockinfile:
