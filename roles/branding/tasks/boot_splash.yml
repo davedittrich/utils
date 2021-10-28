@@ -9,9 +9,6 @@
 - name: Ensure splash is disabled in `/boot/config.txt`.
   ansible.builtin.lineinfile:
     path: '/boot/config.txt'
-    owner: 'root'
-    group: 'root'
-    mode: 0o640
     regexp: '^disable_splash='
     line: 'disable_splash=1'
     state: present
@@ -27,9 +24,6 @@
 - name: Check for `logo.nologo` presense in `/boot/cmdline.txt`.
   ansible.builtin.lineinfile:
     path: '/boot/cmdline.txt'
-    owner: 'root'
-    group: 'root'
-    mode: 0o640
     regexp: '^(.*) logo.nologo(.*)$'
     state: absent
     backup: false
@@ -42,9 +36,6 @@
 - name: Ensure `logo.nologo` present in `/boot/cmdline.txt`.
   ansible.builtin.lineinfile:
     path: '/boot/cmdline.txt'
-    owner: 'root'
-    group: 'root'
-    mode: 0o640
     regexp: '^(.*)$'
     line: '\1 logo.nologo'
     state: present
