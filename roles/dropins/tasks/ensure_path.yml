@@ -7,7 +7,7 @@
       if [[ ! "$PATH" =~ *{{ homedir[user] }}/.local/bin* ]]; then
           PATH={{ homedir[user] }}/.local/bin:$PATH
       fi
-    dest: '{{ homedir[user] ~ "/.bash_aliases.d/01-dot_local_bin" }}'
+    dest: '{{ homedir[user] }}/.bash_aliases.d/01-dot_local_bin'
     owner: '{{ user }}'
     mode: 0o640
   become: true

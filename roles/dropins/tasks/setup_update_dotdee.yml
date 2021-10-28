@@ -29,20 +29,25 @@
         var: pipx_local_result
         verbosity: 1
 
+    # Using no marker in case this block is already in the file.
+
+    - name: Check to see if `.bash_aliases` is already being sourced.
+      command: "egrep '. ~/.bash_aliases' {{ homedir[user] }}/.bashrc"
+      register: source_aliases
+      failed_when: false
+      changed_when: false
+
     - name: Ensure `.bashrc` sources `.bash_aliases`.
       ansible.builtin.blockinfile:
         path: '{{ homedir[user] ~ "/.bashrc" }}'
-        marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.setup_update_dotdee]"
+        owner: '{{ user }}'
+        mode: 0o640
         block: |
           if [ -f ~/.bash_aliases ]; then
               . ~/.bash_aliases
           fi
-
-    - name: Ensure `~/.local/bin` is in users' PATH.
-      ansible.builtin.lineinfile:
-        dest: '{{ homedir[user] }}/.bashrc'
-        line: '[[ "$PATH" =~ *{{ homedir[user] }}/.local/bin* ]] || PATH={{ homedir[user] }}/.local/bin:$PATH'
-        insertafter: 'EOF'
+        marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.dropins:setup_update_dotdee]"
+      when: source_aliases.rc != 0
 
     - name: Ensure `pipx` is installed for user.
       ansible.builtin.shell: |
@@ -52,6 +57,7 @@
         executable: /bin/bash
       environment:
         PATH: '{{ homedir[user] }}/.local/bin:{{ ansible_env.PATH }}'
+      become_user: '{{ user }}'
       register: result
       changed_when: "'pipx is' not in result.stdout and 'skipped' not in result.stdout"
 
@@ -64,9 +70,9 @@
         executable: /bin/bash
       environment:
         PATH: '{{ homedir[user] }}/.local/bin:{{ ansible_env.PATH }}'
+      become_user: '{{ user }}'
       register: result
       # failed_when: "result.rc != 0 'already seems to be installed' not in result.stdout"
       changed_when: "'update-dotdee is' not in result.stdout"
 
   become: true
-  become_user: '{{ user }}'

@@ -56,10 +56,13 @@
     - name: Ensure a dropin source file exists.
       ansible.builtin.copy:
         content: |
-          # This is an empty file used to bootstrap management of the file
-          # '{{ dropin_path }}' using 'update-dotdee'. To make changes to
-          # that file, edit '{{ dropin_path }}.d/000-local' or add another file
-          # to that directory and then run:
+          # If you are currently editing the file '{{ dropin_path }}', be aware that
+          # its contents are generated using the program 'update-dotdee' from files
+          # in the '{{ dropin_path }}.d' directory. This text comes from one such file
+          # that is managed by Ansible, so you should not edit that file directly either.
+          # To extend the contents of `{{ dropin_path }}`, place additional files in
+          # `.d` dirctory (with or without using leading numbers to force the order
+          # during concatenation) and then run:
           #
           #    $ update-dotdee {{ dropin_path }}
           #
@@ -70,7 +73,7 @@
 
     - name: Run `update-dotdee` to create dropin directory.
       ansible.builtin.shell: |
-        update-dotdee {{ dropin_path }} 2>&1
+        update-dotdee '{{ dropin_path }}' 2>&1
       args:
         creates: '{{ dropin_path }}.d'
         executable: /bin/bash
@@ -85,9 +88,9 @@
 
     - name: Hack to ensure original file is first in line.
       ansible.builtin.shell: |
-        if [[ -f ${D}/local ]]; then mv ${D}/local ${D}/000-local; fi
+        if [[ -f ${D}/local ]]; then mv ${D}/local ${D}/00-local; fi
       args:
-        creates: '{{ dropin_path }}.d/000-local'
+        creates: '{{ dropin_path }}.d/00-local'
         executable: /bin/bash
       environment:
         D: '{{ dropin_path }}.d'
@@ -98,7 +101,6 @@
       ansible.builtin.debug:
         msg: 'IGNORING => {{ copy_result }}'
         verbosity: 0
-
 
   when: not dir_result.stat.exists
   become: true
