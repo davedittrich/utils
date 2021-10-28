@@ -29,7 +29,6 @@
       - rsync
       - ssh
       - tree
-      - udev
   when: "'ubuntu' in target_distro"
 
 - name: Set fact with packages to include (Ubuntu).
@@ -49,7 +48,6 @@
       - ssh
       - task-lxde-desktop
       - tree
-      - udev
   when: "'debian' in target_distro"
 
 - name: Set fact with packages to remove (Debian).
