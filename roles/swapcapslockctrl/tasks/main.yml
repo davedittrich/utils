@@ -14,9 +14,6 @@
 - name: Ensure `ctrl:swapcaps` in `/etc/default/keyboard`.
   ansible.builtin.lineinfile:
     path: '/etc/default/keyboard'
-    owner: 'root'
-    group: 'root'
-    mode: 0o640
     regexp: '^XKBOPTIONS=""'
     line: 'XKBOPTIONS="ctrl:swapcaps"'
     state: present
