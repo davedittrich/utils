@@ -93,7 +93,7 @@ def test_lightdm_login_background(host):
     f = host.file('/etc/lightdm/lightdm-gtk-greeter.conf')
     assert f.exists
     assert f.user == 'root'
-    assert f'background={login_background}' in f.content_string
+    assert f'background=#stretched:{login_background}' in f.content_string
 
 
 # @skip_unless_role('davedittrich.utils.branding')
