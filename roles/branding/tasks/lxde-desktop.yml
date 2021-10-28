@@ -70,9 +70,9 @@
       ansible.builtin.set_fact:
         background_settings_dict_list:
           - regexp: '^#+background='
-            line: 'background={{ lxde_wallpapers_directory }}/custom-splash.jpg'
+            line: 'background=#stretched:{{ lxde_wallpapers_directory }}/custom-splash.jpg'
           - regexp: '^#+user-background='
-            line: 'user-background={{ lxde_wallpapers_directory }}/custom-splash.jpg'
+            line: 'user-background=true'
 
     - name: Ensure lightdm login greeter background is customized.
       ansible.builtin.lineinfile:
