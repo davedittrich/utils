@@ -79,9 +79,10 @@ def test_pipx(host, fixture_users, fixture_programs):
 @skip_unless_role('davedittrich.utils.dropins')
 def test_update_dotdee_write_bash_profile(host, fixture_users):
     user = fixture_users
+    homedir = get_homedir(host=host, user=user)
     with host.sudo(user=user):
         result = host.check_output(
-            "~/.local/bin/update-dotdee ~/.bash_profile 2>&1"
+            f"{homedir}/.local/bin/update-dotdee '{homedir}/.bash_profile' 2>&1"  # noqa
         )
         assert "INFO Writing file: ~/.bash_profile" in result
 
