@@ -46,3 +46,9 @@
   with_nested:
     - '{{ accounts }}'
     - '{{ dropin_files }}'
+
+- name: Ensure `PATH` is customized.
+  include_tasks: ensure_path.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
