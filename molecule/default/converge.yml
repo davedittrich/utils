@@ -24,7 +24,6 @@
       changed_when: false
 
   roles:
-    - davedittrich.utils.kali_like
     - davedittrich.utils.branding
     - davedittrich.utils.ip_in_issue
     - davedittrich.utils.swapcapslockctrl
