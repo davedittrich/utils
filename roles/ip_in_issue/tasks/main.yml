@@ -76,7 +76,7 @@
       ansible.builtin.debug:
         msg: '{{ ssh_fingerprints }}'
         verbosity: 2
-      changed_when: false
+
   when: st.stat.exists
 
 - name: Set fact there are no SSH host fingerprints.
@@ -112,7 +112,6 @@
   ansible.builtin.debug:
     msg: '{{ issue_templates }}'
     verbosity: 2
-  changed_when: false
 
 - name: Ensure `/etc/issue.d` directory exists.
   ansible.builtin.file:
