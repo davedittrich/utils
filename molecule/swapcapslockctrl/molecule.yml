@@ -6,10 +6,11 @@ driver:
 lint: |
   set -e
   yamllint .
-  ansible-lint playbooks plugins roles
+  ansible-lint
+  flake8
 platforms:
   - name: instance
-    image: "geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2004}-ansible:latest"
+    image: "${MOLECULE_REPO:-geerlingguy}/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
     command: ${MOLECULE_DOCKER_COMMAND:-"/sbin/init"}
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -21,14 +22,21 @@ provisioner:
     ANSIBLE_COLLECTIONS_PATH: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
     # Grrr! https://github.com/ansible/ansible/issues/70750
     ANSIBLE_COLLECTIONS_PATHS: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
+    ANSIBLE_FORCE_COLOR: true
     ANSIBLE_ROLES_PATH: "../../roles"
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
-    TESTS_PATH: "../../tests"
+    PYTHONPATH: "${PWD}"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+    prepare: ../shared/prepare.yml
+    destroy: ../shared/destroy.yml
 scenario:
   name: swapcapslockctrl
 verifier:
   name: testinfra
-  lint:
-    name: flake8
+  directory: ../shared/tests
+  options:
+    # Add a -v so you see the individual test names.
+    v: true
+  additional_files_or_dirs:
+    - ../shared/*

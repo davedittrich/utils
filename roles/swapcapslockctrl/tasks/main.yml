@@ -1,35 +1,34 @@
 ---
 # tasks file for davedittrich.utils.swapcapslockctrl
 
-- name: Ensure package cache is up to date.
+- name: Ensure required packages are present.
   ansible.builtin.package:
-    update_cache: yes
+    name:
+      - keyboard-configuration
+      - console-setup
+    state: present
+    update_cache: true
     cache_valid_time: 3600
   become: true
 
-- name: Ensure package 'udev' is present.
-  ansible.builtin.package:
-    name: udev
+- name: Ensure `ctrl:swapcaps` in `/etc/default/keyboard`.
+  ansible.builtin.lineinfile:
+    path: '/etc/default/keyboard'
+    regexp: '^XKBOPTIONS=""'
+    line: 'XKBOPTIONS="ctrl:swapcaps"'
     state: present
   become: true
 
-- name: Ensure key remapping file in /etc/udev/hwdb.d/ directory.
-  ansible.builtin.copy:
-    content: |
-        # Match all usb keyboards
-        evdev:input:b0003v*p*
-        # Remap CapsLock <-> Left CTRL
-          KEYBOARD_KEY_70039=leftctrl
-          KEYBOARD_KEY_700E0=capslock
-    dest: /etc/udev/hwdb.d/99-swapcapslockctrl.hwdb
-    owner: root
-    group: root
-    mode: 0o644
-  register: copy
-  become: true
-
-- name: Update udevadm hwdb and trigger update.
-  ansible.builtin.shell:
-    cmd: "udevadm hwdb --update; udevadm trigger"
-  when: copy.changed
+- name: Ensure keyboard is reconfigured.
+  ansible.builtin.shell: |
+    dpkg-reconfigure keyboard-configuration && debconf-show keyboard-configuration
+  args:
+    executable: /bin/bash
+  environment:
+    DEBIAN_FRONTEND: 'noninteractive'
+  register: result
+  changed_when: false
+  failed_when:
+    - result.rc != 0
+    - "'ctrl:swapcaps' not in result.stdout"
   become: true

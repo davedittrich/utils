@@ -1,0 +1,36 @@
+---
+- name: Converge
+  hosts: all
+
+  pre_tasks:
+    - name: Ensure package cache is up to date.
+      ansible.builtin.package:
+        update_cache: true
+      become: true
+      changed_when: false
+      register: task_result
+      until: task_result is success
+      retries: 10
+      delay: 2
+
+    - name: Set fact with tests path
+      set_fact:
+        tests_path: "{{ lookup('env', 'TESTS_PATH') }}"
+      changed_when: false
+
+  roles:
+    - davedittrich.utils.branding
+    - davedittrich.utils.ip_in_issue
+    - davedittrich.utils.swapcapslockctrl
+    - davedittrich.utils.visible_bell
+    - davedittrich.utils.dropins
+
+  post_tasks:
+    - name: Dump all variables used to converge for later use.
+      copy:
+        content: |
+          {{ vars | to_yaml }}
+        dest: /tmp/ansible-vars.yml
+        mode: 0o600
+      changed_when: false
+      delegate_to: localhost

@@ -1,0 +1,48 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+  flake8
+platforms:
+  - name: instance
+    image: "${MOLECULE_REPO:-geerlingguy}/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-"/sbin/init"}
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_COLLECTIONS_PATH: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
+    # Grrr! https://github.com/ansible/ansible/issues/70750
+    ANSIBLE_COLLECTIONS_PATHS: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
+    ANSIBLE_FORCE_COLOR: true
+    ANSIBLE_ROLES_PATH: "../../roles"
+    ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
+    PYTHONPATH: "${PWD}"
+  playbooks:
+    converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+    prepare: ../shared/prepare.yml
+    destroy: ../shared/destroy.yml
+  inventory:
+    hosts:
+      all:
+        vars:
+          accounts:
+            - root
+scenario:
+  name: dropins
+verifier:
+  name: testinfra
+  directory: ../shared/tests
+  options:
+    # Add a -v so you see the individual test names.
+    v: true
+  additional_files_or_dirs:
+    - ../shared/*

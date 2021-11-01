@@ -1,0 +1,107 @@
+---
+
+# Ensure that a dropin directory exists for specified file
+# and the dropin directory is initially populated with the
+# original file at its start.
+#
+# Cases:
+# 1. File does not exist, directory does not exist.
+#    Create a skeleton file and then run `update-dotdee` to
+#    create the directory with this file as `local`.
+# 2. File exists, directory does not exist.
+#    Run `update-dotdee` to create the directory with the
+#    original file as `local`.
+# 3. File does not exist, directory exists.
+#    Should not happen.
+# 4. File exists, directory exists.
+#    Already set up.
+
+- name: Set fact with fully qualified path to dropin file.
+  ansible.builtin.set_fact:
+    dropin_path: '{{ homedir[user] }}/{{ dropin_file }}'
+
+- name: Debug dropin file path.
+  ansible.builtin.debug:
+    var: dropin_path
+    verbosity: 1
+
+- name: Stat dropin file.
+  ansible.builtin.stat:
+    path: '{{ dropin_path }}'
+  become: true
+  register: file_result
+
+- name: Debug `file_result` variable.
+  ansible.builtin.debug:
+    var: file_result
+    verbosity: 1
+
+- name: Stat dropin directory.
+  ansible.builtin.stat:
+    path: '{{ dropin_path }}.d'
+  become: true
+  register: dir_result
+
+- name: Debug `dir_result` variable.
+  ansible.builtin.debug:
+    var: dir_result
+    verbosity: 1
+
+- name: DEBUG
+  ansible.builtin.debug:
+    msg: 'CREATING {{ dropin_file }} AT {{ dropin_path }} FOR USER {{ user }}'
+    verbosity: 0
+
+- block:
+    - name: Ensure a dropin source file exists.
+      ansible.builtin.copy:
+        content: |
+          # If you are currently editing the file '{{ dropin_path }}', be aware that
+          # its contents are generated using the program 'update-dotdee' from files
+          # in the '{{ dropin_path }}.d' directory. This text comes from one such file
+          # that is managed by Ansible, so you should not edit that file directly either.
+          # To extend the contents of `{{ dropin_path }}`, place additional files in
+          # `.d` dirctory (with or without using leading numbers to force the order
+          # during concatenation) and then run:
+          #
+          #    $ update-dotdee {{ dropin_path }}
+          #
+        dest: '{{ dropin_path }}'
+        mode: 0o640
+      register: copy_result
+      when: not file_result.stat.exists
+
+    - name: Run `update-dotdee` to create dropin directory.
+      ansible.builtin.shell: |
+        update-dotdee '{{ dropin_path }}' 2>&1
+      args:
+        creates: '{{ dropin_path }}.d'
+        executable: /bin/bash
+      environment:
+        PATH: '{{ homedir[user] }}/.local/bin:{{ ansible_env.PATH }}'
+      register: update_dotdee_result
+
+    - name: Debug `update_dotdee` result.
+      ansible.builtin.debug:
+        msg: '{{ update_dotdee_result.stdout }}'
+        verbosity: 0
+
+    - name: Hack to ensure original file is first in line.
+      ansible.builtin.shell: |
+        if [[ -f ${D}/local ]]; then mv ${D}/local ${D}/00-local; fi
+      args:
+        creates: '{{ dropin_path }}.d/00-local'
+        executable: /bin/bash
+      environment:
+        D: '{{ dropin_path }}.d'
+      when: update_dotdee_result.rc == 0
+
+  rescue:
+    - name: Debug `copy_result` result.
+      ansible.builtin.debug:
+        msg: 'IGNORING => {{ copy_result }}'
+        verbosity: 0
+
+  when: not dir_result.stat.exists
+  become: true
+  become_user: '{{ user }}'

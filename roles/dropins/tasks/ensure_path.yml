@@ -1,0 +1,26 @@
+---
+
+- name: Ensure PATH is set in `.bash_aliases.d/01-dot_local_bin` file.
+  ansible.builtin.copy:
+    content: |
+      # ANSIBLE MANAGED FILE [davedittrich.utils.dropins:dot_local_bin]
+      if [[ ! "$PATH" =~ *{{ homedir[user] }}/.local/bin* ]]; then
+          PATH={{ homedir[user] }}/.local/bin:$PATH
+      fi
+    dest: '{{ homedir[user] }}/.bash_aliases.d/01-dot_local_bin'
+    owner: '{{ user }}'
+    mode: 0o640
+  become: true
+  become_user: '{{ user }}'
+
+- name: Run `update-dotdee` to create dropin directory.
+  ansible.builtin.shell: |
+    update-dotdee '{{ homedir[user] }}/.bash_aliases' 2>&1
+  args:
+    executable: /bin/bash
+  environment:
+    PATH: '{{ homedir[user] }}/.local/bin:{{ ansible_env.PATH }}'
+  register: update_dotdee_result
+  changed_when: false
+  become: true
+  become_user: '{{ user }}'

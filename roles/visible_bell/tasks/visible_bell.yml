@@ -1,0 +1,64 @@
+---
+
+- name: Get user home directories.
+  include_tasks: ../../../tasks/get_homedir.yml
+
+- name: Ensure applications using `readline` are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir[user] ~ '/.inputrc' }}"
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.visible_bell:visible_bell]"
+    block: |
+      set prefer-visible-bell
+    create: true
+  become: true
+
+- name: Ensure `bash` shell sessions are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir[user] ~ '/.bashrc' }}"
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.visible_bell:visible_bell]"
+    block: |
+      set bellstyle visible
+    create: true
+  become: true
+
+- name: Ensure `csh` and `tcsh` shell sessions are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir[user] ~ '/.cshrc' }}"
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.visible_bell:visible_bell]"
+    block: |
+      set visiblebell
+    create: true
+  become: true
+
+- name: Ensure `ex` family editors are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir[user] ~ '/.exrc' }}"
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    marker: '" {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.visible_bell:visible_bell]'
+    block: |
+      set flash
+    create: true
+  become: true
+
+- name: Ensure `vim` style editors are quieted.
+  ansible.builtin.blockinfile:
+    path: "{{ homedir[user] ~ '/.vimrc' }}"
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    marker: '" {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.visible_bell:visible_bell]'
+    block: |
+      set vb t_vb=
+    create: true
+  become: true

@@ -1,0 +1,26 @@
+---
+- name: Converge
+  hosts: all
+
+  pre_tasks:
+    - name: Update package cache.
+      ansible.builtin.package:
+        update_cache: true
+      changed_when: false
+      register: task_result
+      until: task_result is success
+      retries: 10
+      delay: 2
+
+  roles:
+    - davedittrich.utils.visible_bell
+
+  post_tasks:
+    - name: Dump all variables used to converge for later use.
+      copy:
+        content: |
+          {{ vars | to_yaml }}
+        dest: /tmp/ansible-vars.yml
+        mode: 0o600
+      changed_when: false
+      delegate_to: localhost

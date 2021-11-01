@@ -1,0 +1,7 @@
+---
+
+_dropin_files:
+  - '.bash_profile'
+  - '.bash_aliases'
+  - '.gitconfig'
+  - '.ssh/config'

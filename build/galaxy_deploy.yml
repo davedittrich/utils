@@ -4,34 +4,46 @@
   gather_facts: false
   vars:
     # This should be set via the command line at runtime.
-    tag: "{{ github_tag.split('/')[-1] }}"
+    tag: "{{ github_ref.split('/')[-1].lstrip('v') }}"
+
   pre_tasks:
-    - name: Ensure the ANSIBLE_GALAXY_TOKEN environment variable is set.
-      fail:
-        msg: ANSIBLE_GALAXY_TOKEN is not set.
-      when: "lookup('env','ANSIBLE_GALAXY_TOKEN') | length == 0"
+    - assert:
+        that:
+          - lookup('env', 'ANSIBLE_GALAXY_SERVER') != ''
+          - lookup('env', 'ANSIBLE_GALAXY_API_KEY') != ''
+
     - name: Ensure the ~/.ansible directory exists.
       file:
         path: ~/.ansible
         state: directory
-    - name: Write the Galaxy token to ~/.ansible/galaxy_token.
-      copy:
-        content: |
-          token: {{ lookup('env','ANSIBLE_GALAXY_TOKEN') }}
-        dest: ~/.ansible/galaxy_token
+
   tasks:
+    - name: Set fact with artifact name.
+      set_fact:
+        artifact_name: 'davedittrich-utils-{{ tag }}.tar.gz'
+
+    - name: Debug artifact name.
+      debug:
+        msg: '{{ artifact_name }}'
+
     - name: Template out the galaxy.yml file.
       template:
         src: templates/galaxy.yml.j2
         dest: ../galaxy.yml
       register: galaxy_yml
+
     - name: Build the collection. # noqa 503
       command: >
         ansible-galaxy collection build
         chdir=../
       when: galaxy_yml.changed
+
     - name: Publish the collection. # noqa 503
       command: >
-        ansible-galaxy collection publish ./davedittrich-utils-{{ tag }}.tar.gz
+        ansible-galaxy collection publish
+          "./{{ artifact_name }}"
+          --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
+          --api-key ${{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
         chdir=../
+      no_log: true
       when: galaxy_yml.changed

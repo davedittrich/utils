@@ -1,11 +1,12 @@
 namespace: davedittrich
 name: utils
 version: "{{ tag }}"
-readme: README.rst
+# See https://github.com/ansible/galaxy/issues/2438
+readme: README.md
 authors:
-- Dave Dittrich <dave.dittrich@gmail.com> (https://davedittrich.github.io)
+- Dave Dittrich (https://davedittrich.github.io)
 description: Ansible collection for my opinionated development workstation configuration
-license_file: 'LICENSE.txt'
+license_file: LICENSE.txt
 dependencies: {}
 repository: https://github.com/davedittrich/utils
 documentation: https://github.com/davedittrich/utils/
@@ -14,8 +15,25 @@ issues: https://github.com/davedittrich/utils/issues
 tags:
   - system
   - swapcapslockctrl
+  - visual_bell
+  - bootsplash
   - issue
   - redhat
   - ubuntu
   - debian
-build_ignore: []
+# A list of file glob-like patterns used to filter any files or directories that should not be included in the build
+# artifact. A pattern is matched from the relative path of the file or directory of the collection directory. This
+# uses 'fnmatch' to match the files or directories. Some directories and files like 'galaxy.yml', '*.pyc', '*.retry',
+# and '.git' are always filtered
+build_ignore:
+  - 'molecule'
+  - '.bumpversion.cfg'
+  - '*.tar.gz'
+  - '*.bak'
+  - '*.rej'
+  - '*.swp'
+  - '.*.swp'
+  - '.github'
+  - '.gitignore'
+  - '*/.gitignore'
+  - '.*lint'

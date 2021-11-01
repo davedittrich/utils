@@ -11,8 +11,9 @@ on:
       - 'molecule/ip_in_issue/**'
       - '.github/workflows/ip_in_issue.yml'
 jobs:
-  molecule:
+  ip_in_issue:
     runs-on: ubuntu-latest
+    if: contains(github.ref, '/feature/') || contains(github.ref, '/bugfix/')
     env:
       PY_COLORS: 1
       ANSIBLE_FORCE_COLOR: 1
@@ -45,7 +46,7 @@ jobs:
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
           python -m pip install --upgrade pip
-          python -m pip install ansible ansible-lint docker 'molecule[docker]' pytest pytest-testinfra yamllint
+          python -m pip install ansible ansible-lint docker flake8 'molecule[docker]' pytest pytest-testinfra yamllint
 
       - name: Build the collection
         run: |

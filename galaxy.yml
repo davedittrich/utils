@@ -1,11 +1,13 @@
+---
 namespace: davedittrich
 name: utils
-version: 1.0.0
-readme: README.rst
+version: 0.5.0
+# See https://github.com/ansible/galaxy/issues/2438
+readme: README.md
 authors:
-- Dave Dittrich <dave.dittrich@gmail.com> (https://davedittrich.github.io)
+  - Dave Dittrich (https://davedittrich.github.io)
 description: Ansible collection for my opinionated development workstation configuration
-license_file: 'LICENSE.txt'
+license_file: LICENSE.txt
 dependencies: {}
 repository: https://github.com/davedittrich/utils
 documentation: https://github.com/davedittrich/utils/
@@ -13,6 +15,9 @@ homepage: https://github.com/davedittrich/utils
 issues: https://github.com/davedittrich/utils/issues
 tags:
   - system
+  - swapcapslockctrl
+  - visual_bell
+  - bootsplash
   - issue
   - redhat
   - ubuntu
@@ -23,9 +28,18 @@ tags:
 # and '.git' are always filtered
 build_ignore:
   - 'molecule'
+  - '.bumpversion.cfg'
   - '*.tar.gz'
+  - '*.bak'
+  - '*.rej'
   - '*.swp'
   - '.*.swp'
   - '.github'
   - '.gitignore'
+  - '*/.gitignore'
   - '.*lint'
+  - '.vscode'
+  - 'delegated-ssh-config'
+  - '.pytest_cache'
+  - 'docker/build*log'
+  - 'diffs*'

@@ -1,0 +1,159 @@
+---
+
+# tasks file for davedittrich.utils.branding
+
+# This role will look for a custom boot splash image in
+# the `/boot` directory, since this is where the HypriotOS
+# `flash` script copies it. If it exists, it will be copied
+# to the wallpapers directory for use as a background image
+# as well as the boot splash image. If you instead apply this
+# role later on, specify a path to the desired boot splash
+# file on the Ansible controller using the `custom_splash`
+# variable and it will be copied from there instead.
+#
+# See the following:
+#   https://www.thegeekstuff.com/2012/10/grub-splash-image/
+#   https://www.programmersought.com/article/81266199143/
+#   https://qbee.io/docs/how-to-raspberrypi-golden-image.html
+#
+# root@instance:/# tree /usr/share/images/desktop-base
+# /usr/share/images/desktop-base
+# |-- default -> desktop-background
+# |-- desktop-background -> /etc/alternatives/desktop-background
+# |-- desktop-background.xml -> /etc/alternatives/desktop-background.xml
+# |-- desktop-lockscreen.xml -> /etc/alternatives/desktop-lockscreen.xml
+# `-- login-background.svg -> /etc/alternatives/desktop-login-background
+#
+# 0 directories, 5 files
+
+- name: Get number of detected displays.
+  ansible.builtin.shell: |
+    set -o pipefail
+    dmesg | sed 's/^.*FB found \([0-9]+\) display.*/\1/'
+  args:
+    executable: /bin/bash
+  become: true
+  register: dmesg_out
+  changed_when: false
+
+- name: Set fact with number of displays.
+  ansible.builtin.set_fact:
+    monitors: "{{ 0 if dmesg_out.stdout == '' else dmesg_out.stdout|int }}"
+
+- name: Debug `monitors`.
+  ansible.builtin.debug:
+    var: monitors
+    verbosity: 0
+
+- name: Set fact with user accounts to be configured.
+  ansible.builtin.set_fact:
+    accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
+
+- name: Debug `accounts`.
+  ansible.builtin.debug:
+    msg: '{{ accounts }}'
+    verbosity: 2
+
+- name: Ensure user home directories are mapped.
+  include_tasks: ../../../tasks/get_homedir.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+
+# See https://shallowsky.com/linux/x-screen-blanking.html
+- name: Set fact with X11 settings to use.
+  ansible.builtin.set_fact:
+    x_settings:
+      - 'xset s off'
+      - 'xset s noblank'
+      - 'xset s noexpose'
+      - 'xset -dpms'
+      - 'setterm -blength 0'
+  when: x_settings is not defined
+
+- name: Debug `x_settings` variable.
+  ansible.builtin.debug:
+    var: x_settings
+    verbosity: 2
+
+- name: Set fact with LXDE wallpapers directory path.
+  ansible.builtin.set_fact:
+    lxde_wallpapers_directory: "{{ lxde_wallpapers_directory | default('/usr/share/lxde/wallpapers') }}"
+
+- name: Ensure package cache is up to date.
+  ansible.builtin.package:
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+
+- name: Stat `/boot/custom-splash.jpg`.
+  ansible.builtin.stat:
+    path: '/boot/custom-splash.jpg'
+  become: true
+  register: local_custom_splash
+
+- name: Ensure `boot_splash` is set.
+  ansible.builtin.set_fact:
+    custom_splash: '/boot/custom-splash.jpg'
+  when:
+    - local_custom_splash.stat.exists
+    - custom_splash is not defined
+
+# https://linuxmeerkat.wordpress.com/2014/10/17/running-a-gui-application-in-a-docker-container/
+
+- name: Stat `/dev/fb0` device file.
+  ansible.builtin.stat:
+    path: '/dev/fb0'
+  register: framebuffer
+
+- name: Ensure virtual framebuffer exists if no `/dev/fb0` device.
+  ansible.builtin.package:
+    name: xvfb
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+  when: not framebuffer.stat.exists
+
+- name: Ensure `{{ lxde_wallpapers_directory }}` exists.
+  ansible.builtin.file:
+    path: '{{ lxde_wallpapers_directory }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0o755
+  become: true
+
+- name: Ensure `custom-splash.jpg` is an optional desktop background.
+  ansible.builtin.copy:
+    src: '{{ custom_splash }}'
+    dest: '{{ lxde_wallpapers_directory }}/custom-splash.jpg'
+    remote_src: '{{ local_custom_splash.stat.exists|bool }}'
+    mode: 0o644
+  become: true
+  when: custom_splash is defined
+
+- name: Ensure `/boot/custom-splash.jpg` is absent (i.e., mv).
+  ansible.builtin.file:
+    path: '/boot/custom-splash.jpg'
+    state: absent
+  become: true
+  when: local_custom_splash.stat.exists
+
+- name: Ensure boot splash is customized.
+  include_tasks: boot_splash.yml
+
+- name: Ensure customized LXDE + lightdm.
+  include_tasks: lxde-desktop.yml
+
+- name: Ensure LXDE desktop is customized for users.
+  include_tasks: lxde-desktop-configure.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+
+- name: Ensure clipit history is disabled.
+  include_tasks: clipit-nohistory.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user

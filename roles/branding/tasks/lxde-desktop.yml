@@ -1,0 +1,102 @@
+---
+
+# tasks for configuring customized LXDE sessions.
+
+- name: Set fact with LXDE package.
+  ansible.builtin.set_fact:
+    lxde_package: '{{ "task-lxde-desktop" if ansible_distribution == "Debian" else "lxde4" }}'
+
+# Speed up molecule testing.
+- name: Set fact with LXDE package install flag.
+  ansible.builtin.set_fact:
+    install_lxde: '{{ install_lxde | default(true) }}'
+
+# NOTE: This entire block is performed with `become: true`
+
+- block:
+  # HypriotOS switches the default Python from 2.x to 3.x. This breaks the old
+  # and not well-maintained 'wicd' service:
+  #
+  # Sep 15 23:34:20 hypriot systemd[1]: Starting Wicd a wireless and wired network manager for Linux...
+  # Sep 15 23:34:20 hypriot wicd[17037]:   File "/usr/share/wicd/daemon/wicd-daemon.py", line 136
+  # Sep 15 23:34:20 hypriot wicd[17037]:     print "--no-autoconnect detected, not autoconnecting..."
+  # Sep 15 23:34:20 hypriot wicd[17037]:                                                            ^
+  # Sep 15 23:34:20 hypriot wicd[17037]: SyntaxError: Missing parentheses in call to 'print'.
+  # Sep 15 23:34:20 hypriot wicd[17037]: Did you mean print("--no-autoconnect detected, not autoconnecting...")?
+  # Sep 15 23:34:20 hypriot systemd[1]: wicd.service: Main process exited, code=exited, status=1/FAILURE
+  # Sep 15 23:34:20 hypriot systemd[1]: wicd.service: Failed with result 'exit-code'.
+  # Sep 15 23:34:20 hypriot systemd[1]: Failed to start Wicd a wireless and wired network manager for Linux.
+  #
+  # The result is that adding any new packages (like we are about to do next) forces
+  # reconfiguration, which restarts services and the 'wicd.service' failure breaks
+  # the play. Deleting the packages causes other problems, so just stop and
+  # disable it now.
+
+    - name: Ensure `wicd.service` is masked.
+      ansible.builtin.systemd:
+        name: 'wicd'
+        masked: true
+      failed_when: false
+      changed_when: false
+
+    - name: Ensure LXDE packages are present.
+      ansible.builtin.apt:
+        name:
+          - 'arandr'
+          - 'hwinfo'
+          - '{{ lxde_package }}'
+        state: present
+        install_recommends: false
+
+    - name: Query alternatives x-session-manager setting.
+      ansible.builtin.shell: |
+        set -o pipefail
+        update-alternatives --query x-session-manager 2>/dev/null | grep Value | cut -d" " -f2
+      args:
+        executable: /bin/bash
+      register: alternatives_out
+      changed_when: false
+
+    - name: Ensure LXDE is default X11 session manager.
+      ansible.builtin.shell: |
+        update-alternatives --set x-session-manager /usr/bin/startlxde
+      args:
+        executable: /bin/bash
+      register: update_alternatives_shell
+      failed_when: "update_alternatives_shell.rc != 0"
+      when: "'startlxde' not in alternatives_out.stdout"
+
+    - name: Set fact with background setting information.
+      ansible.builtin.set_fact:
+        background_settings_dict_list:
+          - regexp: '^#+background='
+            line: 'background=#stretched:{{ lxde_wallpapers_directory }}/custom-splash.jpg'
+          - regexp: '^#+user-background='
+            line: 'user-background=true'
+
+    - name: Ensure lightdm login greeter background is customized.
+      ansible.builtin.lineinfile:
+        path: '/etc/lightdm/lightdm-gtk-greeter.conf'
+        regexp: '{{ item.regexp }}'
+        line: '{{ item.line }}'
+        state: present
+      loop: '{{ background_settings_dict_list }}'
+
+    - name: Set fact with wallpaper setting information.
+      ansible.builtin.set_fact:
+        background_settings_dict_list:
+          - regexp: '^#+wallpaper_mode='
+            line: 'wallpaper_mode=stretch'
+          - regexp: '^#+wallpaper='
+            line: 'wallpaper={{ lxde_wallpapers_directory }}/custom-splash.jpg'
+
+    - name: Ensure pcmanfm global wallpaper configuration is customized.
+      ansible.builtin.lineinfile:
+        path: '/etc/xdg/pcmanfm/LXDE/pcmanfm.conf'
+        regexp: '{{ item.regexp }}'
+        line: '{{ item.line }}'
+        state: present
+      loop: '{{ background_settings_dict_list }}'
+
+  when: install_lxde
+  become: true

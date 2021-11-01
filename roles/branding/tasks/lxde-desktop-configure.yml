@@ -1,0 +1,84 @@
+---
+
+# Tasks for configuring user's LXDE desktop.
+# Pass in user account name as `user`.
+
+# LXDE supports multiple monitors by giving each display (starting with `0`
+# and incrementing by one) its own `pcmanfm` configuration file.
+# Trying to affect these configurations using `pcmanfm` directly can fail, since
+# `pcmanfm` assumes it is running by a logged in user with access to the
+# X11 display. There is no option to ignore this when just making configuration
+# changes, so you get a "Cannot connect to display" failure.  The workaround
+# hack in this playbook modifies files directly using the `ansible.builtin.lineinfile`
+# module.
+
+- name: Set fact with user's `~/.config/` directory path.
+  ansible.builtin.set_fact:
+    dot_config_dir: '{{ homedir[user] ~ "/.config/" }}'
+
+- name: Set fact with relative local path.
+  ansible.builtin.set_fact:
+    dot_config_template_dir: '{{ role_path }}/templates/home.config'
+
+    # Place all files (whether actual templates or not) into this
+    # directory tree as if they were templates to handle them all
+    # the same way. This simplifies the playbook logic, even if
+    # slightly more processing is done as a result, and makes it
+    # easier to include new files as needed to customize things.
+
+- name: Find `.config/` templates on control host.
+  ansible.builtin.find:
+    paths: '{{ dot_config_template_dir }}'
+    recurse: true
+    use_regex: false
+    patterns: '*.j2'
+  delegate_to: localhost
+  become: false
+  register: config_templates_matched
+
+- name: Set fact with relative template paths.
+  ansible.builtin.set_fact:
+    config_templates: '{{ config_templates | default([]) + [ item.path|replace(dot_config_template_dir ~ "/", "") ] }}'
+  loop: '{{ config_templates_matched.files }}'
+
+- name: Debug template files.
+  ansible.builtin.debug:
+    var: config_templates
+    verbosity: 0
+  changed_when: false
+
+  # ok: [instance] => {
+  #     "config_templates": [
+  #         "user-dirs.dirs.j2",
+  #         "user-dirs.locale.j2",
+  #         "gtk-3.0/bookmarks.j2",
+  #         "qt5ct/qt5ct.conf.j2",
+  #         "lxterminal/lxterminal.conf.j2",
+  #         "pcmanfm/LXDE/desktop-items-0.conf.j2",
+  #         "openbox/lxde-rc.xml.j2",
+  #         "clipit/disabled.j2",
+  #         "libfm/libfm.conf.j2"
+  #     ]
+  # }
+
+- name: Ensure user's configuration directories exist.
+  ansible.builtin.file:
+    path: '{{ dot_config_dir ~ item|dirname }}'
+    state: directory
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o750
+  become: true
+  become_user: '{{ user }}'
+  loop: '{{ config_templates }}'
+
+- name: Ensure user's configuration files exist.
+  ansible.builtin.template:
+    src: '{{ dot_config_template_dir ~ "/" ~ item }}'
+    dest: '{{ dot_config_dir ~ item|replace(".j2", "") }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o750
+  become: true
+  become_user: '{{ user }}'
+  loop: '{{ config_templates }}'

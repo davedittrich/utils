@@ -1,0 +1,13 @@
+---
+# Ensure temporary resources are cleaned up.
+
+- name: Destroy
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Delete variables saved from converge step.
+      ansible.builtin.file:
+        path: /tmp/ansible-vars.yml
+        state: absent
+      changed_when: false
+      delegate_to: localhost

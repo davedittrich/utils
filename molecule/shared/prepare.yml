@@ -1,0 +1,63 @@
+---
+# Ensure files to be modified exist.
+
+- name: Prepare
+  hosts: all
+  tasks:
+    - name: Stat `/boot/config.txt` file.
+      ansible.builtin.stat:
+        path: '/boot/config.txt'
+      register: boot_config
+
+    - name: Ensure `/boot/config.txt` file exists in instance.
+      ansible.builtin.copy:
+        src: 'config.txt'
+        dest: '/boot/config.txt'
+        owner: root
+        group: root
+        mode: 0o640
+      when: boot_config.stat.exists is false
+
+    - name: Stat `/boot/cmdline.txt` file.
+      ansible.builtin.stat:
+        path: '/boot/cmdline.txt'
+      register: boot_cmdline
+
+    - name: Ensure `/boot/cmdline.txt` file exists in instance.
+      ansible.builtin.copy:
+        src: 'cmdline.txt'
+        dest: '/boot/cmdline.txt'
+        owner: root
+        group: root
+        mode: 0o640
+      when: boot_cmdline.stat.exists is false
+
+    - name: Ensure `/boot/custom-splash.jpg` exists.
+      ansible.builtin.copy:
+        src: '{{ custom_splash | default("Hello_World.jpg") }}'
+        dest: '/boot/custom-splash.jpg'
+        owner: root
+        group: root
+        mode: 0o640
+
+    - name: Set fact with users whose accounts need to be configured.
+      ansible.builtin.set_fact:
+        accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
+
+    - name: Ensure user home directories are mapped.
+      include_tasks: ../../tasks/get_homedir.yml
+      loop: '{{ accounts }}'
+      loop_control:
+        loop_var: user
+
+    - name: Ensure SSH directory exists for `davedittrich.utils.dropin` role.
+      ansible.builtin.file:
+        path: '{{ homedir[user] }}/.ssh'
+        state: directory
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0o700
+      loop: '{{ accounts }}'
+      loop_control:
+        loop_var: user
+      become: true

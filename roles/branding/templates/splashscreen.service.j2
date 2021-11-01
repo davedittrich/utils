@@ -1,0 +1,16 @@
+# This service enables a custom splash screen for branding your project.
+# Created by Ansible role `davedittrich.utils.branding`.
+[Unit]
+Description=Splash screen
+DefaultDependencies=no
+After=local-fs.target
+
+[Service]
+# Place your project's logo, your favorite meme, or any other PNG file
+# you want to use for the splash image in /root/custom-splash.jpg.
+ExecStart=/usr/bin/fbi -d /dev/fb0 --noverbose -a {{ lxde_wallpapers_directory }}/custom-splash.jpg
+StandardInput=tty
+StandardOutput=tty
+
+[Install]
+WantedBy=sysinit.target

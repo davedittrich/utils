@@ -1,0 +1,12 @@
+---
+- hosts: all
+  gather_facts: true
+
+  roles:
+    - role: davedittrich.utils.dropins
+      vars:
+        dropin_files:
+          - '.bash_profile'
+          - '.bash_aliases'
+          - '.gitconfig'
+          - '.ssh/config'

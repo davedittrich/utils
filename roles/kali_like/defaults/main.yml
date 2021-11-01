@@ -1,0 +1,12 @@
+---
+
+kali_like_packages:
+  - dirbuster
+  - exploitdb
+  - zaproxy
+  - webshells
+  - hydra
+  - john
+  - wordlists
+# - burpsuite
+  - wfuzz

@@ -4,11 +4,41 @@ on:
     types:
       - created
 jobs:
+  #
+  # Note: NOT DRY. This job matches one in release-candidate.yml.
+  #
+  molecule:
+    runs-on: ubuntu-latest
+    env:
+      PY_COLORS: 1
+      TOX_PARALLEL_NO_SPINNER: 1
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v1
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ansible ansible-lint docker flake8 'molecule[docker]' pytest pytest-testinfra yamllint
+      - name: Move project to Ansible-required location
+        run: |
+          mkdir -p ~/.ansible/collections/ansible_collections/davedittrich/utils
+          cp -r ./ ~/.ansible/collections/ansible_collections/davedittrich/utils
+      - name: Molecule test
+        run: |
+          molecule test
   release:
     runs-on: ubuntu-latest
     env:
-      ANSIBLE_GALAXY_TOKEN: ${{ secrets.ANSIBLE_GALAXY_TOKEN }}
+      ANSIBLE_GALAXY_SERVER: 'https://galaxy.ansible.com/'
+      ANSIBLE_GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
       ANSIBLE_FORCE_COLOR: 1
+    #
+    # Note: NOT DRY. The remainder of this workflow matches release-candidate.yml.
+    #
     steps:
       - name: Check out code
         uses: actions/checkout@v1

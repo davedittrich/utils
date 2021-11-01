@@ -1,0 +1,75 @@
+---
+
+- name: Stat `/boot/config.txt` file.
+  ansible.builtin.stat:
+    path: '/boot/config.txt'
+  become: true
+  register: boot_config
+
+- name: Ensure splash is disabled in `/boot/config.txt`.
+  ansible.builtin.lineinfile:
+    path: '/boot/config.txt'
+    regexp: '^disable_splash='
+    line: 'disable_splash=1'
+    state: present
+  become: true
+  when: boot_config.stat.exists
+
+- name: Stat `/boot/cmdline.txt` file.
+  ansible.builtin.stat:
+    path: '/boot/cmdline.txt'
+  become: true
+  register: boot_cmdline
+
+- name: Check for `logo.nologo` presense in `/boot/cmdline.txt`.
+  ansible.builtin.lineinfile:
+    path: '/boot/cmdline.txt'
+    regexp: '^(.*) logo.nologo(.*)$'
+    state: absent
+    backup: false
+  become: true
+  check_mode: true
+  changed_when: false
+  register: nologo_exists
+  when: boot_cmdline.stat.exists
+
+- name: Ensure `logo.nologo` present in `/boot/cmdline.txt`.
+  ansible.builtin.lineinfile:
+    path: '/boot/cmdline.txt'
+    regexp: '^(.*)$'
+    line: '\1 logo.nologo'
+    state: present
+    backrefs: true
+    backup: false
+  become: true
+  when: boot_cmdline.stat.exists and not nologo_exists.found
+
+  # This task assumes you have already placed the file to use for
+  # the boot splash in `/root`. This was designed for Raspberry Pi
+  # installations created using Hypriot's `flash` program and a
+  # customization script using `python_secrets`..
+
+- name: Ensure `fbi` package is present.
+  ansible.builtin.package:
+    name: fbi
+    state: present
+  become: true
+
+- name: Ensure `splashscreen` service is stopped.
+  service:
+    name: splashscreen
+    enabled: true
+    state: stopped
+  become: true
+  changed_when: false
+  failed_when: false
+
+- name: Ensure `splashscreen.service` file exists.
+  ansible.builtin.template:
+    src: 'splashscreen.service.j2'
+    dest: '/lib/systemd/system/splashscreen.service'
+    owner: root
+    group: root
+    mode: 0o644
+  become: true
+  notify: restart splashscreen

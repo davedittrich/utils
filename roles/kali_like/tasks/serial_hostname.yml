@@ -1,0 +1,36 @@
+---
+
+# Tasks file for setting hostname via serial number.
+
+- name: Stat `/sys/class/dmi/id/board_serial` file.
+  ansible.builtin.stat:
+    path: '/sys/class/dmi/id/board_serial'
+  register: board_serial_result
+
+- block:
+    - name: Get serial number for host.
+      ansible.builtin.shell: |
+        awk -F\/ '{print $2}'` /sys/class/dmi/id/board_serial
+      register: result
+
+    - name: Set fact with host name based on serial number.
+      ansible.builtin.set_fact:
+        host_serial: 'kali-{{ result.stdout }}'
+
+    - name: Debug `host_serial`
+      ansible.builtin.debug:
+        var: host_serial
+        verbosity: 1
+
+    # TODO(dittrich): Add name to `/etc/hosts` file.
+
+    - name: Ensure `/etc/hostname` has serialized Kali host name.
+      copy:
+        dest: /etc/hostname
+        content: '{{ host_serial }}'
+        owner: 'root'
+        group: 'root'
+        mode: 0o644
+      become: true
+
+  when: board_serial_result.stat.exists

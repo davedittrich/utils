@@ -1,10 +1,12 @@
 # Collections Plugins Directory
 
-This directory can be used to ship various plugins inside an Ansible collection. Each plugin is placed in a folder that
-is named after the type of plugin it is in. It can also include the `module_utils` and `modules` directory that
+This directory is where plugins for the ``davedittrich.util`` collection reside.
+Each plugin is placed in a folder that is named after the type of plugin it is in.
+It can also include the `module_utils` and `modules` directory that
 would contain module utils and modules respectively.
 
-Here is an example directory of the majority of plugins currently supported by Ansible:
+Here is an example directory of the majority of plugins currently supported by Ansible
+(as of v2.11):
 
 ```
 └── plugins

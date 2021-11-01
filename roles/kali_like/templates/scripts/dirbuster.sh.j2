@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# Helper script installed by davedittrich.utils.{{ role_path | basename }}
+
+DB_SHARE=/usr/share/dirbuster
+echo "The dirbuster share directory is ${DB_SHARE}"
+cd ${DB_SHARE}
+exec /usr/bin/dirbuster

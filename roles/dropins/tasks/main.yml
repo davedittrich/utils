@@ -1,0 +1,54 @@
+---
+
+# Tasks file for davedittrich.utils.dropins role.
+
+- name: Set fact with users whose accounts need to be configured.
+  ansible.builtin.set_fact:
+    accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
+
+- name: Ensure user home directories are mapped.
+  include_tasks: ../../../tasks/get_homedir.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+
+- name: Ensure `python3-venv` package is installed.
+  ansible.builtin.package:
+    name: python3-venv
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+
+- name: Ensure `dropin_files` is defined with files to be configured as dropin directories.
+  ansible.builtin.set_fact:
+    dropin_files: '{{ _dropin_files }}'
+  when: dropin_files is not defined
+
+- name: Debug `dropin_files` variable.
+  ansible.builtin.debug:
+    var: dropin_files
+    verbosity: 0
+
+- name: Ensure `update-dotdee` present in user account via `pipx`.
+  include_tasks: setup_update_dotdee.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+
+# https://stackoverflow.com/questions/58110659/issue-passing-variable-to-include-task-file-having-add-host-in-ansible
+
+- name: Ensure dropin directories are set up.
+  include_tasks: setup_dropin.yml
+  vars:
+    user: '{{ item.0 }}'
+    dropin_file: '{{ item.1 }}'
+  with_nested:
+    - '{{ accounts }}'
+    - '{{ dropin_files }}'
+
+- name: Ensure `PATH` is customized.
+  include_tasks: ensure_path.yml
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
