@@ -425,27 +425,39 @@ INFO     Verifier completed successfully.
 
 ## Gotchas
 
-When developing and testing new roles, you may run into some "issues" with Ansible plays
-that cause idempotence tests to fail.  Here are some of the causes and solutions.
+When developing and testing your new roles, you may find that some Ansible plays
+cause idempotence tests to fail.  Here are some of the causes and solutions.
 
-* When a `blockinfile` play causes an idempotence failure, it may be the result of
-  the marker not being unique within the file. More than one role (or more than task
-  within a role) may manipulate the same file. Unless the marker is unique, each
-  `blockinfile` play may change the same block twice. Make *very sure* that you have
-  unique markers.
+* More than one role may attempt to manage the same file in the file system. This
+  can cause problems when one play copies or templates an entire file, while another
+  uses `ansible.builtin.blockinfile` or `ansible.builtin.lineinfile`. This can cause
+  the file *contents* to change back and forth.  Closely examine the plays that fail
+  idempotence tests to see what file the change and how. You may need to change the
+  order of the roles, change the way the file contents are modified, change the
+  markers in `blockinfile` plays to be more unique.
 
-* The same "issue" may result in tests that fail when checking for the content of
-  files, which may help identify the duplicate markers.  Make sure that you have
-  good test coverage to find these.
+* Idempotence failures can also be caused by changes in file *metadata* rather than
+  contents. The most common reason for this is different `mode` values in two or
+  more plays that manage the same file.  This can result in the mode changing
+  back and forth between the different values, even when the content remains exactly
+  the same. Avoid setting the `mode` or `group` unless you know it is necessary (e.g.,
+  when `ansible-lint` tells you that a newly created file may end up with insecure
+  settings.) Use `molecule converge` to get all the plays to be run, followed by
+  `molecule login` to log into the instance to check file contents and/or file
+  system metadata. Running `molecule verify` will run the tests again to debug
+  your plays.
 
 
 ## See also
 
-- [Testing Ansible automation with molecule](https://redhatnordicssa.github.io/how-we-test-our-roles)
-- [Question: accessing values of variables as they are being used for provisioning an instance inside Testinfra tests #151](https://github.com/ansible-community/molecule/issues/151)
-- [Using Ansible Molecule to test roles in monorepo](https://mariarti0644.medium.com/using-ansible-molecule-to-test-roles-in-monorepo-5f711c716666>)
-- [Continuous Infrastructure with Ansible, Molecule & TravisCI](https://blog.codecentric.de/en/2018/12/continuous-infrastructure-ansible-molecule-travisci/)
-- [Test-driven infrastructure development with Ansible & Molecule](https://blog.codecentric.de/en/2018/12/test-driven-infrastructure-ansible-molecule/), by Jonas Hecht, 2018-12-04
+- [Make your Ansible Playbooks flexible, maintainable, and scalable](https://www.ansible.com/blog/make-your-ansible-playbooks-flexible-maintainable-and-scalable),
+  by Jeff Geerling, September 28, 2018
+- [Testing Ansible automation with molecule](https://redhatnordicssa.github.io/how-we-test-our-roles), by Peter Gustafsson, March 4, 2019
+- [Question: accessing values of variables as they are being used for provisioning an instance inside Testinfra tests #151](https://github.com/ansible-community/molecule/issues/151), April 5, 2016
+- [Using Ansible Molecule to test roles in monorepo](https://mariarti0644.medium.com/using-ansible-molecule-to-test-roles-in-monorepo-5f711c716666), by Maria Kotlyarevskaya, Mar 13, 2021
+- [Continuous Infrastructure with Ansible, Molecule & TravisCI](https://blog.codecentric.de/en/2018/12/continuous-infrastructure-ansible-molecule-travisci/), by Jonas Hecht, December 11, 2018
+- [Test-driven infrastructure development with Ansible & Molecule](https://blog.codecentric.de/en/2018/12/test-driven-infrastructure-ansible-molecule/), by Jonas Hecht, December 4, 2018
+- [`test infra` modules](https://testinfra.readthedocs.io/en/latest/modules.html)
 
 ## Release notes
 
