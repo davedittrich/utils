@@ -4,7 +4,7 @@
   gather_facts: false
   vars:
     # This should be set via the command line at runtime.
-    tag: "{{ github_ref.split('/')[-1].lstrip('v') }}"
+    tag: "{{ github_tag.split('/')[-1].lstrip('v') }}"
 
   pre_tasks:
     - assert:
