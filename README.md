@@ -11,6 +11,11 @@ setting up standardized tooling and settings on development workstations. It als
 facilitates automated configuration of other systems, like Raspberry Pi servers
 and cloud instances for training labs or "capture the flag" contests.
 
+The original design was influenced by the blog posts listed below in the
+**See also** section by
+[Jonas Hecht](https://blog.codecentric.de/en/author/jonas-hecht/) and
+[Jeff Geerling](https://www.ansible.com/blog/author/jeff-geerling).
+
 Development of this collection is supported by a test-driven design that uses
 [`molecule`](https://molecule.readthedocs.io/en/latest/) to test any or all
 roles, both locally and driven by GitHub Actions workflows on `push` actions.
@@ -450,13 +455,13 @@ cause idempotence tests to fail.  Here are some of the causes and solutions.
 
 ## See also
 
+- [Test-driven infrastructure development with Ansible & Molecule](https://blog.codecentric.de/en/2018/12/test-driven-infrastructure-ansible-molecule/), by Jonas Hecht, December 4, 2018
+- [Continuous Infrastructure with Ansible, Molecule & TravisCI](https://blog.codecentric.de/en/2018/12/continuous-infrastructure-ansible-molecule-travisci/), by Jonas Hecht, December 11, 2018
 - [Make your Ansible Playbooks flexible, maintainable, and scalable](https://www.ansible.com/blog/make-your-ansible-playbooks-flexible-maintainable-and-scalable),
   by Jeff Geerling, September 28, 2018
 - [Testing Ansible automation with molecule](https://redhatnordicssa.github.io/how-we-test-our-roles), by Peter Gustafsson, March 4, 2019
 - [Question: accessing values of variables as they are being used for provisioning an instance inside Testinfra tests #151](https://github.com/ansible-community/molecule/issues/151), April 5, 2016
 - [Using Ansible Molecule to test roles in monorepo](https://mariarti0644.medium.com/using-ansible-molecule-to-test-roles-in-monorepo-5f711c716666), by Maria Kotlyarevskaya, Mar 13, 2021
-- [Continuous Infrastructure with Ansible, Molecule & TravisCI](https://blog.codecentric.de/en/2018/12/continuous-infrastructure-ansible-molecule-travisci/), by Jonas Hecht, December 11, 2018
-- [Test-driven infrastructure development with Ansible & Molecule](https://blog.codecentric.de/en/2018/12/test-driven-infrastructure-ansible-molecule/), by Jonas Hecht, December 4, 2018
 - [`test infra` modules](https://testinfra.readthedocs.io/en/latest/modules.html)
 
 ## Release notes
