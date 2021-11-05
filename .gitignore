@@ -1,2 +1,7 @@
 __pycache__
 *.pyc
+.vscode/settings.json
+delegated-ssh-config
+diffs*
+galaxy.yml
+donotpublish
