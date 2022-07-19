@@ -8,7 +8,7 @@ export MOLECULE_DISTRO=debian10
 export MOLECULE_REPO=davedittrich
 PLAYBOOK=playbooks/workstation_setup.yml
 PYTHONPATH=$(shell pwd)/molecule
-SCENARIO:=default
+SCENARIO=default
 SHELL=/bin/bash
 VERSION=$(shell grep "version:" galaxy.yml | sed 's/ //g' | cut -d: -f 2)
 
@@ -19,6 +19,7 @@ help:
 	@echo "  build - build version v$(VERSION) of the ansible-galaxy collection"
 	@echo "  build-images - build Docker images from geerlingguy images"
 	@echo "	                with extra packages already installed"
+	@echo "  collection-dev-link - create collections development directory link pointing to repo directory"
 	@echo "  clean - remove temporary and intermediate files"
 	@echo "  clean-images - remove Docker images"
 	@echo "  converge - molecule converge on scenario '$(SCENARIO)'"
@@ -67,11 +68,25 @@ build:
 build-images:
 	cd docker && $(MAKE) build
 
+.PHONY: clean-collection
+clean-collection:
+	for D in $(shell echo ~/.cache/ansible-compat/*/collections/ansible_collections/*); \
+	do \
+		if [ -f $$D/utils/README.md ]; \
+		then \
+			echo "[+] cleaning $$D"; \
+			rm -rf $$D; \
+		fi; \
+	done || true
+
 .PHONY: clean
-clean:
-	rm davedittrich-utils-*.tar.gz || true
+clean: clean-collection
+	-rm -f davedittrich-utils-*.tar.gz || true
+	@echo '[+] 1'
 	find * -name '*.pyc' -delete
+	@echo '[+] 2'
 	find * -name __pycache__ -exec rmdir {} ';' || true
+	@echo '[+] 3'
 
 .PHONY: clean-images
 clean-images:
@@ -114,7 +129,7 @@ publish: $(ARTIFACT)
 scenario-exists:
 	@if [[ ! -d molecule/$(SCENARIO) ]]; then \
 		echo -n "[-] scenario '$(SCENARIO)' does not exist "; \
-		echo "choose from: [$(shell cd molecule && find * -depth 1 -name molecule.yml | cut -d/ -f1)]"; \
+		echo "choose from: [$(shell cd molecule && echo */molecule.yml | cut -d/ -f1)]"; \
 		exit 1; \
 	fi
 
@@ -122,7 +137,8 @@ scenario-exists:
 spotless: clean clean-images
 
 .PHONY: test
-test: scenario-exists
+test: scenario-exists clean-collection
+	docker info 2>/dev/null | grep -q ID || (echo "[-] docker does not appear to be running" && exit 1)
 	molecule test -s $(SCENARIO)
 	@echo '[+] all tests succeeded'
 
@@ -161,3 +177,17 @@ test-delegated:
 .PHONY: version
 version:
 	@echo version $(VERSION)
+
+.PHONY: collections-dev-link
+collections-dev-link:
+	for d in $(shell sed 's/:/ /' <<< "$(COLLECTION_PATH)"); \
+	do \
+		if [ ! -d $$d ]; then mkdir -p $$d; fi; \
+		if grep -q '\.dev' <<< "$$d"; then \
+			if [ ! -L $$d/davedittrich ]; then \
+				ln -s $(shell pwd) $$d/davedittrich; \
+			fi; \
+		fi; \
+	done
+
+# EOF
