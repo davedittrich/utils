@@ -4,7 +4,7 @@ dependency:
 driver:
   name: docker
 lint: |
-  tox -e lint
+    tox -e lint
 platforms:
   - name: instance
     image: "davedittrich/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
