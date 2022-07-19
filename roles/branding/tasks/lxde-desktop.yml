@@ -13,7 +13,8 @@
 
 # NOTE: This entire block is performed with `become: true`
 
-- block:
+- name: Block
+  block:
   # HypriotOS switches the default Python from 2.x to 3.x. This breaks the old
   # and not well-maintained 'wicd' service:
   #

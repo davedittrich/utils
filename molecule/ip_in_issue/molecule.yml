@@ -3,11 +3,7 @@ dependency:
   name: galaxy
 driver:
   name: docker
-lint: |
-  set -e
-  yamllint .
-  ansible-lint
-  flake8
+lint: 'tox -e lint'
 platforms:
   - name: instance
     image: "${MOLECULE_REPO:-geerlingguy}/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
@@ -30,8 +26,6 @@ provisioner:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
     prepare: ../shared/prepare.yml
     destroy: ../shared/destroy.yml
-scenario:
-  name: ip_in_issue
 verifier:
   name: testinfra
   directory: ../shared/tests

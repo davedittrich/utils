@@ -4,12 +4,12 @@
   hosts: all
   tasks:
     - name: Test connection to delegated-host.
-      command: 'uptime'
+      ansible.builtin.command: 'uptime'
       register: uptime
       changed_when: false
 
     - name: Check results.
-      assert:
+      ansible.builtin.assert:
         that:
           - "' up ' in uptime.stdout"
         fail_msg: '[-] cannot connect to delegated-host'

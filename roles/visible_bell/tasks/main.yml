@@ -20,7 +20,8 @@
     verbosity: 2
 
 - name: Ensure quieting applied to intended users.
-  include_tasks: visible_bell.yml
+  include_tasks:
+    file: visible_bell.yml
   vars:
     user: "{{ item }}"
   loop: '{{ accounts }}'

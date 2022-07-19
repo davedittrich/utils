@@ -60,7 +60,7 @@ def test_dropin_directories(host, fixture_users, fixture_dropin_files):
     d = host.file(f'{dropin_file}.d')
     assert d.exists
     assert d.is_directory
-    assert len(d.listdir()) > 0
+    assert len(d.listdir) > 0
     assert d.user == user
 
 
