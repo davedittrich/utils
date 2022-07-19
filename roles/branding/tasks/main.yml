@@ -38,7 +38,7 @@
 
 - name: Set fact with number of displays.
   ansible.builtin.set_fact:
-    monitors: "{{ 0 if dmesg_out.stdout == '' else dmesg_out.stdout|int }}"
+    monitors: "{{ 0 if dmesg_out.stdout == '' else dmesg_out.stdout | int }}"
 
 - name: Debug `monitors`.
   ansible.builtin.debug:
@@ -55,7 +55,8 @@
     verbosity: 2
 
 - name: Ensure user home directories are mapped.
-  include_tasks: ../../../tasks/get_homedir.yml
+  include_tasks:
+    file: ../../../tasks/get_homedir.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
@@ -128,7 +129,7 @@
   ansible.builtin.copy:
     src: '{{ custom_splash }}'
     dest: '{{ lxde_wallpapers_directory }}/custom-splash.jpg'
-    remote_src: '{{ local_custom_splash.stat.exists|bool }}'
+    remote_src: '{{ local_custom_splash.stat.exists | bool }}'
     mode: 0o644
   become: true
   when: custom_splash is defined
@@ -141,19 +142,23 @@
   when: local_custom_splash.stat.exists
 
 - name: Ensure boot splash is customized.
-  include_tasks: boot_splash.yml
+  include_tasks:
+    file: boot_splash.yml
 
 - name: Ensure customized LXDE + lightdm.
-  include_tasks: lxde-desktop.yml
+  include_tasks:
+    file: lxde-desktop.yml
 
 - name: Ensure LXDE desktop is customized for users.
-  include_tasks: lxde-desktop-configure.yml
+  include_tasks:
+    file: lxde-desktop-configure.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
 
 - name: Ensure clipit history is disabled.
-  include_tasks: clipit-nohistory.yml
+  include_tasks:
+    file: clipit-nohistory.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user

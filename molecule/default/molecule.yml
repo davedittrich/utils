@@ -4,10 +4,7 @@ dependency:
 driver:
   name: docker
 lint: |
-  set -e
-  yamllint .
-  ansible-lint
-  flake8
+    tox -e lint
 platforms:
   - name: instance
     image: "${MOLECULE_REPO:-geerlingguy}/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
@@ -38,8 +35,6 @@ provisioner:
           accounts:
             - 'root'
 # ![molecule.yml-provisioner]
-scenario:
-  name: default
 verifier:
   name: testinfra
   directory: ../shared/tests

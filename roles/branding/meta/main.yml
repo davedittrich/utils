@@ -1,4 +1,4 @@
-galaxy_info:
+galaxy_info:  # noqa schema
   author: Dave Dittrich
   description: Ansible role to manage splash screens, desktop manager backgrounds, etc. for branding.
   # issue_tracker_url: http://example.com/issue/tracker

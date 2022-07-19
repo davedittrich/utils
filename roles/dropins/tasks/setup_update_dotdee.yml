@@ -8,7 +8,8 @@
 # Since you can't `become` and `become_user` with `include_tasks`, do it
 # here on the `block` instead to be more DRY in plays.
 
-- block:
+- name: Block
+  block:
 
     - name: Set fact with full path to `pipx` local dir.
       ansible.builtin.set_fact:
@@ -32,7 +33,7 @@
     # Using no marker in case this block is already in the file.
 
     - name: Check to see if `.bash_aliases` is already being sourced.
-      command: "egrep '. ~/.bash_aliases' {{ homedir[user] }}/.bashrc"
+      ansible.builtin.command: "egrep '. ~/.bash_aliases' {{ homedir[user] }}/.bashrc"
       register: source_aliases
       failed_when: false
       changed_when: false

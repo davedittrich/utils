@@ -1,4 +1,5 @@
 ---
+
 - name: Converge
   hosts: all
 
@@ -14,7 +15,7 @@
       delay: 2
 
     - name: Set fact with tests path
-      set_fact:
+      ansible.builtin.set_fact:
         tests_path: "{{ lookup('env', 'TESTS_PATH') }}"
       changed_when: false
 
@@ -27,7 +28,7 @@
 
   post_tasks:
     - name: Dump all variables used to converge for later use.
-      copy:
+      ansible.builtin.copy:
         content: |
           {{ vars | to_yaml }}
         dest: /tmp/ansible-vars.yml

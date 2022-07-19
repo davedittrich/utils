@@ -14,11 +14,7 @@ driver:
 platforms:
   - name: delegated-host
 # ![delegated-molecule.yml-driver]
-lint: |
-  set -e
-  yamllint .
-  ansible-lint
-  flake8
+lint: 'tox -e lint'
 provisioner:
   name: ansible
   env:
@@ -40,8 +36,6 @@ provisioner:
           accounts:
             - 'root'
             - 'pirate'
-scenario:
-  name: delegated
 verifier:
   name: testinfra
   additional_files_or_dirs:

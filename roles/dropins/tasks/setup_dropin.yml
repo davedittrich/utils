@@ -52,7 +52,8 @@
     msg: 'CREATING {{ dropin_file }} AT {{ dropin_path }} FOR USER {{ user }}'
     verbosity: 0
 
-- block:
+- name: Block
+  block:
     - name: Ensure a dropin source file exists.
       ansible.builtin.copy:
         content: |

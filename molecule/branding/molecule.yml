@@ -3,11 +3,7 @@ dependency:
   name: galaxy
 driver:
   name: docker
-lint: |
-  set -e
-  yamllint .
-  ansible-lint
-  flake8
+lint: 'tox -e lint'
 platforms:
   - name: instance
     image: "${MOLECULE_REPO:-geerlingguy}/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
@@ -36,8 +32,6 @@ provisioner:
         vars:
           accounts:
             - 'root'
-scenario:
-  name: branding
 verifier:
   name: testinfra
   directory: ../shared/tests

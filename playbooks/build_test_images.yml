@@ -27,7 +27,8 @@
         fail_msg: "environment variable 'COLLECTION_NAMESPACE' not set"
 
     - name: Build custom molecule test image.
-      include_tasks: ../tasks/build_one_image.yml
+      include_tasks:
+        file: ../tasks/build_one_image.yml
       loop: '{{ target_distros }}'
       loop_control:
         loop_var: target_distro

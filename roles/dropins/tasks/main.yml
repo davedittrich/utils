@@ -7,7 +7,8 @@
     accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
 
 - name: Ensure user home directories are mapped.
-  include_tasks: ../../../tasks/get_homedir.yml
+  include_tasks:
+    file: ../../../tasks/get_homedir.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
@@ -31,7 +32,8 @@
     verbosity: 0
 
 - name: Ensure `update-dotdee` present in user account via `pipx`.
-  include_tasks: setup_update_dotdee.yml
+  include_tasks:
+    file: setup_update_dotdee.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
@@ -39,7 +41,8 @@
 # https://stackoverflow.com/questions/58110659/issue-passing-variable-to-include-task-file-having-add-host-in-ansible
 
 - name: Ensure dropin directories are set up.
-  include_tasks: setup_dropin.yml
+  include_tasks:
+    file: setup_dropin.yml
   vars:
     user: '{{ item.0 }}'
     dropin_file: '{{ item.1 }}'
@@ -48,7 +51,8 @@
     - '{{ dropin_files }}'
 
 - name: Ensure `PATH` is customized.
-  include_tasks: ensure_path.yml
+  include_tasks:
+    file: ensure_path.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user

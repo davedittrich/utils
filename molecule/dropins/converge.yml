@@ -7,7 +7,7 @@
 
   post_tasks:
     - name: Dump all variables used to converge for later use.
-      copy:
+      ansible.builtin.copy:
         content: |
           {{ vars | to_yaml }}
         dest: /tmp/ansible-vars.yml
