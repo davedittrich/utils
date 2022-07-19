@@ -31,7 +31,7 @@
 - name: Ensure helper files exist.
   ansible.builtin.template:
     src: '{{ kali_like_script_templates_dir ~ item }}'
-    dest: '{{ dot_local_bin ~ item|replace(".sh.j2", "") }}'
+    dest: '{{ dot_local_bin ~ item | replace(".sh.j2", "") }}'
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o755

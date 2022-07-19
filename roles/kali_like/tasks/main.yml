@@ -7,7 +7,8 @@
     accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
 
 - name: Ensure user home directories are mapped.
-  include_tasks: ../../../tasks/get_homedir.yml
+  include_tasks:
+    file: ../../../tasks/get_homedir.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
@@ -25,7 +26,7 @@
   become: true
 
 - name: Work around some bug regarding `/usr/bin/awk`.  # noqa no-handler
-  command: update-alternatives --set awk /usr/bin/gawk
+  ansible.builtin.command: update-alternatives --set awk /usr/bin/gawk
   become: true
   changed_when: false
   when: gawk_result.changed
@@ -78,7 +79,7 @@
   become: true
 
 - name: Hush Kali developer login message.
-  command: 'touch ~/.hushlogin'
+  ansible.builtin.command: 'touch ~/.hushlogin'
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
@@ -98,7 +99,7 @@
 
 - name: Set fact with relative template paths.
   ansible.builtin.set_fact:
-    kali_like_script_templates: '{{ kali_like_script_templates|default([]) + [ item.path|basename ] }}'
+    kali_like_script_templates: '{{ kali_like_script_templates | default([]) + [ item.path | basename ] }}'
   loop: '{{ kali_like_script_templates_matched.files }}'
 
 - name: Debug `kali_like_script_templates`.
@@ -108,7 +109,8 @@
   changed_when: false
 
 - name: Ensure helper scripts are installed for users.
-  include_tasks: install_helper_scripts.yml
+  include_tasks:
+    file: install_helper_scripts.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
@@ -117,7 +119,7 @@
 # TODO(dittrich): Complete this.
 
 - name: Ensure applications-merged directory exists
-  file:
+  ansible.builtin.file:
     dest: '/etc/xdg/menus/applications-merged'
     state: directory
     owner: 'root'
@@ -135,8 +137,8 @@
   become: true
 
 - name: Ensure hostname reflects serial number.
-  include_tasks: serial_hostname.yml
-
+  include_tasks:
+    file: serial_hostname.yml
 # - name: Ensure kali icons are present
 # TODO(dittrich): Complete this.
 

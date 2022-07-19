@@ -105,16 +105,16 @@
   delegate_to: localhost
 
 - name: Debug `docker_build`.
-  debug:
+  ansible.builtin.debug:
     var: docker_build
 
 - name: Set fact with log file path.
-  set_fact:
-    log_file: 'build-{{ my_image|replace(repo_name, "")|replace("/", "")|replace(":latest", "") }}.log'
+  ansible.builtin.set_fact:
+    log_file: 'build-{{ my_image | replace(repo_name, "") | replace("/", "") | replace(":latest", "") }}.log'
 
 - name: Preserve Docker build log for debugging.
-  copy:
-    content: '{{ docker_build.stdout ~ "\n\n" ~ docker_build.stderr|default("") }}'
+  ansible.builtin.copy:
+    content: '{{ docker_build.stdout ~ "\n\n" ~ docker_build.stderr | default("") }}'
     dest: '../docker/{{ log_file }}'
     owner: '{{ ansible_user_id }}'
     group: '{{ ansible_user_id }}'
@@ -130,6 +130,6 @@
   when: keep_source_image is false
 
 - name: Ensure Dockerfile is removed.
-  file:
+  ansible.builtin.file:
     path: '../docker/Dockerfile'
     state: absent

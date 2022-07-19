@@ -1,7 +1,8 @@
 ---
 
 - name: Get user home directories.
-  include_tasks: ../../../tasks/get_homedir.yml
+  include_tasks:
+    file: ../../../tasks/get_homedir.yml
 
 - name: Ensure applications using `readline` are quieted.
   ansible.builtin.blockinfile:

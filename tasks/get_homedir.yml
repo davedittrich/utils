@@ -3,11 +3,13 @@
 # Pass in user as `user`.
 
 - name: Ensure `homedir` dictionary exists.
-  set_fact:
+  ansible.builtin.set_fact:
     homedir: {}
   when: homedir is not defined
 
-- block:
+- name: Block
+  block:
+
     - name: Get user home directory with `getent`.
       ansible.builtin.shell: |
         set -o pipefail

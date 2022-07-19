@@ -45,7 +45,8 @@
         accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
 
     - name: Ensure user home directories are mapped.
-      include_tasks: ../../tasks/get_homedir.yml
+      include_tasks:
+        file:  ../../tasks/get_homedir.yml
       loop: '{{ accounts }}'
       loop_control:
         loop_var: user
@@ -61,3 +62,5 @@
       loop_control:
         loop_var: user
       become: true
+
+# EOF

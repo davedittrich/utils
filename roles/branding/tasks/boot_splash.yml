@@ -56,7 +56,7 @@
   become: true
 
 - name: Ensure `splashscreen` service is stopped.
-  service:
+  ansible.builtin.service:
     name: splashscreen
     enabled: true
     state: stopped

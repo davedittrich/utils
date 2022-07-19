@@ -7,7 +7,9 @@
     path: '/sys/class/dmi/id/board_serial'
   register: board_serial_result
 
-- block:
+- name: Block
+  block:
+
     - name: Get serial number for host.
       ansible.builtin.shell: |
         awk -F\/ '{print $2}'` /sys/class/dmi/id/board_serial
@@ -25,7 +27,7 @@
     # TODO(dittrich): Add name to `/etc/hosts` file.
 
     - name: Ensure `/etc/hostname` has serialized Kali host name.
-      copy:
+      ansible.builtin.copy:
         dest: /etc/hostname
         content: '{{ host_serial }}'
         owner: 'root'
