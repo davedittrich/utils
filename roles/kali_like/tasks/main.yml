@@ -45,12 +45,13 @@
 
 - name: Get Kali package signing key .deb file.
   ansible.builtin.get_url:
-    url: 'http://http.kali.org/kali/pool/main/k/kali-archive-keyring/kali-archive-keyring_2020.2_all.deb'
-    dest: '/tmp/kali-archive-keyring_2020.2_all.deb'
+    url: 'http://http.kali.org/kali/pool/main/k/kali-archive-keyring/kali-archive-keyring_2022.1_all.deb'
+    dest: '/tmp/kali-archive-keyring_2022.1_all.deb'
+    mode: 0o644
 
 - name: Ensure Kali package signing key is present.
   ansible.builtin.apt:
-    deb: '/tmp/kali-archive-keyring_2020.2_all.deb'
+    deb: '/tmp/kali-archive-keyring_2022.1_all.deb'
     state: present
     update_cache: false
   become: true
@@ -67,7 +68,7 @@
 # TODO(dittrich): Is this needed?
 # - name: Ensure key file is absent.
 #   ansible.builtin.file:
-#     dest: 'kali-archive-keyring_2020.2_all.deb'
+#     dest: 'kali-archive-keyring_2022.1_all.deb'
 #     state: absent
 #   become: true
 
