@@ -1,4 +1,5 @@
 ---
+
 parseable: true
 skip_list:
   - ANSIBLE0010
@@ -8,4 +9,4 @@ verbosity: 1
 exclude_paths:
   - build
   - .github
-  - bh2022
+  - roles/*/meta/main.yml
