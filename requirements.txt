@@ -11,3 +11,4 @@ pipx==0.16.4
 pytest==6.2.4
 python-secrets>=22.5.0
 testinfra==4.1.0
+tox
