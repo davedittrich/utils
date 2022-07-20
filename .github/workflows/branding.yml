@@ -46,7 +46,7 @@ jobs:
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
           python -m pip install --upgrade pip
-          python -m pip install ansible ansible-lint docker flake8 'molecule[docker]' pytest pytest-testinfra yamllint
+          python -m pip install -r requirements.txt
 
       - name: Build the collection
         run: |
