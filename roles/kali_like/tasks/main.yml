@@ -33,6 +33,14 @@
   changed_when: false
   when: gawk_result.changed
 
+- name: Ensure same libcrypt fix as `tasks/build_one_image.yml`.
+  ansible.builtin.apt:
+    name: '{{ "libcrypt-dev" if ansible_distribution == "Debian" else "libcrypt1" }}'
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+
 - name: Ensure Kali package pre-requisites are present.
   ansible.builtin.apt:
     name: "{{ packages }}"
@@ -75,14 +83,6 @@
 #     dest: 'kali-archive-keyring_2022.1_all.deb'
 #     state: absent
 #   become: true
-
-- name: Ensure same libcrypt fix as `tasks/build_one_image.yml`.
-  ansible.builtin.apt:
-    name: '{{ "libcrypt-dev" if ansible_distribution == "Debian" else "libcrypt1" }}'
-    state: present
-    update_cache: true
-    cache_valid_time: 3600
-  become: true
 
 - name: Ensure required Kali packages are present.
   ansible.builtin.apt:
