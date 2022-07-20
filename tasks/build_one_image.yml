@@ -62,21 +62,27 @@
 
 - name: Set fact with converted image name.
   ansible.builtin.set_fact:
-    my_image: '{{ source_image|replace("geerlingguy", repo_name) }}'
+    my_image: '{{ source_image | replace("geerlingguy", repo_name) }}'
 
 - name: Template out Dockerfile.
   ansible.builtin.copy:
     content: |
       FROM {{ source_image }}
-      ENV DEBIAN_FRONTEND noninteractive
-      RUN apt-get update && \
+      ENV DEBIAN_FRONTEND noninteractive && \
+      RUN echo "deb http://deb.debian.org/debian testing non-free contrib main" | tee -a /etc/apt/sources.list.d/deb-docker.list \
+        apt-get update && \
+        {% if 'debian' in target_distro %}
+        apt-get install -y libcrypt-dev && \
+        {% else %}
+        apt-get install -y libcrypt1 && \
+        {% endif %}
         apt-get -y \
           -o APT::Install-Recommends=false \
           -o APT::Get::AutomaticRemove=true \
           -o APT::Acquire::Retries=3 \
-          install {{ packages_include | join(" ") }} && \
-        {% if packages_remove|count > 0 -%}
-        apt purge -y {{ packages_remove | join(" ") }} && \
+          install {{ packages_include | join(' ') }} && \
+        {% if packages_remove | count > 0 -%}
+        apt purge -y {{ packages_remove | join(' ') }} && \
         {% endif -%}
         apt autoremove -y && \
         apt clean && \
