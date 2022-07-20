@@ -38,7 +38,7 @@
     name: '{{ "libcrypt-dev" if ansible_distribution == "Debian" else "libcrypt1" }}'
     state: present
     update_cache: true
-    cache_valid_time: 3600
+    cache_valid_time: 1
   become: true
 
 - name: Ensure Kali package pre-requisites are present.
