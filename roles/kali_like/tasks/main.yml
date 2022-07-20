@@ -17,12 +17,13 @@
   ansible.builtin.set_fact:
     kali_like_script_templates_dir: '{{ role_path }}/templates/scripts/'
 
+# Force cache update on this (the first) task to use APT cache
 - name: Ensure `gawk` is installed.
   ansible.builtin.apt:
     name: gawk
     state: present
     update_cache: true
-    cache_valid_time: 3600
+    cache_valid_time: 1
   register: gawk_result
   become: true
 
