@@ -4,7 +4,7 @@
 
 - name: Set fact with LXDE package.
   ansible.builtin.set_fact:
-    lxde_package: '{{ "task-lxde-desktop" if ansible_distribution == "Debian" else "lxde4" }}'
+    lxde_package: '{{ "task-lxde-desktop" if ansible_distribution == "Debian" else "lxde" }}'
 
 # Speed up molecule testing.
 - name: Set fact with LXDE package install flag.
