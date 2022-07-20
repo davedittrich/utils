@@ -66,6 +66,9 @@ build:
 
 .PHONY: build-images
 build-images:
+	-molecule destroy
+	-docker kill instance
+	-docker rm instance
 	cd docker && $(MAKE) build
 
 .PHONY: clean-collection
