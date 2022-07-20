@@ -22,6 +22,7 @@
     name: gawk
     state: present
     update_cache: true
+    cache_valid_time: 3600
   register: gawk_result
   become: true
 
@@ -35,7 +36,8 @@
   ansible.builtin.apt:
     name: "{{ packages }}"
     state: present
-    update_cache: false
+    update_cache: true
+    cache_valid_time: 3600
   vars:
     packages:
       - python3-lib2to3
@@ -53,7 +55,8 @@
   ansible.builtin.apt:
     deb: '/tmp/kali-archive-keyring_2022.1_all.deb'
     state: present
-    update_cache: false
+    update_cache: true
+    cache_valid_time: 3600
   become: true
 
 - name: Add Kali sources to `/etc/apt/sources.list.d/`
@@ -71,6 +74,14 @@
 #     dest: 'kali-archive-keyring_2022.1_all.deb'
 #     state: absent
 #   become: true
+
+- name: Ensure same libcrypt fix as `tasks/build_one_image.yml`.
+  ansible.builtin.apt:
+    name: '{{ "libcrypt-dev" if ansible_distribution == "Debian" else "libcrypt1" }}'
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
 
 - name: Ensure required Kali packages are present.
   ansible.builtin.apt:
