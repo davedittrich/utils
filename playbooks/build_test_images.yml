@@ -1,5 +1,4 @@
 ---
-
 - hosts: localhost
   gather_facts: false
   vars:
@@ -9,10 +8,10 @@
     - name: Ensure `target_distros` is defined.
       ansible.builtin.set_fact:
         target_distros:
-          - 'debian10'
-          - 'debian9'
-          - 'ubuntu2004'
-          - 'ubuntu1804'
+          - "debian10"
+          - "debian9"
+          - "ubuntu2004"
+          - "ubuntu1804"
       when: target_distros is not defined
 
     - name: Ensure `repo_name` is defined.
@@ -29,6 +28,6 @@
     - name: Build custom molecule test image.
       include_tasks:
         file: ../tasks/build_one_image.yml
-      loop: '{{ target_distros }}'
+      loop: "{{ target_distros }}"
       loop_control:
         loop_var: target_distro

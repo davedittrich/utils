@@ -3,6 +3,7 @@
 
 - name: Prepare
   hosts: all
+
   tasks:
     - name: Stat `/boot/config.txt` file.
       ansible.builtin.stat:

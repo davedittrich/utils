@@ -14,7 +14,8 @@ driver:
 platforms:
   - name: delegated-host
 # ![delegated-molecule.yml-driver]
-lint: 'tox -e lint'
+lint: |
+  tox -e lint
 provisioner:
   name: ansible
   env:
