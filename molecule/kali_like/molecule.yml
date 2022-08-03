@@ -3,7 +3,8 @@ dependency:
   name: galaxy
 driver:
   name: docker
-lint: 'tox -e lint'
+lint: |
+  tox -e lint
 platforms:
   - name: instance
     image: "${MOLECULE_REPO:-geerlingguy}/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
