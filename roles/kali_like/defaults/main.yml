@@ -7,5 +7,5 @@ kali_like_packages:
   - hydra
   - john
   - wordlists
-# - burpsuite
+  - burpsuite
   - wfuzz
