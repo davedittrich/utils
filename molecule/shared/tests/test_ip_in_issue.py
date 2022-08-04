@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from molecule.shared import (  # noqa
-    ansible_vars,
-    skip_unless_role,
-)
+from molecule.shared import skip_unless_role
 
 
 @skip_unless_role('davedittrich.utils.ip_in_issue')
