@@ -426,19 +426,19 @@ INFO     Verifier completed successfully.
 ## Gotchas
 
 When developing and testing your new roles, you may find that some Ansible plays
-cause idempotence tests to fail.  Here are some of the causes and solutions.
+cause idempotence tests to fail. Here are some of the causes and solutions.
 
-* More than one role may attempt to manage the same file in the file system. This
+- More than one role may attempt to manage the same file in the file system. This
   can cause problems when one play copies or templates an entire file, while another
   uses `ansible.builtin.blockinfile` or `ansible.builtin.lineinfile`. This can cause
-  the file *contents* to change back and forth.  Closely examine the plays that fail
+  the file _contents_ to change back and forth. Closely examine the plays that fail
   idempotence tests to see what file the change and how. You may need to change the
   order of the roles, change the way the file contents are modified, change the
   markers in `blockinfile` plays to be more unique.
 
-* Idempotence failures can also be caused by changes in file *metadata* rather than
+- Idempotence failures can also be caused by changes in file _metadata_ rather than
   contents. The most common reason for this is different `mode` values in two or
-  more plays that manage the same file.  This can result in the mode changing
+  more plays that manage the same file. This can result in the mode changing
   back and forth between the different values, even when the content remains exactly
   the same. Avoid setting the `mode` or `group` unless you know it is necessary (e.g.,
   when `ansible-lint` tells you that a newly created file may end up with insecure
@@ -447,6 +447,40 @@ cause idempotence tests to fail.  Here are some of the causes and solutions.
   system metadata. Running `molecule verify` will run the tests again to debug
   your plays.
 
+- "FOSS-rot". Yes, I said it. Like most popular open source projects, anything
+  you write for or with Ansible will, after a few months, simply fail because of
+  breaking changes in Ansible, community collections and roles, and related software
+  like `molecule`, `testinfra`, and Docker is also part of this particular problem.
+
+  I hadn't touched this collection in many months and when I came back to it to
+  continue developing, several things failed that used to work perfectly fine. The
+  most critical of these was the installation of packages with APT in `molecule`'s
+  Docker containers. This collection custom-builds Docker images from `geerlingguy`'s
+  Docker images that supported everyone's most favorite (for this same reason!)
+  Linux love-child, `systemd`.
+
+  As of 2022-07-02, tasks using the `ansible.builtin.apt` module or
+  `ansible.builtin.shell` running `apt` or `apt-get` began to fail with::
+
+      E: Sub-process /usr/bin/dpkg returned an error code (1)
+      . . .
+      Failed to connect to bus: No such file or directory
+      dpkg: error processing package libc6:amd64 (--configure): installed libc6:amd64 package post-installation script subprocess returned error exit status 1
+      Errors were encountered while processing: libc6:amd64
+
+  While many people suggest adding `"deprecatedCgroupv1": true` to (on a Mac) the
+  `~/Library/Group Containers/group.com.docker/settings.json` file, disabling `cgroupv2`
+  and sticking with the previously working `cgroupv1`. While this may work, generally
+  staying behind on versions can be a security risk or eventually fail entirely due to
+  deprecated features finally being removed, so the more optimal solution appears to be
+  adding `"default-cgroupns-mode": "host",` to the Docker Engine configuration settings
+  and restarting the Docker daemon.
+
+  See:
+
+      * https://github.com/docker/for-mac/issues/6073#issuecomment-990718272
+      * https://github.com/Rosa-Luxemburgstiftung-Berlin/ansible-role-unbound/blob/main/molecule/default/Dockerfile-debian-bullseye.j2
+      * https://github.com/geerlingguy/docker-debian11-ansible/issues/4
 
 ## See also
 
