@@ -181,6 +181,9 @@ test-delegated:
 version:
 	@echo version $(VERSION)
 
+.PHONY: setup
+setup: collection-community-docker
+
 .PHONY: collections-dev-link
 collections-dev-link:
 	for d in $(shell sed 's/:/ /' <<< "$(COLLECTION_PATH)"); \
@@ -192,5 +195,12 @@ collections-dev-link:
 			fi; \
 		fi; \
 	done
+
+.PHONY: collection-community-docker
+collection-community-docker:
+	if ! ansible-galaxy collection list community.docker --format yaml | grep -q community.docker; \
+	then \
+		ansible-galaxy collection install community.docker; \
+	fi
 
 # EOF
