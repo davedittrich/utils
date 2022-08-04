@@ -1,0 +1,105 @@
+---
+# Install Apache Guacamole by building locally.
+# https://www.kali.org/docs/general-use/guacamole-kali-in-browser/
+
+- name: Assert `guacamole_password` is set.
+  ansible.builtin.assert:
+    that:
+      - '{{ guacamole_password is defined and guacamole_password != "" }}'
+    fail_msg: "'guacamole_password' must be defined in including playbook"
+
+- name: Assert `mysql_password` is set.
+  ansible.builtin.assert:
+    that:
+      - '{{ mysql_password is defined and mysql_password != "" }}'
+    fail_msg: "'mysql_password' must be defined in including playbook"
+
+- name: Set fact with Guacamole related service names.
+  ansible.builtin.set_fact:
+    guacamole_services:
+      - "guacd"
+      - "mariadb"
+      - "tomcat9"
+      # - "vncserver"
+  when: guacamole_services is not defined
+
+- name: Ensure Git is installed.
+  ansible.builtin.apt:
+    name: git
+    state: present
+  become: true
+
+- name: Clone Guacamole repo.
+  ansible.builtin.git:
+    clone: true
+    repo: https://github.com/MysticRyuujin/guac-install.git
+    dest: /tmp/guac-install
+  changed_when: false
+  become: true
+
+- block:
+    - name: Install Guacamole from source.
+      shell: ./guac-install.sh --nomfa --installmysql --mysqlpwd {{ mysql_password }} --guacpwd {{ guacamole_password }}
+      args:
+        executable: /bin/bash
+        chdir: /tmp/guac-install
+        creates: "/usr/local/sbin/guacd"
+      environment:
+        - DEBIAN_FRONTEND: "noninteractive"
+      become: true
+
+  rescue:
+    - name: Find Guacamole build log file.
+      # FIXME: Find the file, but until then use fixed name.
+      ansible.builtin.set_fact:
+        guacamole_build_log: "/tmp/guacamole_1.4.0_build.log"
+
+    - name: Expose Guacamole build log file contents.
+      shell: cat {{ guacamole_build_log }}
+      args:
+        executable: /bin/bash
+      changed_when: false
+      become: true
+
+  always:
+    - name: Clean up Guacamole install files.
+      ansible.builtin.file:
+        path: guac-install
+        state: absent
+
+- name: Ensure TigerVNC is installed.
+  ansible.builtin.apt:
+    name: "tigervnc-standalone-server"
+    state: present
+  become: true
+
+- name: Ensure user home directories are mapped.
+  include_tasks:
+    file: ../../../tasks/get_homedir.yml
+  loop: "{{ accounts }}"
+  loop_control:
+    loop_var: user
+
+- name: Ensure TigerVNC is enabled for users.
+  include_tasks:
+    file: setup-vnc.yml
+  loop: "{{ accounts }}"
+  loop_control:
+    loop_var: user
+
+- name: Set timezone to America/Los_Angeles
+  community.general.timezone:
+    name: "America/Los_Angeles"
+  become: true
+
+# FIXME: vncserver :1
+- name: Ensure Guacamole-related services are enabled, started.
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  become: true
+  changed_when: false
+  failed_when: false
+  loop: "{{ guacamole_services }}"
+# vim: set ts=4 sw=4 tw=0 et :
