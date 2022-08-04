@@ -1,0 +1,45 @@
+---
+
+# For whatever reason, builds as of July 2022 started to break with
+# an error about missing libcrypt.so.
+#
+# Apply fix from
+# https://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg1818037.html
+
+# apt -y download libcrypt1
+#
+# - name: Ensure libcrypt1 deb file is downloaded.
+#   ansible.builtin.apt:
+#     name: libcrypt1
+#     state: present
+#     download_only: true
+#     update_cache: true
+#     cache_valid_time: 3600
+
+- name: Ensure libcrypt1 deb file is downloaded.
+  ansible.builtin.shell: |
+    apt -y download libcrypt1
+    echo /var/cache/apt/archives/libcrypt1*
+  args:
+    executable: /bin/bash
+  register: result
+  failed_when:
+    - result.rc != 0
+
+- name: Debug `result`.
+  ansible.builtin.debug:
+    var: result
+
+# dpkg-deb -x libcrypt1_1%3a4.4.25-2_amd64.deb  .
+#
+- name: Ensure libcrypt1 deb file is installed.
+  ansible.builtin.apt:
+    deb: '/tmp/libcrypt.deb'
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+# cp -av lib/x86_64-linux-gnu/* /lib/x86_64-linux-gnu/
+# - name: Ensure lib link is fixed
+
+# apt -y --fix-broken install
