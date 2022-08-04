@@ -50,6 +50,15 @@ def fixture_guac_services(request):
 
 
 @skip_unless_role('davedittrich.utils.kali_like')
+def test_kali_apt_list(host):
+    f = host.file('/etc/apt/sources.list.d/kali.list')
+    assert f.exists
+    assert f.user == 'root'
+    assert f.mode == 0o644
+    assert r'kali-rolling' in f.content_string
+
+
+@skip_unless_role('davedittrich.utils.kali_like')
 def test_script_files(host, fixture_users, fixture_helper_script_files):
     user = fixture_users
     script_file = fixture_helper_script_files
@@ -64,6 +73,13 @@ def test_script_files(host, fixture_users, fixture_helper_script_files):
 def test_kali_like_packages(host, fixture_kali_like_packages):
     package = fixture_kali_like_packages
     assert host.package(package).is_installed
+
+
+@skip_unless_role('davedittrich.utils.kali_like')
+def test_gawk(host):
+    assert host.package('gawk').is_installed
+    result = host.run('/etc/alternatives/awk --version')
+    assert 'GNU Awk' in result.stdout
 
 
 @skip_unless_role('davedittrich.utils.kali_like')
