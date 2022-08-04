@@ -21,9 +21,7 @@ from molecule.shared import (
 #     assert str(fh.content_string).find(hostname) > 0
 
 
-# Use one fixture to return the list of users, and another to return the
-# list of helper scripts.  These are used to generate test functions
-# at collection time. For more information on how this works, see:
+# For information on how fixtures are used, see:
 #   https://medium.com/opsops/deepdive-into-pytest-parametrization-cb21665c05b9
 
 
