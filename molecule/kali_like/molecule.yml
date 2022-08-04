@@ -33,6 +33,8 @@ provisioner:
         vars:
           accounts:
             - root
+          mysql_password: '_molecule_mysql_password'
+          guacamole_password: '_molecule_guacamole_password'
 verifier:
   name: testinfra
   directory: ../shared/tests

@@ -34,6 +34,8 @@ provisioner:
         vars:
           accounts:
             - 'root'
+          mysql_password: '_molecule_mysql_password'
+          guacamole_password: '_molecule_guacamole_password'
 # ![molecule.yml-provisioner]
 verifier:
   name: testinfra

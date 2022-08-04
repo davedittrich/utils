@@ -42,6 +42,12 @@ def fixture_kali_like_packages(request):
     return request.param
 
 
+@pytest.fixture(params=ansible_vars.get('guacamole_services', []))
+def fixture_guac_services(request):
+    """Return list of Guacamole related services."""
+    return request.param
+
+
 @skip_unless_role('davedittrich.utils.kali_like')
 def test_script_files(host, fixture_users, fixture_helper_script_files):
     user = fixture_users
@@ -68,4 +74,19 @@ def test_kali_application_menu(host):
     assert f.mode == 0o644
 
 
-# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
+@skip_unless_role('davedittrich.utils.kali_like')
+def test_guacamole_guacd(host):
+    f = host.file('/usr/local/sbin/guacd')
+    assert f.exists
+    assert f.user == 'root'
+    assert f.group == 'root'
+    assert (f.mode | stat.S_IRWXU) == 0o755
+
+
+@pytest.mark.xfail
+@skip_unless_role('davedittrich.utils.kali_like')
+def test_guacamole_services(host, fixture_guac_services):
+    service = host.service(fixture_guac_services)
+    assert service.is_running
+
+# vim: set ts=4 sw=4 tw=0 et :
