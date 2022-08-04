@@ -21,24 +21,25 @@ from molecule.shared import (
 #     assert str(fh.content_string).find(hostname) > 0
 
 
-# Use one fixture to return the list of users, and another to return the
-# list of helper scripts.  These are used to generate test functions
-# at collection time. For more information on how this works, see:
+# For information on how fixtures are used, see:
 #   https://medium.com/opsops/deepdive-into-pytest-parametrization-cb21665c05b9
 
 
 @pytest.fixture(params=ansible_vars.get('accounts', []))
 def fixture_users(request):
+    """Return user account IDs."""
     return request.param
 
 
 @pytest.fixture(params=ansible_vars.get('kali_like_script_templates', []))
 def fixture_helper_script_files(request):
+    """Return script template file names."""
     return str(request.param).replace('.sh.j2', '')
 
 
 @pytest.fixture(params=ansible_vars.get('kali_like_packages', []))
 def fixture_kali_like_packages(request):
+    """Return list of desired Kali packages."""
     return request.param
 
 
