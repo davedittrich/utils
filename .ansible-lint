@@ -8,3 +8,4 @@ verbosity: 1
 exclude_paths:
   - build
   - .github
+  - bh2022
