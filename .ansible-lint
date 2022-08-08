@@ -4,11 +4,9 @@ parseable: true
 skip_list:
   - ANSIBLE0010
   - command-instead-of-shell
-  - no-changed-when  # Commands should not change things if nothing needs doing
 use_default_rules: true
 verbosity: 1
 exclude_paths:
   - build
   - .github
-  - molecule/*/molecule.yml
   - roles/*/meta/main.yml

@@ -33,4 +33,6 @@ rules:
   trailing-spaces: enable
   truthy:
     ignore: |
+      .tox/
       .github/workflows/
+      bh2022/
