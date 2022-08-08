@@ -9,5 +9,4 @@ verbosity: 1
 exclude_paths:
   - build
   - .github
-  - molecule/*/molecule.yml
   - roles/*/meta/main.yml
