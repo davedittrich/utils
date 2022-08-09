@@ -1,0 +1,24 @@
+---
+
+# Playbook to identify student laptops on the network.
+
+- hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Ping scan network with Nmap.
+      ansible.builtin.shell:
+        nmap -sS {{ event_netblock }} -oX -
+      register: nmap_scan
+
+    - name: Store results in dictionary.
+      ansible.builtin.set_fact:
+        nmap_result: "{{ nmap.scan | ansible.utils.from_xml('xmltodict') }}"
+
+    - name: Debug nmap_result
+      ansible.builtin.debug:
+        var: nmap_result
+        verbosity: 0
+
+
+# vim: ft=ansible
