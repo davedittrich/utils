@@ -1,0 +1,65 @@
+---
+
+# Playbook to patch laptop provisioning script.
+
+- hosts: '{{ host }} '  # '{{ host | default(all) }}'
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Stat /sync/exercises/docker-compose.yml
+      ansible.builtin.stat:
+        path: /sync/exercises/docker-compose.yml
+      register: stat_docker_compose_yml
+      changed_when: false
+
+    - name: Check running containers.
+      ansible.builtin.shell: >
+        docker-compose ps
+      args:
+        executable: /bin/bash
+        chdir: /sync/exercises
+      when: stat_docker_compose_yml.stat.exists
+      register: docker_compose_ps
+      changed_when: false
+
+    - name: Ensure broken jekyll container is stopped.
+      ansible.builtin.shell: >
+        docker-compose down --rmi all
+      args:
+        executable: /bin/bash
+        chdir: /sync/exercises
+      when: "'jekyll' in docker_compose_ps.stdout"
+      changed_when: false
+
+    - name: Ensure correct symbolic link to course materials.
+      ansible.builtin.file:
+        path: '/sync'
+        src: '/sync2'
+        state: link
+        owner: root
+        group: root
+
+    - name: Ensure corrent path to jekyll exercise startup script.
+      ansible.builtin.lineinfile:
+        path: '/sync2/bin/start-jekyll-for-exercises.sh'
+        regexp: '^cd /sync/exercises'
+        line: 'cd /root/exercises'
+        state: present
+
+    # - name: Ensure working jekyll container is started.
+    #   ansible.builtin.shell: >
+    #     /sync/bin/start-jekyll-for-exercises.sh
+    #   args:
+    #     executable: /bin/bash
+    #   changed_when: false
+
+    - name: Run start-class.sh script.
+      ansible.builtin.shell: >
+        /sync/bin/start-class.sh
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+
+# vim: ft=ansible :

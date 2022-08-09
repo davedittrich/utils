@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Run nmap looking for hosts on the specified netblock that have
+# SSH open. Using those IP addresses, run Ansible ad-hoc commands
+# to then try to retrieve `system-serial-number` data from.
+
+NETWORK=${1:-192.168.0.0/24}
+
+nmap -sT -p22 -oX |
+	jq 
+
+# Resulting output looks like this:
+# 10.220.34.75 | CHANGED | rc=0 >>
+# 8RK6XQ3
+grep -A1 CHANGED system-serial-numbers.txt  | grep -v '[-]-'
+

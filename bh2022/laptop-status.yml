@@ -1,0 +1,23 @@
+---
+
+# Playbook to check status of laptops
+
+- hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Ping host
+      ansible.builtin.ping:
+      register: ping_result
+
+    - name: Set fact with ping results
+      ansible.builtin.set_fact:
+        ping_result: '{{ ping_result | default([]) + ping_result }}'
+
+    - name: Debug ping_result
+      ansible.builtin.debug:
+        var: ping_result
+        verbosity: 1
+
+
+# vim: ft=ansible
