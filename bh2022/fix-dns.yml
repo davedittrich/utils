@@ -1,0 +1,29 @@
+---
+
+# Playbook to force NetworkManager DNS server priority order
+# to work around bug in NetworkManager.
+
+- hosts: '{{ host | default("localhost") }}'
+  gather_facts: false
+  vars:
+    nmdir: '/etc/NetworkManager/system-connections/'
+
+  tasks:
+    - name: Fix DNS priority for {{ ssid }} network.
+      ansible.builtin.blockinfile:
+        path: '{{ nmdir }}/{{ ssid }}.nmconnection'
+        block: |
+          ipv4.dns-priority=-50
+          ipv6.dns-priority=-50
+        insertafter: '^id={{ ssid }}'
+      register: result
+      become: true
+
+    - name: Ensure NetworkManager config change applied.
+      ansible.builtin.service:
+        name: NetworkManager
+        state: restarted
+      when: result.changed
+      become: true
+
+# vim: ft=ansible
