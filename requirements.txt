@@ -11,3 +11,4 @@ pytest==6.2.4
 python3-venv
 python-secrets
 testinfra==4.1.0
+xmltodict==0.13.0
