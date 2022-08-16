@@ -1,0 +1,28 @@
+#!/bin/bash
+# Copyright (C) 2019-2022 Dave Dittrich. All rights reserved.
+#
+# Create symbolic link pointing to this directory to allow inclusion
+# of roles in this collection without having to install them first.
+
+if [ -z ${COLLECTION_PATH} ]; then
+  echo "[-] set COLLECTION_PATH before running this script"
+  exit 1
+fi
+
+REPO_BASE=$(dirname $(pwd))
+for dir in $(sed 's/:/ /' <<< "${COLLECTION_PATH}"); do
+  AC_DIR=${dir}/ansible_collections
+  if [[ ${dir} == *.dev ]]; then
+    if [ ! -d ${AC_DIR} ]; then
+      echo "[+] creating directory ${AC_DIR}"
+      mkdir -p ${AC_DIR}
+    fi
+    if [ ! -L ${AC_DIR}/davedittrich ]; then
+      echo "[+] linking ${REPO_BASE} to ${AC_DIR}/davedittrich"
+      ln -s ${REPO_BASE} ${AC_DIR}/davedittrich
+    fi
+    tree -L 2 ${dir}
+  fi
+done
+
+exit 0
