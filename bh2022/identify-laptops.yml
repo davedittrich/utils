@@ -4,21 +4,91 @@
 
 - hosts: localhost
   gather_facts: false
+  vars:
+    tmpdir: '/tmp'   # FIXME: Use a random temp directory.
+    testfile: '~/nmap-testdata.xml'
 
   tasks:
-    - name: Ping scan network with Nmap.
-      ansible.builtin.shell:
-        nmap -sS {{ event_netblock }} -oX -
-      register: nmap_scan
+    - name: Block for nmap scan and processing.
+      block:
+        - name: Load test data.
+          ansible.builtin.shell:
+            cat {{ testfile }}
+          register: nmap_scan
+          when: testfile is defined
 
-    - name: Store results in dictionary.
-      ansible.builtin.set_fact:
-        nmap_result: "{{ nmap.scan | ansible.utils.from_xml('xmltodict') }}"
+        - name: Ping scan network with Nmap.
+          ansible.builtin.shell:
+            nmap -sT -p22 {{ event_netblock }} -oX - | tee {{ tmpdir }}/nmap.xml
+          register: nmap_scan
+          when: testfile is not defined
 
-    - name: Debug nmap_result
+        - name: Store results in dictionary.
+          ansible.builtin.set_fact:
+            # nmap_result: "{{ nmap_scan | ansible.utils.from_xml('xmltodict') }}"
+            nmap_result: "{{ nmap_scan.stdout | ansible.utils.from_xml('xmltodict') }}"
+
+        - name: Generate base filename from timestamp for use in file names.
+          ansible.builtin.set_fact:
+            nmapfile: 'nmap-{{ nmap_result.nmaprun["@start"] }}'
+
+        - name: Debug `nmap_result.nmaprun`.
+          ansible.builtin.debug:
+            var: nmap_result.nmaprun
+            verbosity: 1
+
+        - name: Save results to `{{ tmpdir }}/{{ nmapfile }}.json`.
+          ansible.builtin.copy:
+            dest: '{{ tmpdir }}/{{ nmapfile }}.json'
+            content: '{{ nmap_result.nmaprun.host }}'
+
+        - name: Produce pretty-print output in `{{ tmpdir }}/{{ nmapfile }}.txt`.
+          ansible.builtin.shell:
+            python -m json.tool {{ tmpdir }}/{{ nmapfile }}.json > /tmp/{{ nmapfile }}.txt
+          args:
+            executable: /bin/bash
+
+        - name: Iterate over addresses looking for ...TK
+          ansible.builtin.set_fact:
+            host_list: '{{ host_list | default([]) + [ item ] }}'
+          loop:
+            '{{ nmap_result.nmaprun.host }}'
+
+#     always:
+
+#       - name: Ensure temporary files are cleaned up.
+#         ansible.builtin.shell:
+#           rm -f {{ tmpdir }}/{{ nmapfile }}.*
+# {
+#      "address": [
+#          {
+#              "@addr": "10.220.34.120",
+#              "@addrtype": "ipv4"
+#          },
+#          {
+#              "@addr": "00:E0:4C:68:01:E2",
+#              "@addrtype": "mac",
+#              "@vendor": "Realtek Semiconductor"
+#          }
+#      ],
+#      "hostnames": null,
+#      "status": {
+#          "@reason": "arp-response",
+#          "@reason_ttl": "0",
+#          "@state": "up"
+#      },
+#      "times": {
+#          "@rttvar": "5000",
+#          "@srtt": "4744",
+#          "@to": "100000"
+#      }
+#  },
+
+    - name: Debug nmap_result.nmaprun.host list.
       ansible.builtin.debug:
-        var: nmap_result
+        var: item
         verbosity: 0
-
+      loop:
+        "{{ nmap_result.nmaprun }}"
 
 # vim: ft=ansible
