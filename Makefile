@@ -2,7 +2,7 @@ ANSIBLE_GALAXY_SERVER:=$(shell psec secrets get ansible_galaxy_server)
 ANSIBLE_GALAXY_API_KEY:=$(shell psec secrets get ansible_galaxy_api_key)
 ARTIFACT=davedittrich-utils-$(VERSION).tar.gz
 export COLLECTION_NAMESPACE=davedittrich
-COLLECTION_PATH="$(HOME)/.ansible/collections.dev:$(HOME)/.ansible/collections"
+export COLLECTION_PATH=$(HOME)/.ansible/collections.dev:$(HOME)/.ansible/collections
 DELEGATED_HOST:=none
 export MOLECULE_DISTRO=debian10
 export MOLECULE_REPO=davedittrich
@@ -184,17 +184,9 @@ version:
 .PHONY: setup
 setup: collection-community-docker
 
-.PHONY: collections-dev-link
-collections-dev-link:
-	for d in $(shell sed 's/:/ /' <<< "$(COLLECTION_PATH)"); \
-	do \
-		if [ ! -d $$d ]; then mkdir -p $$d; fi; \
-		if grep -q '\.dev' <<< "$$d"; then \
-			if [ ! -L $$d/davedittrich ]; then \
-				ln -s $(shell pwd) $$d/davedittrich; \
-			fi; \
-		fi; \
-	done
+.PHONY: create-collections-dev-link
+create-collections-dev-link:
+	@bash scripts/create-collections-dev-link
 
 .PHONY: collection-community-docker
 collection-community-docker:
