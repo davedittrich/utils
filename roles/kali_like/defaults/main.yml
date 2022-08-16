@@ -1,11 +1,12 @@
 ---
 kali_like_packages:
+  - burpsuite
   - dirbuster
   - exploitdb
-  - zaproxy
-  - webshells
   - hydra
   - john
-  - wordlists
-  - burpsuite
+  - kali-defaults
   - wfuzz
+  - webshells
+  - wordlists
+  - zaproxy
