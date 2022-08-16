@@ -6,6 +6,7 @@ all:
     ansible_user: 'root'
     ansible_ssh_private_key_file: '~/.ssh/bh2022-laptops'
     updates_dir: '/root/updates'
+    ssid: 'MandalayBayL'
     event_netblock: '10.220.34.0/24'
     blocked:
       - "J4D7XQ3"
