@@ -3,6 +3,14 @@
 # Builds a Docker image customized for molecule testing of
 # the `davedittrich.utils` Ansible Collection.
 
+- name: Set fact with `docker_user`.
+  ansible.builtin.set_fact:
+    docker_user: '{{ docker_user | default("ansible_effective_user_id") }}'
+
+- name: Set fact with `docker_group`.
+  ansible.builtin.set_fact:
+    docker_group: '{{ docker_group | default("ansible_effective_group_id") }}'
+
 - name: Assert `packages` and `repo_name`` are defined.
   ansible.builtin.assert:
     that:
@@ -88,8 +96,8 @@
         apt clean && \
         rm -rf /var/cache/apt
     dest: ../docker/Dockerfile
-    owner: '{{ ansible_user_id }}'
-    group: '{{ ansible_user_id }}'
+    owner: '{{ docker_user }}'
+    group: '{{ docker_group }}'
     mode: 0o600
   delegate_to: localhost
 
@@ -122,8 +130,8 @@
   ansible.builtin.copy:
     content: '{{ docker_build.stdout ~ "\n\n" ~ docker_build.stderr | default("") }}'
     dest: '../docker/{{ log_file }}'
-    owner: '{{ ansible_user_id }}'
-    group: '{{ ansible_user_id }}'
+    owner: '{{ docker_user }}'
+    group: '{{ docker_group }}'
     mode: 0o600
   delegate_to: localhost
   when: ansible_verbosity > 1
