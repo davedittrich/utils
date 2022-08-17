@@ -90,6 +90,53 @@ ansible-galaxy collection install davedittrich.utils:==0.1.0
 See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guide/collections_using.html)
 for more details.
 
+### Tasks performed by role
+
+Following is a high-level breakdown of tasks performed by role. This is not an
+exhaustive list of all tasks, but rather a summary of the general topics:
+
+#### ``davedittrich.utils.kali_like`` role.
+
+* Install base OS packages necessary for Kali tooling.
+* Set up for installing packages from Kali repo.
+* Install a specific subset of Kali packages.
+* Hush the Kali developer login message.
+* Install templated helper scripts for user convenience.
+* Set up `~/.local/bin` directories in accounts for local add-on programs.
+* Pre-configure Kali menus and desktop.
+* Set host name based on system serial number.
+* Install and configure system for Apache Guacamole (RDP in browser).
+* Set custom timezone.
+
+#### ``davedittrich.utils.branding`` role.
+* Make LXDE/``lightdm`` default X11 session manager.
+* Customize LXDE and ``lightdm`` settings and menus.
+* Customize display wallpaper, login greeter background, and boot splash images.
+* Disable boot logo (e.g., on Raspberry Pi devices.)
+* Disable ``clipit`` history.
+
+
+#### ``davedittrich.utils.ip_in_issue`` role.
+
+* Ensure SSH host key fingerprints are visible on console login screen.
+* Ensure Ethernet device and IP addressing information is visible on console login screen.
+
+#### ``davedittrich.utils.swapcapslockctrl`` role.
+
+* Swaps Left keyboard **CapsLock** key with **CTRL**.
+
+#### ``davedittrich.utils.visible_bell`` role.
+
+* Disables bell sound for keyboard, ``bash``, ``csh``, ``ex`` family editors, ``vim`` editor
+ and instead sets visible bell.
+
+#### ``davedittrich.utils.dropins`` role.
+
+* Ensures ``update-dotdee`` is installed via ``pipx``.
+* Set up users' ``~/.bash_aliases``, ``~/.bashrc``, ``~/.gitconfig``, and ``~/.ssh/config`` files
+  for use with ``update-dotdee``.
+* Create initial dropin directories with original files appearing at top.
+
 ## Testing
 
 For `molecule` tests to work on this collection without interfering with existing collections,
