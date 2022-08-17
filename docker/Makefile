@@ -2,6 +2,8 @@ SHELL=/bin/bash
 USER_ID=$(shell id -u)
 GROUP_ID=$(shell id -g)
 export COLLECTION_NAMESPACE=davedittrich
+USER_ID=$(shell id -u)
+GROUP_ID=$(shell id -g)
 
 # By default, only build the debian10 image to save time and space.
 .PHONY: build
@@ -9,7 +11,11 @@ build: build-default
 
 .PHONY: build-default
 build-default:
-	ansible-playbook -e '{ "target_distros": ["debian10"], "docker_user": $(USER_ID), "docker_group": $(GROUP_ID) }' -vvv ../playbooks/build_test_images.yml
+	ansible-playbook -e '{ \
+		"target_distros": ["debian10"], \
+		"docker_user": "$(USER_ID)", \
+		"docker_group": "$(GROUP_ID)" \
+		}' -vvv ../playbooks/build_test_images.yml
 	$(MAKE) list-images
 
 .PHONY: build-all
