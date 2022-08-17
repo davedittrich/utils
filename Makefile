@@ -73,7 +73,7 @@ build-images:
 
 .PHONY: clean-collection
 clean-collection:
-	for D in $(shell echo ~/.cache/ansible-compat/*/collections/ansible_collections/*); \
+	@for D in $(shell echo ~/.cache/ansible-compat/*/collections/ansible_collections/*); \
 	do \
 		if [ -f $$D/utils/README.md ]; \
 		then \
@@ -93,7 +93,15 @@ clean: clean-collection
 
 .PHONY: clean-images
 clean-images:
-	cd docker && $(MAKE) spotless
+	cd docker && $(MAKE) clean
+
+.PHONY: clean-molecule
+clean-molecule:
+	molecule destroy --all
+	for scenario in default $(shell grep '[-] davedittrich.utils.' molecule/default/converge.yml | cut -d. -f 3); \
+	do \
+		molecule reset -s $$scenario > /dev/null; \
+	done
 
 .PHONY: converge
 converge: scenario-exists
