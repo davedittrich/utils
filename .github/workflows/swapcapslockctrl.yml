@@ -17,6 +17,8 @@ jobs:
     env:
       PY_COLORS: 1
       ANSIBLE_FORCE_COLOR: 1
+      USER_ID: runner
+      GROUP_ID: docker
     strategy:
       fail-fast: true
       matrix:
