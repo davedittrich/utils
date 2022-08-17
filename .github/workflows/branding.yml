@@ -56,6 +56,9 @@ jobs:
       - name: Install the collection
         run: ansible-galaxy collection install "${{ env.COLLECTION_FILE }}"
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
       - name: Run role tests
         run: >-
           make build-images &&
