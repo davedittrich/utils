@@ -58,6 +58,7 @@ jobs:
 
       - name: Run role tests
         run: >-
+          make build-images &&
           molecule --version &&
           ansible --version &&
           MOLECULE_COMMAND=${{ matrix.molecule_distro.command }}
