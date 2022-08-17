@@ -63,6 +63,7 @@ jobs:
 
       - name: Run role tests
         run: >-
+          make build-images &&
           molecule --version &&
           ansible --version &&
           make build-images &&
