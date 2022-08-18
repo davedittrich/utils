@@ -32,6 +32,7 @@ jobs:
           cp -r ./ ~/.ansible/collections/ansible_collections/davedittrich/utils
       - name: Molecule test
         run: |
+          make build-images
           molecule test
   release_candidate:
     runs-on: ubuntu-latest
