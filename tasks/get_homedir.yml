@@ -1,6 +1,18 @@
 ---
 
 # Pass in user as `user`.
+# Use in playbooks as follows:
+#
+# - name: Ensure user home directories are mapped.
+#   include_task:
+#     file: ../../../tasks/get_homedir.yml
+#   loop: '{{ users }}'
+#   loop_control:
+#     loop_var: user
+#
+# ...
+#   path: "{{ homedir[user] ~ '/.filename' }}"
+# ...
 
 - name: Ensure `homedir` dictionary exists.
   ansible.builtin.set_fact:

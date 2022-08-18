@@ -46,8 +46,7 @@
 
   # This task assumes you have already placed the file to use for
   # the boot splash in `/root`. This was designed for Raspberry Pi
-  # installations created using Hypriot's `flash` program and a
-  # customization script using `python_secrets`..
+  # installations created using Hypriot's `flash`.
 
 - name: Ensure `fbi` package is present.
   ansible.builtin.package:
