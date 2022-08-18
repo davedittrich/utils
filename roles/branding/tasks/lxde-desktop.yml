@@ -1,6 +1,6 @@
 ---
 
-# tasks for configuring customized LXDE sessions.
+# Tasks for configuring customized LXDE sessions.
 
 - name: Set fact with LXDE package.
   ansible.builtin.set_fact:
@@ -52,7 +52,7 @@
     - name: Query alternatives x-session-manager setting.
       ansible.builtin.shell: |
         set -o pipefail
-        update-alternatives --query x-session-manager 2>/dev/null | grep Value | cut -d" " -f2
+        update-alternatives --query x-session-manager 2>/dev/null | grep Value | cut -d' ' -f2
       args:
         executable: /bin/bash
       register: alternatives_out

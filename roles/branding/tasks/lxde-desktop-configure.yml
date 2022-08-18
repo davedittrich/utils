@@ -72,6 +72,11 @@
   become_user: '{{ user }}'
   loop: '{{ config_templates }}'
 
+  # Could also put the rc.xml file for openbox into the system
+  # directory `/etc/xdg/openbox/rc.xml`. When done on a live
+  # system, requires `lxpanelctl restart && openbox --restart`,
+  # which would disrupt any active sessions.
+
 - name: Ensure user's configuration files exist.
   ansible.builtin.template:
     src: '{{ dot_config_template_dir ~ "/" ~ item }}'
