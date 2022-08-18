@@ -10,7 +10,7 @@ PLAYBOOK=playbooks/workstation_setup.yml
 PYTHONPATH=$(shell pwd)/molecule
 SCENARIO=default
 SHELL=/bin/bash
-VERSION=$(shell grep "version:" galaxy.yml | sed 's/ //g' | cut -d: -f 2)
+VERSION=$(shell grep "version:" galaxy.yml 2>/dev/null | sed 's/ //g' | cut -d: -f 2)
 
 .PHONY: help
 help:
