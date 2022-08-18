@@ -5,45 +5,88 @@
   vars:
     # This should be set via the command line at runtime.
     tag: "{{ github_tag.split('/')[-1].lstrip('v') }}"
+    nolog: '{{ nolog|default(true) }}'
 
   pre_tasks:
+    - ansible.builtin.set_fact:
+        verbose_flag: '-{{ "v" * ansible_verbosity|default(1) }}'
+
+    - ansible.builtin.set_fact:
+        version: '{{ version|default(lookup("file", "../VERSION")) }}'
+
+    - ansible.builtin.set_fact:
+        save_galaxy_yml: '{{ save_galaxy_yml|default(false) }}'
+
+    - ansible.builtin.set_fact:
+        publish: '{{ publish|default(false) }}'
+
     - assert:
         that:
           - lookup('env', 'ANSIBLE_GALAXY_SERVER') != ''
           - lookup('env', 'ANSIBLE_GALAXY_API_KEY') != ''
+      when: publish
+
+    - name: Find files to exclude from build artifact on localhost.
+      ansible.builtin.shell: |
+        git status --porcelain | grep '?? ' | tee /tmp/git_status.txt
+      register: git_status
 
     - name: Ensure the ~/.ansible directory exists.
-      file:
+      ansible.builtin.file:
         path: ~/.ansible
         state: directory
+        mode: 0o700
 
   tasks:
     - name: Set fact with artifact name.
-      set_fact:
-        artifact_name: 'davedittrich-utils-{{ tag }}.tar.gz'
+      ansible.builtin.set_fact:
+        artifact_name: 'davedittrich-utils-{{ version }}.tar.gz'
 
     - name: Debug artifact name.
-      debug:
+      ansible.builtin.debug:
         msg: '{{ artifact_name }}'
 
-    - name: Template out the galaxy.yml file.
-      template:
-        src: templates/galaxy.yml.j2
-        dest: ../galaxy.yml
+    - name: Stat the galaxy.yml file.
+      ansible.builtin.stat:
+        path: ../galaxy.yml
       register: galaxy_yml
 
-    - name: Build the collection. # noqa 503
-      command: >
-        ansible-galaxy collection build
-        chdir=../
-      when: galaxy_yml.changed
+    - name: Template out the galaxy.yml file.
+      ansible.builtin.template:
+        src: templates/galaxy.yml.j2
+        dest: ../galaxy.yml
+      register: new_galaxy_yml
+      when: not (save_galaxy_yml and galaxy_yml.stat.exists)
 
-    - name: Publish the collection. # noqa 503
-      command: >
-        ansible-galaxy collection publish
-          "./{{ artifact_name }}"
-          --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
-          --api-key ${{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
-        chdir=../
-      no_log: true
-      when: galaxy_yml.changed
+    - name: Block to build/publish collection.
+      block:
+
+        - name: Build the collection. # noqa 503
+          ansible.builtin.command: >
+            ansible-galaxy {{ verbose_flag }} collection build
+            chdir=../
+          when: new_galaxy_yml.changed
+
+        - name: Publish the collection. # noqa 503
+          ansible.builtin.command: >
+            ansible-galaxy collection publish
+              "./{{ artifact_name }}"
+              --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
+              --api-key ${{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
+            chdir=../
+          no_log: '{{ nolog }}'
+          when: publish
+
+        - name: Ensure the `galaxy.yml` file is absent.
+          ansible.builtin.file:
+            path: ../galaxy.yml
+            state: absent
+          when: not save_galaxy_yml
+
+      rescue:
+        - fail:
+            msg: >
+              '{{ artifact_name }} not built: ' +
+              "file 'build/galaxy.yml' kept for reference"
+
+# EOF
