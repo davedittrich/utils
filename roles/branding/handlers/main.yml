@@ -5,6 +5,6 @@
     name: splashscreen
     daemon_reload: true
     enabled: true
-    state: restarted
+    state: started
   ignore_errors: true
   become: true
