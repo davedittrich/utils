@@ -20,22 +20,31 @@ Development of this collection is supported by a test-driven design that uses
 [`molecule`](https://molecule.readthedocs.io/en/latest/) to test any or all
 roles, both locally and driven by GitHub Actions workflows on `push` actions.
 
-The operating system distributions supported at this time are:
+The operating system distributions supported at this time by this collection
+and its playbooks for `molecule` testing are:
 
 - Debian 10 (default distribution)
 - Debian 9
 - Ubuntu 20.04 LTS
 - Ubuntu 18.04 LTS
 
-To help reduce the amount of time necessary for this testing, several capabilities
-are available:
+The development environment and test infrastructure that invokes `molecule`
+for testing has been tested on the following (in order of most-frequently
+to least-frequently used):
 
-1. Local testing during development is done against _only_ Debian 10. Once you
-   have something that passes all tests, you can then chose to run tests again
-   against the remaining distributions.
+* Mac OS X (Darwin) 10.15.7
+* Ubuntu 20.04 LTS on Windows Subsystem for Linux (WSL) 2
+* Kali (Debian 10) Linux (2022-07-07 release)
 
-2. Customized Docker images are used to pre-load the many packages that are expected
-   to be on production workstations. This significantly reduces the amount of time
+To help reduce the amount of time taken by all this testing, several optimization
+techniques are employed:
+
+1. Local testing during development is done against _only_ Debian 10. Once all
+   tests are passing, the remaining OS distributions can then be selected for further
+   compatibility testing.
+
+2. Customized Docker images are used to pre-load packages expected to be on
+   "production" systems. This significantly reduces the amount of time
    necessary to perform frequent tests by _only_ performing time-consuming package
    package installations and setup when you chose to do so (not every time a
    `molecule` instance is created.)
@@ -100,7 +109,7 @@ for more details.
 Following is a high-level breakdown of tasks performed by role. This is not an
 exhaustive list of all tasks, but rather a summary of the general topics:
 
-#### ``davedittrich.utils.kali_like`` role.
+#### [`davedittrich.utils.kali_like`](roles/kali_like/) role.
 
 * Install base OS packages necessary for Kali tooling.
 * Set up for installing packages from Kali repo.
@@ -113,34 +122,34 @@ exhaustive list of all tasks, but rather a summary of the general topics:
 * Install and configure system for Apache Guacamole (RDP in browser).
 * Set custom timezone.
 
-#### ``davedittrich.utils.branding`` role.
-* Make LXDE/``lightdm`` default X11 session manager.
-* Customize LXDE and ``lightdm`` settings and menus.
+#### [`davedittrich.utils.branding`](roles/branding/) role.
+* Make LXDE/`lightdm` default X11 session manager.
+* Customize LXDE and `lightdm` settings and menus.
 * Customize display wallpaper, login greeter background, and boot splash images.
 * Disable boot logo (e.g., on Raspberry Pi devices.)
-* Disable ``clipit`` history.
+* Disable `clipit` history.
 
 
-#### ``davedittrich.utils.ip_in_issue`` role.
+#### [`davedittrich.utils.ip_in_issue`](roles/ip_in_issue) role.
 
 * Ensure SSH host key fingerprints are visible on console login screen.
 * Ensure Ethernet device and IP addressing information is visible on console login screen.
 
-#### ``davedittrich.utils.swapcapslockctrl`` role.
+#### [`davedittrich.utils.swapcapslockctrl`](roles/swapcapslockctrl) role.
 
 * Swaps Left keyboard **CapsLock** key with **CTRL**.
 
-#### ``davedittrich.utils.visible_bell`` role.
+#### [`davedittrich.utils.visible_bell`](roles/visible_bell) role.
 
-* Disables bell sound for keyboard, ``bash``, ``csh``, ``ex`` family editors, ``vim`` editor
+* Disables bell sound for keyboard, `bash`, `csh`, `ex` family editors, `vim` editor
  and instead sets visible bell.
 
-#### ``davedittrich.utils.dropins`` role.
+#### [`davedittrich.utils.dropins`](roles/dropins) role.
 
-* Ensures ``update-dotdee`` is installed via ``pipx``.
-* Set up users' ``~/.bash_aliases``, ``~/.bashrc``, ``~/.gitconfig``, and ``~/.ssh/config`` files
-  for use with ``update-dotdee``.
+* Ensures `update-dotdee` is installed via `pipx`.
 * Create initial dropin directories with original files appearing at top.
+* By default, enabled use of `update-dotdee` to control users' `~/.bash_aliases`, `~/.bashrc`,
+  `~/.gitconfig`, and `~/.ssh/config` files.
 
 ## Testing
 
@@ -160,7 +169,10 @@ $ tree -L 2 ~/.ansible/collections*
 6 directories, 0 files
 ```
 
-Then set the `provisioner` in `molecule/default/molecule.yml` as follows::
+You can create this link using the command `make create-collections-dev-link`.
+
+The `provisioner` section in files like `molecule/default/molecule.yml` are then
+configured as follows:
 
 ```yaml
 provisioner:
@@ -215,7 +227,7 @@ Tests can be skipped by use of the `@skip_unless_role()` decorator, which checks
 to see if the role for which they apply is in the `ansible_roles_names` variable
 (meaning that role was applied and thus needs testing).
 
-```
+```yaml
 . . .
 ansible_role_names: [davedittrich.utils.ip_in_issue]
 . . .
