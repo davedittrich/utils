@@ -1,10 +1,10 @@
 ---
 
-- name: restart splashscreen
+- name: enable splashscreen
   ansible.builtin.systemd:
     name: splashscreen
     daemon_reload: true
     enabled: true
-    state: restarted
+    state: started
   ignore_errors: true
   become: true
