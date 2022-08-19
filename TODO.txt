@@ -1,6 +1,7 @@
 * Add `dropins` role to set up dropin configuration files (and write
   Medium article about the dropin model.)
 * Use `prepare.yml` to load SSH public keys from `files/` directory.
+* Create plugin to get SSH host key fingerprints and store in ``hostvars``.
 * Add conditionals to swapcapslockctrl to handle older OSs
 * Add AnyDesk installation.
 * Add Resilio Sync installation.

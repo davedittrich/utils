@@ -106,3 +106,5 @@
     - result.rc != 0
     - "'ctrl:swapcaps' not in result.stdout"
   become: true
+
+# EOF
