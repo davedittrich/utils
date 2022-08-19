@@ -10,7 +10,7 @@ from molecule.shared import (
 )
 
 
-## System oriented tests.
+# System oriented tests.
 
 
 @skip_unless_role('davedittrich.utils.branding')
@@ -68,7 +68,7 @@ def test_user_lightdm_login_background(host):
     assert f'background=#stretched:{login_background}' in f.content_string
 
 
-## User oriented tests.
+# User oriented tests.
 
 
 @skip_unless_role('davedittrich.utils.branding')
@@ -107,7 +107,7 @@ def test_user_wallpaper_setting(host, user):
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_LXDE_autostart_xset(host, user):
     homedir = get_homedir(host=host, user=user)
-    f = host.file(os.path.join((homedir, '.config/lxsession/LXDE/autostart')
+    f = host.file(os.path.join((homedir, '.config/lxsession/LXDE/autostart')))
     assert f.exists
     assert f.user == user
     assert r'xset' in f.content_string

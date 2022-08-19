@@ -58,5 +58,4 @@ def test_keyboard_configuration(host):
         assert r'ctrl:swapcaps' in result
 
 
-
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
