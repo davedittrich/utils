@@ -1,5 +1,7 @@
 ---
 
+# Playbook for setting up a development workstation.
+
 - hosts: all
   gather_facts: true
 
@@ -9,4 +11,3 @@
     - davedittrich.utils.swapcapslockctrl
     - davedittrich.utils.visible_bell
     - davedittrich.utils.dropins
-    - davedittrich.utils.kali_like

@@ -31,6 +31,7 @@ help:
 	@echo "  spotless - clean, then get rid of as much else as possible"
 	@echo "  test - run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO))"
 	@echo "  test-all-distros - run molecule tests on all scenarios (fake 'matrix' like GitHub Actions)"
+	@echo "  help-delegated-host - provide help on using the 'delegated' scenario"
 	@echo "  test-delegated - run molecule against delegated host ($(DELEGATED_HOST))"
 	@echo "  verify - run tests on scenario '$(SCENARIO)'"
 	@echo "  version - show the current version number from 'VERSION' file"

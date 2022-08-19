@@ -1,11 +1,13 @@
 ---
 
+# Playbook for setting up a Kali-like workstation.
+
 - hosts: all
   gather_facts: true
 
   roles:
-    - davedittrich.utils.kali_like
     - davedittrich.utils.branding
     - davedittrich.utils.ip_in_issue
     - davedittrich.utils.visible_bell
     - davedittrich.utils.dropins
+    - davedittrich.utils.kali_like
