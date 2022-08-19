@@ -12,7 +12,7 @@ from molecule.shared import (  # noqa
 
 @skip_unless_role('davedittrich.utils.visible_bell')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
-def test_inputrc(host, user):
+def test_user_inputrc(host, user):
     f = host.file(
         os.path.join(
             get_homedir(host=host, user=user),
@@ -25,7 +25,7 @@ def test_inputrc(host, user):
 
 @skip_unless_role('davedittrich.utils.visible_bell')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
-def test_bashrc(host, user):
+def test_user_bashrc(host, user):
     f = host.file(
         os.path.join(
             get_homedir(host=host, user=user),
@@ -39,7 +39,7 @@ def test_bashrc(host, user):
 
 @skip_unless_role('davedittrich.utils.visible_bell')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
-def test_cshrc(host, user):
+def test_user_cshrc(host, user):
     f = host.file(
         os.path.join(
             get_homedir(host=host, user=user),
@@ -53,7 +53,7 @@ def test_cshrc(host, user):
 
 @skip_unless_role('davedittrich.utils.visible_bell')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
-def test_exrc(host, user):
+def test_user_exrc(host, user):
     f = host.file(
         os.path.join(
             get_homedir(host=host, user=user),
@@ -67,7 +67,7 @@ def test_exrc(host, user):
 
 @skip_unless_role('davedittrich.utils.visible_bell')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
-def test_vimrc(host, user):
+def test_user_vimrc(host, user):
     f = host.file(
         os.path.join(
             get_homedir(host=host, user=user),
