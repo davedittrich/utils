@@ -10,6 +10,9 @@ from molecule.shared import (
 )
 
 
+## System oriented tests.
+
+
 @skip_unless_role('davedittrich.utils.branding')
 def test_boot_config(host):
     f = host.file('/boot/config.txt')
@@ -21,6 +24,7 @@ def test_boot_config(host):
 @skip_unless_role('davedittrich.utils.branding')
 def test_boot_cmdline(host):
     f = host.file('/boot/cmdline.txt')
+    assert f.exists
     assert f.user == 'root'
     assert r'logo.nologo' in f.content_string
 
@@ -37,12 +41,12 @@ def test_splashscreen_service(host):
 
 
 @skip_unless_role('davedittrich.utils.branding')
-@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
-def test_user_homedir(host, user):
-    homedir = get_homedir(host=host, user=user)
-    f = host.file(homedir)
+def test_wallpaper_image(host):
+    assert 'lxde_wallpapers_directory' in ansible_vars
+    wallpapers_dir = ansible_vars['lxde_wallpapers_directory']
+    f = host.file(os.path.join(wallpapers_dir, 'custom-splash.jpg'))
     assert f.exists
-    assert f.user == user
+    assert f.user == 'root'
 
 
 @skip_unless_role('davedittrich.utils.branding')
@@ -54,12 +58,26 @@ def test_x11_session_manager_is_lxde(host):
 
 
 @skip_unless_role('davedittrich.utils.branding')
-def test_wallpaper_image(host):
+def test_user_lightdm_login_background(host):
     assert 'lxde_wallpapers_directory' in ansible_vars
     wallpapers_dir = ansible_vars['lxde_wallpapers_directory']
-    f = host.file(os.path.join(wallpapers_dir, 'custom-splash.jpg'))
+    login_background = os.path.join(wallpapers_dir, 'custom-splash.jpg')
+    f = host.file('/etc/lightdm/lightdm-gtk-greeter.conf')
     assert f.exists
     assert f.user == 'root'
+    assert f'background=#stretched:{login_background}' in f.content_string
+
+
+## User oriented tests.
+
+
+@skip_unless_role('davedittrich.utils.branding')
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
+def test_user_homedir(host, user):
+    homedir = get_homedir(host=host, user=user)
+    f = host.file(homedir)
+    assert f.exists
+    assert f.user == user
 
 
 @skip_unless_role('davedittrich.utils.branding')
@@ -86,19 +104,18 @@ def test_user_wallpaper_setting(host, user):
 
 
 @skip_unless_role('davedittrich.utils.branding')
-def test_lightdm_login_background(host):
-    assert 'lxde_wallpapers_directory' in ansible_vars
-    wallpapers_dir = ansible_vars['lxde_wallpapers_directory']
-    login_background = os.path.join(wallpapers_dir, 'custom-splash.jpg')
-    f = host.file('/etc/lightdm/lightdm-gtk-greeter.conf')
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
+def test_user_LXDE_autostart_xset(host, user):
+    homedir = get_homedir(host=host, user=user)
+    f = host.file(os.path.join((homedir, '.config/lxsession/LXDE/autostart')
     assert f.exists
-    assert f.user == 'root'
-    assert f'background=#stretched:{login_background}' in f.content_string
+    assert f.user == user
+    assert r'xset' in f.content_string
 
 
 # @skip_unless_role('davedittrich.utils.branding')
 # @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
-# def test_LXDE_desktop_conf(host, user):
+# def test_user_LXDE_desktop_conf(host, user):
 #     homedir = get_homedir(host=host, user=user)
 #     f = host.file(
 #         os.path.join(homedir, '.config/lxsession/LXDE/desktop.conf')
@@ -112,6 +129,7 @@ def test_lightdm_login_background(host):
 # list of configuration files.  These are used to generate test functions
 # at collection time. For more information on how this works, see:
 #   https://medium.com/opsops/deepdive-into-pytest-parametrization-cb21665c05b9
+
 
 @pytest.fixture(params=ansible_vars.get('accounts', []))
 def fixture_users(request):
