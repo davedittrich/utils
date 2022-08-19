@@ -4,4 +4,4 @@ __pycache__
 delegated-ssh-config
 diffs*
 galaxy.yml
-donotpublish
+do_not_publish
