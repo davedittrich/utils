@@ -87,7 +87,7 @@ def test_user_wallpaper_setting(host, user):
     if monitors == 0:
         pytest.xfail('no monitors')
     homedir = get_homedir(host=host, user=user)
-    d = host.file(os.path.join(homedir, '.config/pcmanfm/LXDE'))
+    d = host.file(os.path.join(homedir, '.config', 'pcmanfm', 'LXDE'))
     assert d.exists
     assert d.is_directory
     assert d.user == user
@@ -95,7 +95,7 @@ def test_user_wallpaper_setting(host, user):
         f = host.file(
             os.path.join(
                 homedir,
-                f'.config/pcmanfm/LXDE/desktop-items-{monitor}.conf'
+                '.config', 'pcmanfm', 'LXDE', f'desktop-items-{monitor}.conf'
             )
         )
         assert f.exists
@@ -107,10 +107,14 @@ def test_user_wallpaper_setting(host, user):
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_LXDE_autostart_xset(host, user):
     homedir = get_homedir(host=host, user=user)
-    f = host.file(os.path.join((homedir, '.config/lxsession/LXDE/autostart')))
+    f = host.file(
+        os.path.join(
+            homedir, '.config', 'lxsession', 'LXDE', 'autostart'
+        )
+    )
     assert f.exists
     assert f.user == user
-    assert r'xset' in f.content_string
+    assert r'lxpanel --profile LXDE' in f.content_string
 
 
 # @skip_unless_role('davedittrich.utils.branding')
