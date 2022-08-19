@@ -487,6 +487,52 @@ molecule/shared/tests/test_visible_bell.py::test_vimrc[ansible:/delegated-host-p
 INFO     Verifier completed successfully.
 ```
 
+## Testing on a new delegated host
+
+To add a new host for testing, such as a laptop or a cloud instance, initialize a
+new scenario using the `delegated` driver.
+
+```shell
+$ molecule init scenario --driver-name=delegated antsle
+INFO     Initializing new scenario antsle...
+INFO     Initialized scenario in /Users/dittrich/code/davedittrich/utils/molecule/antsle successfully.
+```
+
+Here is the structure of the new `molecule/` subdirectory for the scenario:
+
+```shell
+$ tree molecule/antsle/
+molecule/antsle/
+├── INSTALL.rst
+├── converge.yml
+├── create.yml
+├── destroy.yml
+├── molecule.yml
+└── verify.yml
+
+0 directories, 6 files
+```
+
+State is cached in the `$HOME/.cache/molecule/` directory.
+
+```shell
+$ tree $HOME/.cache/molecule/
+/Users/dittrich/.cache/molecule/
+└── utils
+    ├── default
+    │   ├── ansible.cfg
+    │   ├── inventory
+    │   │   └── ansible_inventory.yml
+    │   └── state.yml
+    └── delegated
+        ├── ansible.cfg
+        ├── inventory
+        │   └── ansible_inventory.yml
+        └── state.yml
+
+5 directories, 6 files
+```
+
 ## Gotchas
 
 When developing and testing your new roles, you may find that some Ansible plays
@@ -556,6 +602,7 @@ cause idempotence tests to fail. Here are some of the causes and solutions.
 - [Question: accessing values of variables as they are being used for provisioning an instance inside Testinfra tests #151](https://github.com/ansible-community/molecule/issues/151), April 5, 2016
 - [Using Ansible Molecule to test roles in monorepo](https://mariarti0644.medium.com/using-ansible-molecule-to-test-roles-in-monorepo-5f711c716666), by Maria Kotlyarevskaya, Mar 13, 2021
 - [`test infra` modules](https://testinfra.readthedocs.io/en/latest/modules.html)
+- [Validate Ansible roles through molecule delegated driver](https://medium.com/@fabio.marinetti81/validate-ansible-roles-through-molecule-delegated-driver-a2ea2ab395b5), by Fabio Marinetti, April 7, 2020
 
 ## Release notes
 
