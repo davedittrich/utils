@@ -1,5 +1,5 @@
-ANSIBLE_GALAXY_SERVER:=$(shell psec secrets get ansible_galaxy_server)
-ANSIBLE_GALAXY_API_KEY:=$(shell psec secrets get ansible_galaxy_api_key)
+ANSIBLE_GALAXY_SERVER:=$(shell psec secrets get ansible_galaxy_server 2>/dev/null)
+ANSIBLE_GALAXY_API_KEY:=$(shell psec secrets get ansible_galaxy_api_key 2>/dev/null)
 ARTIFACT=davedittrich-utils-$(VERSION).tar.gz
 export COLLECTION_NAMESPACE=davedittrich
 export COLLECTION_PATH=$(HOME)/.ansible/collections.dev:$(HOME)/.ansible/collections
@@ -10,7 +10,7 @@ PLAYBOOK=playbooks/workstation_setup.yml
 PYTHONPATH=$(shell pwd)/molecule
 SCENARIO=default
 SHELL=/bin/bash
-VERSION=$(shell grep "version:" galaxy.yml 2>/dev/null | sed 's/ //g' | cut -d: -f 2)
+VERSION=$(shell cat VERSION)
 
 .PHONY: help
 help:
@@ -33,7 +33,7 @@ help:
 	@echo "  test-all-distros - run molecule tests on all scenarios (fake 'matrix' like GitHub Actions)"
 	@echo "  test-delegated - run molecule against delegated host ($(DELEGATED_HOST))"
 	@echo "  verify - run tests on scenario '$(SCENARIO)'"
-	@echo "  version - show the current version number from 'galaxy.yml' file"
+	@echo "  version - show the current version number from 'VERSION' file"
 	@echo ""
 	@echo "Variables:"
 	@echo "  ANSIBLE_GALAXY_SERVER ('$(ANSIBLE_GALAXY_SERVER)' from psec)"
@@ -61,7 +61,7 @@ help:
 
 .PHONY: build
 build:
-	ansible-galaxy collection build -vvvv
+	ansible-playbook -vvvv -i 'localhost,' build/galaxy_deploy.yml
 	@tar -tzf $(ARTIFACT) | grep -v '.*/$$' | while read line; do echo ' -->' $$line; done
 
 .PHONY: build-images

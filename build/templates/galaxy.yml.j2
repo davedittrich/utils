@@ -1,6 +1,6 @@
 namespace: davedittrich
 name: utils
-version: "{{ tag }}"
+version: "{{ version }}"
 # See https://github.com/ansible/galaxy/issues/2438
 readme: README.md
 authors:
@@ -14,6 +14,7 @@ homepage: https://github.com/davedittrich/utils
 issues: https://github.com/davedittrich/utils/issues
 tags:
   - system
+  - kali_like
   - swapcapslockctrl
   - visual_bell
   - bootsplash
@@ -21,25 +22,46 @@ tags:
   - redhat
   - ubuntu
   - debian
-# A list of file glob-like patterns used to filter any files or directories that should not be included in the build
-# artifact. A pattern is matched from the relative path of the file or directory of the collection directory. This
-# uses 'fnmatch' to match the files or directories. Some directories and files like 'galaxy.yml', '*.pyc', '*.retry',
-# and '.git' are always filtered
+#
+# A list of file glob-like patterns used to filter any files or directories
+# that should not be included in the build artifact. A pattern is matched from
+# the relative path of the file or directory of the collection directory. This
+# uses 'fnmatch' to match the files or directories. Some directories and files
+# like 'galaxy.yml', '*.pyc', '*.retry', and '.git' are always filtered
+#
+# SECURITY NOTE: Ansible Galaxy does NOT support deleting collections that are uploaded
+# to it. The only way to prevent files from showing up in your collection that contain
+# secrets is to EXPLICITLY list them here. Those are a security disaster waiting to happen,
+# but RedHat does not consider this an issue and will not fix it. The only ways to protect
+# yourself when doing development and producing/pushing collections to Ansible Galaxy
+# manually are to use file names that match the rule `*do_not_publish` and to create your
+# collection file and double-check EVERY file included in it to make SURE that you do not
+# accidentally create a file with sensitive content that is not explicitly excluded.
+#
 build_ignore:
+  - '*.bak'
+  - '*.log'
+  - '*.orig'
+  - '*.rej'
+  - '*.swp'
+  - '*.tar.gz'
+  - '*/.*.swp'
+  - '*/diffs*'
+  - '*do_not_publish'
+  - '.*.swp'
+  - '.*lint'
   - '.bumpversion.cfg'
   - '.github'
   - '.gitignore'
   - '.vscode'
   - '*/.gitignore'
-  - '.*lint'
   - '*/.*.swp'
   - '.pytest_cache'
-  - '*.bak'
-  - '*.rej'
-  - '*.tar.gz'
+  - '.vscode'
   - 'delegated-ssh-config'
   - 'docker/*.log'
   - 'donotpublish'
   - 'diffs*'
   - '*/diffs*'
   - 'molecule'
+  - 'tox.ini'
