@@ -2,7 +2,64 @@
 - name: Converge
   hosts: all
   gather_facts: false
-  tasks:
-    - name: "Include utils"
-      ansible.builtin.include_role:
-        name: "utils"
+  pre_tasks:
+    - name: Test connection to delegated-host.
+      ansible.builtin.command: 'uptime'
+      register: uptime
+      changed_when: false
+
+    - name: Check results.
+      ansible.builtin.assert:
+        that:
+          - "' up ' in uptime.stdout"
+        fail_msg: '[-] cannot connect to delegated-host'
+
+    - name: Block for preparing host for converge.
+      block:
+
+        - name: Test ability to update APT cache.
+          ansible.builtin.package:
+            update_cache: true
+          become: true
+          changed_when: false
+          register: apt_update
+          failed_when: "apt_update is not success or 'must be accepted explicitly' in apt_update.sterr"
+
+      rescue:
+        - name: Ensure changes to `Suite` or `Version` are handled.
+          ansible.builtin.shell:
+            apt-get --allow-releaseinfo-change update
+          args:
+            executable: /bin/bash
+          when:
+            - "'InRelease' in apt_update.stdout"
+            - "'changed its' in apt_update.stdout"
+            - "'Suite' in apt_update.stdout or 'Version' in apt_update.stdout"
+
+    - name: Ensure SSH is installed on instance.
+      ansible.builtin.package:
+        name: ssh
+        state: present
+
+    - name: Set fact with tests path.
+      ansible.builtin.set_fact:
+        tests_path: "{{ lookup('env', 'TESTS_PATH') }}"
+      changed_when: false
+
+  roles:
+    - davedittrich.utils.kali_like
+    - davedittrich.utils.branding
+    - davedittrich.utils.ip_in_issue
+    - davedittrich.utils.swapcapslockctrl
+    - davedittrich.utils.visible_bell
+    - davedittrich.utils.dropins
+
+  post_tasks:
+    - name: Dump all variables used to converge for later use.
+      ansible.builtin.copy:
+        content: |
+          {{ vars | to_yaml }}
+        dest: /tmp/ansible-vars.yml
+        mode: 0o600
+      changed_when: false
+      delegate_to: localhost
