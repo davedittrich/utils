@@ -1,0 +1,53 @@
+---
+# Fix systemctl dbus connect failure.
+# https://www.toptechskills.com/ansible-tutorials-courses/rapidly-build-test-ansible-roles-molecule-docker/
+# https://molecule.readthedocs.io/en/latest/configuration.html
+
+# [molecule/share/prepare.yml-wrap]
+- name: Ensure systemctl.py script exists.
+  local_action:
+    module: ansible.builtin.get_url
+    url: >
+      'https://raw.githubusercontent.com/gdraheim/docker-systemctl-images/' +
+      '69902651ea0b67b97bcdb38b651796163b5bfcea/files/docker/systemctl.py'
+    dest: '../shared/files/systemctl.py'
+    checksum: 'sha256:4b8146075199cb1499c6916e004af3a5cba36d7979d5a88af4654de803f05cc0'
+  run_once: true
+# ![molecule/share/prepare.yml-wrap]
+
+- name: Ensure systemctl is replaced with non-DBUS script.
+  ansible.builtin.copy:
+    src: '../shared/files/systemctl.py'
+    dest: '/usr/bin/systemctl'
+    owner: root
+    group: root
+    mode: 0o750
+  become: true
+
+- name: Ensure systemctl uses discovered_interpreter_python.
+  ansible.builtin.lineinfile:
+    path: '/usr/bin/systemctl'
+    regexp: '^#! /usr/bin/python'
+    line: '#! {{ discovered_interpreter_python | default("/usr/bin/python3") }}'
+    owner: root
+    group: root
+    mode: 0o750
+  become: true
+
+- name: Ensure systemd run directory exists.
+  ansible.builtin.file:
+    name: '/run/systemd/system'
+    state: 'directory'
+    owner: root
+    group: root
+    mode: 0750
+  become: true
+
+- name: Ensure dbus.service is stopped.
+  ansible.builtin.service:
+    name: dbus.service
+    state: stopped
+  become: true
+  ignore_errors: true
+
+#
