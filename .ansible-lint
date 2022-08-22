@@ -4,10 +4,18 @@ parseable: true
 skip_list:
   - ANSIBLE0010
   - command-instead-of-shell
+  - no-handler
 use_default_rules: true
 verbosity: 1
 exclude_paths:
+  - __pycache__
   - build
   - .github
+  - .tox
   - molecule/*/molecule.yml
+  - molecule/*/create.yml
+  - molecule/*/converge.yml
+  - molecule/*/prepare.yml
   - roles/*/meta/main.yml
+  - playbooks/*.yml
+  - tasks/*.yml
