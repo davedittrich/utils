@@ -5,6 +5,21 @@
 - hosts: all
   gather_facts: true
 
+  pre_tasks:
+    - name: Ensure required packages are present.
+      ansible.builtin.apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+      vars:
+        packages:
+          - dnsutils
+          - tree
+          - ntp
+          - vim
+      become: true
+
   roles:
     - davedittrich.utils.branding
     - davedittrich.utils.ip_in_issue
