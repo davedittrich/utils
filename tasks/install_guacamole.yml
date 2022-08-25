@@ -39,7 +39,8 @@
 
 - block:
     - name: Install Guacamole from source.
-      shell: ./guac-install.sh --nomfa --installmysql --mysqlpwd {{ mysql_password }} --guacpwd {{ guacamole_password }}
+      ansible.builtin.shell:
+        ./guac-install.sh --nomfa --installmysql --mysqlpwd {{ mysql_password }} --guacpwd {{ guacamole_password }}
       args:
         executable: /bin/bash
         chdir: /tmp/guac-install
