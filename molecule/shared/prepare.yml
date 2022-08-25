@@ -33,14 +33,6 @@
         mode: 0o640
       when: boot_cmdline.stat.exists is false
 
-    - name: Ensure `/boot/custom-splash.jpg` exists.
-      ansible.builtin.copy:
-        src: '{{ custom_splash | default("Hello_World.jpg") }}'
-        dest: '/boot/custom-splash.jpg'
-        owner: root
-        group: root
-        mode: 0o640
-
     - name: Set fact with users whose accounts need to be configured.
       ansible.builtin.set_fact:
         accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"

@@ -1,5 +1,4 @@
 ---
-
 # tasks file for davedittrich.utils.branding
 
 # This role will look for a custom boot splash image in
@@ -7,9 +6,10 @@
 # `flash` script copies it. If it exists, it will be copied
 # to the wallpapers directory for use as a background image
 # as well as the boot splash image. If you instead apply this
-# role later on, specify a path to the desired boot splash
-# file on the Ansible controller using the `custom_splash`
-# variable and it will be copied from there instead.
+# role later on, you can specify a path to the desired boot
+# splash file on the Ansible controller using the `custom_splash`
+# variable and it will be copied from there instead. Failing that,
+# The default `Hello_World.png` file will be used.
 #
 # See the following:
 #   https://www.thegeekstuff.com/2012/10/grub-splash-image/
@@ -140,6 +140,33 @@
     state: absent
   become: true
   when: local_custom_splash.stat.exists
+
+# https://martin.hoppenheit.info/blog/2016/where-to-put-application-icons-on-linux/
+# https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+
+- name: Block for defaulting custom splash from `Hello_World.png`.
+  when: custom_splash is not defined
+  block:
+    - name: Ensure `imagemagick` package is present.
+      ansible.builtin.apt:
+        name: imagemagick
+        state: present
+      become: true
+
+    - name: Ensure `Hello_World.png` is available in `lxde_wallpapers_directory`.
+      ansible.builtin.copy:
+        src: 'Hello_World.png'
+        dest: '{{ lxde_wallpapers_directory }}/custom-splash.png'
+        mode: 0o644
+      become: true
+
+    - name: Ensure `custom-splash.jpg` is created.
+      ansible.builtin.shell: convert custom-splash.png custom-splash.jpg
+      args:
+        executable: /bin/bash
+        chdir: '{{ lxde_wallpapers_directory }}'
+        creates: '{{ lxde_wallpapers_directory }}/custom-splash.jpg'
+      become: true
 
 - name: Ensure boot splash is customized.
   include_tasks:
