@@ -58,7 +58,7 @@ def test_x11_session_manager_is_lxde(host):
 
 
 @skip_unless_role('davedittrich.utils.branding')
-def test_user_lightdm_login_background(host):
+def test_lightdm_login_background(host):
     assert 'lxde_wallpapers_directory' in ansible_vars
     wallpapers_dir = ansible_vars['lxde_wallpapers_directory']
     login_background = os.path.join(wallpapers_dir, 'custom-splash.jpg')
