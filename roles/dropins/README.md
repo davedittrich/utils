@@ -36,7 +36,8 @@ root@instance:~# cat .bash_profile
 Requirements
 ------------
 
-There are no pre-requisites.
+This role must be applied *after* any other roles that use `lineinfile` or
+`blockinfile` in order for idempotence tests to pass.
 
 Role Variables
 --------------

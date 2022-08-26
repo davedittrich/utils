@@ -21,11 +21,11 @@
       changed_when: false
 
   roles:
-    - davedittrich.utils.dropins
+    - davedittrich.utils.visible_bell
     - davedittrich.utils.branding
     - davedittrich.utils.ip_in_issue
     - davedittrich.utils.swapcapslockctrl
-    - davedittrich.utils.visible_bell
+    - davedittrich.utils.dropins
     - davedittrich.utils.kali_like
 
   post_tasks:

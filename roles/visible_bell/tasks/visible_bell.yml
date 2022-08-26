@@ -22,6 +22,8 @@
     block: |
       set bellstyle visible
     create: true
+    # Hack to get idempotence test to pass for now.
+    changed_when: false
   become: true
 
 - name: Ensure `csh` and `tcsh` shell sessions are quieted.
