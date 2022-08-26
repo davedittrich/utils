@@ -76,14 +76,20 @@
   ansible.builtin.copy:
     content: |
       FROM {{ source_image }}
-      ENV DEBIAN_FRONTEND noninteractive && \
-      RUN echo "deb http://deb.debian.org/debian testing non-free contrib main" | tee -a /etc/apt/sources.list.d/deb-docker.list \
-        apt-get update && \
-        {% if 'debian' in target_distro %}
-        apt-get install -y libcrypt-dev && \
-        {% else %}
-        apt-get install -y libcrypt1 && \
-        {% endif %}
+      ENV DEBIAN_FRONTEND noninteractive
+      ENV container docker
+      RUN echo "deb http://deb.debian.org/debian testing non-free contrib main" | tee -a /etc/apt/sources.list.d/deb-docker.list
+      RUN apt-get update && \
+        (apt-get -y install libc6 perl-base || \
+          (cd /tmp; \
+           apt -y download libcrypt1; \
+           ls -l libcrypt1*.deb; \
+           dpkg-deb -x 'libcrypt1_1%3a4.4.28-2_amd64.deb' .; \
+           cp -av lib/x86_64-linux-gnu/* /lib/x86_64-linux-gnu/; \
+           ln -s /lib/x86_64-linux-gnu/libcrypt1.so.1.1.0 /lib/x86_64-linux-gnu/libcrypt1.so.1; \
+           apt -y --fix-broken install; \
+          ) \
+        ) && \
         apt-get -y \
           -o APT::Install-Recommends=false \
           -o APT::Get::AutomaticRemove=true \
