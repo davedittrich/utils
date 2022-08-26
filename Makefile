@@ -1,6 +1,5 @@
 ANSIBLE_GALAXY_SERVER:=$(shell psec secrets get ansible_galaxy_server 2>/dev/null)
 ANSIBLE_GALAXY_API_KEY:=$(shell psec secrets get ansible_galaxy_api_key 2>/dev/null)
-ARTIFACT=davedittrich-utils-$(VERSION).tar.gz
 export COLLECTION_NAMESPACE=davedittrich
 export COLLECTION_PATH=$(HOME)/.ansible/collections.dev:$(HOME)/.ansible/collections
 DELEGATED_HOST:=none
@@ -11,6 +10,7 @@ PYTHONPATH=$(shell pwd)/molecule
 SCENARIO=default
 SHELL=/bin/bash
 VERSION=$(shell cat VERSION)
+ARTIFACT=davedittrich-utils-$(VERSION).tar.gz
 
 .PHONY: help
 help:
