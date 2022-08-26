@@ -2,6 +2,8 @@
 
 - hosts: all
   gather_facts: true
+  vars:
+    collection_root: '{{ lookup("env", "COLLECTION_ROOT") }}'
 
   roles:
     - davedittrich.utils.branding

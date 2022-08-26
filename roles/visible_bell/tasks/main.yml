@@ -19,6 +19,12 @@
     msg: '{{ accounts }}'
     verbosity: 2
 
+- name: Get user home directories.
+  include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+
 - name: Ensure quieting applied to intended users.
   include_tasks:
     file: visible_bell.yml

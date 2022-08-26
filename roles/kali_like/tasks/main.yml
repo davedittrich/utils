@@ -7,8 +7,7 @@
     accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
 
 - name: Ensure user home directories are mapped.
-  include_tasks:
-    file: ../../../tasks/get_homedir.yml
+  include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
@@ -88,13 +87,11 @@
   become: true
 
 - name: Ensure hostname reflects serial number.
-  include_tasks:
-    file: serial_hostname.yml
+  include_tasks: serial_hostname.yml
 # - name: Ensure kali icons are present
 # TODO(dittrich): Complete this.
 
 - name: Ensure Guacamole installed for remote access.
-  include_tasks:
-    file: ../../../tasks/install_guacamole.yml
+  include_tasks: ../../../tasks/install_guacamole.yml
 
 # vim: ft=ansible :
