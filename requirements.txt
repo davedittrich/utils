@@ -10,5 +10,7 @@ yamllint==1.26.1
 pipx==0.16.4
 pytest==6.2.4
 python-secrets>=22.5.0
+python3-venv
 testinfra==4.1.0
 tox
+xmltodict==0.13.0
