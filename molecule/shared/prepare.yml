@@ -4,7 +4,7 @@
 - name: Prepare
   hosts: all
   vars:
-    collection_root: '{{ lookup("env", "COLLECTION_ROOT" }}'
+    collection_root: '{{ lookup("env", "COLLECTION_ROOT") }}'
   tasks:
     - name: Stat `/boot/config.txt` file.
       ansible.builtin.stat:
