@@ -34,6 +34,7 @@
       - hwinfo
       - imagemagick
       - lxde4
+      - python3-testinfra
       - rsync
       - ssh
       - tree
@@ -52,6 +53,7 @@
       - fbi
       - hwinfo
       - imagemagick
+      - python3-testinfra
       - rsync
       - ssh
       - task-lxde-desktop
