@@ -1,13 +1,13 @@
 ---
+
 # tasks file for davedittrich.utils.swapcapslockctrl
 
 - name: Set fact with users whose accounts need to be configured
-  set_fact:
-    accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
+  ansible.builtin.set_fact:
+    accounts: '{{ accounts | default(["root", ansible_user_id]) | unique }}'
 
 - name: Ensure user home directories are mapped.
-  include_tasks:
-    file: ../../../tasks/get_homedir.yml
+  include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
@@ -26,7 +26,7 @@
 - name: Stat `/etc/X11/Xsession.d` directory.
   ansible.builtin.stat:
     path: /etc/X11/Xsession.d
-  register: Xsession_d
+  register: xsessiond
 
 - name: Ensure Xsession custom xmodmap loading dropin exists.
   ansible.builtin.copy:
@@ -48,16 +48,16 @@
     group: root
     mode: 0o644
   become: true
-  when: Xsession_d.stat.exists
+  when: xsessiond.stat.exists
 
 - name: Ensure key remapping file in `/etc/udev/hwdb.d/` directory.
   ansible.builtin.copy:
     content: |
-        # Match all usb keyboards
-        evdev:input:b0003v*p*
-        # Remap CapsLock <-> Left CTRL
-          KEYBOARD_KEY_70039=leftctrl
-          KEYBOARD_KEY_700E0=capslock
+      # Match all usb keyboards
+      evdev:input:b0003v*p*
+      # Remap CapsLock <-> Left CTRL
+      KEYBOARD_KEY_70039=leftctrl
+      KEYBOARD_KEY_700E0=capslock
     dest: /etc/udev/hwdb.d/99-swapcapslockctrl.hwdb
     owner: root
     group: root
@@ -83,7 +83,7 @@
   vars:
     user: '{{ item }}'
   loop: '{{ accounts }}'
-  when: Xsession_d.stat.exists
+  when: xsessiond.stat.exists
 
 - name: Ensure `ctrl:swapcaps` in `/etc/default/keyboard`.
   ansible.builtin.lineinfile:
@@ -99,7 +99,7 @@
   args:
     executable: /bin/bash
   environment:
-    DEBIAN_FRONTEND: 'noninteractive'
+    DEBIAN_FRONTEND: "noninteractive"
   register: result
   changed_when: false
   failed_when:
