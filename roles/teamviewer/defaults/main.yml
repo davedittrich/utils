@@ -1,0 +1,10 @@
+---
+
+teamviewer_version: '15.22.3'
+teamviewer_deb_file: '/tmp/teamviewer_15.22.3_amd64.deb'
+teamviewer_deb_file_sha256: '3ced9acefede989a81a1aaa93569e3d804ce918cdb2fc20515ddd6831bfcdb95'
+teamviewer_signing_key_url: 'https://download.teamviewer.com/download/linux/signature/TeamViewer2017.asc'
+teamviewer_deb_url: 'https://dl.teamviewer.com/download/linux/version_15x/teamviewer_15.22.3_amd64.deb'
+# teamviewer_deb_url: 'https://download.teamviewer.com/download/linux/teamviewer_amd64.deb'
+
+# vim: ft=ansible :

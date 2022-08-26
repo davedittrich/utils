@@ -1,0 +1,104 @@
+---
+
+# Tasks for installing and pre-configuring TeamViewer for proctoring
+# students.
+#
+# This playbook is written so as to use a local copy of the TeamViewer
+# .deb file on the Ansible control host, which gets copied to the target
+# before installation. If a local copy is not available, the latest .deb
+# file is downloaded first.
+#
+# Note: The TeamViewer systemd service is `teamviewerd.service`.
+
+- block:
+    - name: Stat file pointed at by `teamviewer_deb_file` on localhost.
+      ansible.builtin.stat:
+        path: '{{ teamviewer_deb_file }}'
+      delegate_to: localhost
+      register: _deb_file
+
+    - name: Ensure local TeamViewer deb file is copied to target.
+      ansible.builtin.copy:
+        src: '{{ teamviewer_deb_file }}'
+        dest: '/tmp/{{ teamviewer_deb_file|basename }}'
+        state: present
+        owner: 'root'
+        group: 'root'
+        mode: 0o644
+      become: true
+      when: _deb_file.stat.exists
+
+    - name: Ensure remote TeamViewer deb file is downloaded to target.
+      ansible.builtin.get_url:
+        src: '{{ teamviewer_deb_file_url }}'
+        dest: '/tmp/{{ teamviewer_deb_file|basename }}'
+        checksum: 'sha256:{{ teamviewer_deb_file_sha256 }}'
+        state: present
+      become: true
+      when: not _deb_file.stat.exists
+
+    - name: Ensure TeamViewer deb file is installed.
+      ansible.builtin.apt:
+        deb: '/tmp/{{ teamviewer_deb_file|basename }}'
+        state: present
+      become: true
+  when: teamviewer_deb_file|default('') != ''
+
+- name: Add teamviewer to sources.list.d
+  apt_repository:
+    repo: deb [arch=amd64] http://linux.teamviewer.com/deb stable main
+    state: present
+  become: true
+
+- block:
+    - name: Ensure TeamViewer apt signing key is present.
+      ansible.builtin.copy:
+        src: 'files/TeamViewer2017.asc'
+        dest: '/tmp/TeamViewer2017.asc'
+        state: present
+        owner: 'root'
+        group: 'root'
+        mode: 0o644
+
+    - name: Ensure TeamViewer apt signing key is present.
+      apt_key:
+        url: '{{ teamviewer_signing_key_url }}'
+        dest: '/tmp/TeamViewer2017.asc'
+        state: present
+      become: true
+
+    - name: Install package - teamviewer
+      ansible.builtin.apt:
+        name: teamviewer
+        state: present
+        update_cache: true
+      become: true
+  when: teamviewer_deb_file|default('') == ''
+
+- name: Ensure `teamviewerd` is stopped.
+  ansible.builtin.systemd:
+    name: teamviewerd
+    state: stopped
+  become: true
+
+- name: Ensure `teamviewerd` is configured.
+  ansible.builtin.lineinfile:
+    path: '/etc/teamviewer/global.conf'
+    line: '[int32] EulaAccepted = 1'
+    state: present
+  become: true
+
+- name: Ensure password is set for proctor remote access.
+  ansible.builtin.command: |
+    teamviewer --passwd {{ teamviewer_password }}
+  changed_when: false
+  become: true
+
+- name: Ensure `teamviewerd.service` is enabled, started.
+  systemd:
+    name: teamviewerd
+    enabled: true
+    state: started
+  become: true
+
+# vim: ft=ansible :
