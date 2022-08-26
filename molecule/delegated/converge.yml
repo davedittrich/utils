@@ -1,6 +1,8 @@
 ---
 - name: Converge
   hosts: all
+  vars:
+    collection_root: '{{ lookup("env", "COLLECTION_ROOT") }}'
 
   pre_tasks:
     - name: Ensure package cache is up to date.

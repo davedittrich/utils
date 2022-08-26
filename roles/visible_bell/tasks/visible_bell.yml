@@ -1,9 +1,5 @@
 ---
 
-- name: Get user home directories.
-  include_tasks:
-    file: ../../../tasks/get_homedir.yml
-
 - name: Ensure applications using `readline` are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir[user] ~ '/.inputrc' }}"
@@ -63,3 +59,5 @@
       set vb t_vb=
     create: true
   become: true
+
+# EOF

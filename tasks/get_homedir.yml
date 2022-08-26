@@ -4,8 +4,7 @@
 # Use in playbooks as follows:
 #
 # - name: Ensure user home directories are mapped.
-#   include_task:
-#     file: ../../../tasks/get_homedir.yml
+#   include_task: '{{ collection_root }}/tasks/get_homedir.yml'
 #   loop: '{{ users }}'
 #   loop_control:
 #     loop_var: user
@@ -40,3 +39,5 @@
         var: homedir
 
   when: user not in homedir
+
+# EOF

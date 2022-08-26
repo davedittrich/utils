@@ -4,6 +4,8 @@
 
 - hosts: all
   gather_facts: true
+  vars:
+    collection_root: '{{ lookup("env", "COLLECTION_ROOT") }}'
 
   pre_tasks:
     - name: Ensure required packages are present.
