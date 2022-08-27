@@ -1,5 +1,5 @@
 ---
-- name: enable splashscreen
+- name: Enable splashscreen
   ansible.builtin.systemd:
     name: splashscreen
     daemon_reload: true
