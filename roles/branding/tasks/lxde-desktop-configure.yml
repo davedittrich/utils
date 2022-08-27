@@ -38,7 +38,7 @@
 
 - name: Set fact with relative template paths.
   ansible.builtin.set_fact:
-    config_templates: '{{ config_templates | default([]) + [ item.path | replace(dot_config_template_dir ~ "/", "") ] }}'
+    config_templates: '{{ config_templates | default([]) + [item.path | replace(dot_config_template_dir ~ "/", "")] }}'
   loop: '{{ config_templates_matched.files }}'
 
 - name: Debug template files.

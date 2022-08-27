@@ -88,9 +88,9 @@
   loop_control:
     loop_var: user
 
-- name: Set timezone to America/Los_Angeles
+- name: Ensure timezone set properly.
   community.general.timezone:
-    name: "America/Los_Angeles"
+    name: 'America/Los_Angeles'
   become: true
 
 # FIXME: vncserver :1

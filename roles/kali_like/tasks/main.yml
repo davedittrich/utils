@@ -49,7 +49,7 @@
 
 - name: Set fact with relative template paths.
   ansible.builtin.set_fact:
-    kali_like_script_templates: '{{ kali_like_script_templates | default([]) + [ item.path | basename ] }}'
+    kali_like_script_templates: '{{ kali_like_script_templates | default([]) + [item.path | basename] }}'
   loop: '{{ kali_like_script_templates_matched.files }}'
 
 - name: Debug `kali_like_script_templates`.

@@ -14,7 +14,7 @@
 
 - name: Set fact `exclude_interface`.
   ansible.builtin.set_fact:
-    exclude_interface: '{{ exclude_interface | default({}) | combine({ item.0: true }) }}'
+    exclude_interface: '{{ exclude_interface | default({}) | combine({item.0: true}) }}'
   with_nested:
     - '{{ ansible_interfaces }}'
     - '{{ exclude_interface_prefix }}'
@@ -27,7 +27,7 @@
 
 - name: Set fact `issue_interfaces`.
   ansible.builtin.set_fact:
-    issue_interfaces: '{{ issue_interfaces | default([]) + [ item ] }}'
+    issue_interfaces: '{{ issue_interfaces | default([]) + [item] }}'
   with_items: '{{ ansible_interfaces }}'
   when: 'item not in exclude_interface'
 
@@ -105,7 +105,7 @@
 
 - name: Set fact with template names.
   ansible.builtin.set_fact:
-    issue_templates: '{{ issue_templates | default([]) + [ item.path ] }}'
+    issue_templates: '{{ issue_templates | default([]) + [item.path] }}'
   with_items: '{{ templates_matched.files }}'
 
 - name: Debug template files.
