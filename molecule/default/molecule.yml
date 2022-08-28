@@ -29,7 +29,7 @@ provisioner:
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
     prepare: ../shared/prepare.yml
-    destroy: ../shared/destroy.yml
+    cleanup: ../shared/cleanup.yml
   inventory:
     hosts:
       all:
@@ -39,6 +39,20 @@ provisioner:
           mysql_password: '_molecule_mysql_password'
           guacamole_password: '_molecule_guacamole_password'
 # ![molecule.yml-provisioner]
+scenario:
+  destroy_sequence:
+    - dependency
+    - cleanup
+    - destroy
+  test_sequence:
+    - dependency
+    - lint
+    - cleanup
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
 verifier:
   name: testinfra
   directory: ../shared/tests

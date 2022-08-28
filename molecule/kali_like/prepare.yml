@@ -9,30 +9,8 @@
       include_tasks:
         file:  ../shared/prepare.yml
 
-    - name: Ensure Kali package signing key is present.
-      ansible.builtin.apt_key:
-        keyserver: pgpkeys.mit.edu
-        id: ED444FF07D8D0BF6
-        state: present
-      become: true
-
-    - name: Add Kali sources to `/etc/apt/sources.list.d/`
-      ansible.builtin.copy:
-        content: |
-          deb http://http.kali.org/kali sana main non-free contrib
-          deb http://security.kali.org/kali-security sana/updates main contrib non-free
-          deb-src http://http.kali.org/kali sana main non-free contrib
-          deb-src http://security.kali.org/kali-security sana/updates main contrib non-free
-        dest: /etc/apt/sources.list.d/kali.list
-        owner: root
-        group: root
-        mode: 0o644
-      become: true
-
-    - name: Ensure APT cache is updated for pre-requisites.
-      ansible.builtin.apt:
-        update-cache: true
-        cache_valid_time: 1
-      become: true
+    - name: Ensure Kali packages enabled.
+      include_tasks:
+        file:  '{{ collection_root }}/roles/kali_like/tasks/prepare_for_kali_packages.yml'
 
 # EOF

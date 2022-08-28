@@ -14,6 +14,16 @@
       - '{{ mysql_password is defined and mysql_password != "" }}'
     fail_msg: "'mysql_password' must be defined in including playbook"
 
+- name: Ensure `locale` is set.
+  ansible.builtin.set_fact:
+    locale: 'en_US.UTF-8'
+  when: locale is not defined
+
+- name: Ensure `timezone` is set.
+  ansible.builtin.set_fact:
+    timezone: 'America/Los_Angeles'
+  when: timezone is not defined
+
 - name: Set fact with Guacamole related service names.
   ansible.builtin.set_fact:
     guacamole_services:
@@ -88,10 +98,31 @@
   loop_control:
     loop_var: user
 
-- name: Ensure timezone set properly.
-  community.general.timezone:
-    name: 'America/Los_Angeles'
+- name: Ensure locale is set.
+  ansible.builtin.command: /usr/sbin/update-locale LANG={{ locale }} LC_ALL=$locale
   become: true
+
+- name: Ensure `/etc/localtime` is set.
+  ansible.builtin.file:
+    src: '/usr/share/zoneinfo/{{ timezone }}'
+    dest: '/etc/localtime'
+    state: link
+  become: true
+
+- name: Ensure `/etc/timezone` is set.
+  ansible.builtin.template:
+    src: 'templates/etc/timezone'
+    dest: '/etc/timezone'
+  notify: Update tzdata
+
+- name: Ensure tzdata is updated.
+  ansible.builtin.command: /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
+  become: true
+
+# - name: Ensure timezone set properly.
+#   community.general.timezone:
+#     name: 'America/Los_Angeles'
+#   become: true
 
 # FIXME: vncserver :1
 - name: Ensure Guacamole-related services are enabled, started.
