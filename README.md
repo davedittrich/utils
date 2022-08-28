@@ -546,6 +546,52 @@ cause idempotence tests to fail. Here are some of the causes and solutions.
       * https://github.com/Rosa-Luxemburgstiftung-Berlin/ansible-role-unbound/blob/main/molecule/default/Dockerfile-debian-bullseye.j2
       * https://github.com/geerlingguy/docker-debian11-ansible/issues/4
 
+  P.S. [2022-08-26] It turns out there were *several* inter-related issues that
+  conspired to break things and cost weeks in debugging, partly due to the
+  requirement of 10-15 minutes per test cycle to run the full test suite to
+  resolve the Debian+`systemd`+`libcrypt1`+Docker+... issues. These were
+  (for historical and SEO purposes):
+
+    * Debian packages changed such that updates completely broke package
+      installation due to `libcrypt.so.1` being deleted while `dpkg`
+      was updating packages using `perl-base`, which depends on it still
+      being there.
+
+          + https://www.youtube.com/watch?v=bbuoHXaNsUg
+
+      While trying to debug this issue, errors about failures to connect to
+      `dbus` occured, but it wasn't clear exactly why. At first it seemed
+      to be a result of...
+
+    * Docker on Mac switched to using `cgroupns` V2, which required configuring
+      Docker's `daemon.json` file to include setting `cgroupns` to `host`. Not
+      only that, but...
+
+    * `systemd` v248 broke Docker's volume mounts of `/sys/fs/cgroup`, requiring
+      changes to `molecule` to allow setting `cgroupns=host` and changing the
+      mounts from `ro` to `rw`.
+
+          + https://github.com/geerlingguy/docker-ubuntu2204-ansible/issues/2#issuecomment-1110602354
+          + https://github.com/johanssone/ansible-unbound/commit/ec3cbb8440109f13d33a057801c7b65bb1b58095
+          + https://github.com/ansible-collections/community.docker/issues/338
+
+    * Around the same time, `molecule` changed its package dependencies, causing
+      `pytest` and `testinfra` to break. Updating `molecule` only to the version
+      that fixed the `cgroupns` problem broke the `lint` and `verify` stages.
+
+   There is a also a number of issues with incompatible versions of `ansible`,
+   `ansible-core`, `ansible-lint`, and maybe also `testinfra` and `pytest`?
+   It is always frustrating to see responses from RedHat like the closing
+   comment on [this thread](https://github.com/ansible-community/ansible-lint-action/issues/41#issuecomment-933663572),
+   but it seems to mean you have to avoid (at all cost?) pinning specific
+   versions of any of the above listed `pip` packages and instead *only*
+   specify the version number of `ansible` (in this case, `==2.9.26`) and
+   and follow `thestevenbell`'s recommendation. Using `2.9.27` fails
+   with the error described and the RedHat response doesn't really help
+   explain "best-practice" for avoiding this problem.
+
+   Sigh. (At least everything seems to be stable again. For now...)
+
 ## See also
 
 - [Test-driven infrastructure development with Ansible & Molecule](https://blog.codecentric.de/en/2018/12/test-driven-infrastructure-ansible-molecule/), by Jonas Hecht, December 4, 2018
