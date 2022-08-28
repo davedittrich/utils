@@ -1,0 +1,191 @@
+---
+# Prepare a Debian 10 system to include Kali Linux packages as well.
+# This includes pre-requisite packages necessary for installation of
+# Kali tools, Kali package signing keys, setting package priority
+# policy, etc.
+#
+# See: https://www.kali.org/blog/advanced-package-management-in-kali-linux/
+
+- name: Ensure Kali package pre-requisites are present.
+  ansible.builtin.apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  vars:
+    packages:
+      - apt-utils
+      - dirmngr
+      - gnupg
+      - gnupg2
+      - python3-lib2to3
+      - python3-six
+      - xz-utils
+  become: true
+
+# - name: Ensure `gawk` is installed.
+#   ansible.builtin.apt:
+#     name: gawk
+#     state: present
+#     update_cache: false
+#   register: gawk_result
+#   become: true
+
+# - name: Work around some bug regarding `/usr/bin/awk`. # noqa no-handler
+#   ansible.builtin.command: update-alternatives --set awk /usr/bin/gawk
+#   become: true
+#   changed_when: false
+#   when: gawk_result.changed
+
+- name: Ensure Kali package signing key is present.
+  ansible.builtin.apt_key:
+    id: ED444FF07D8D0BF6
+    file: ED444FF07D8D0BF6.asc
+    state: present
+  become: true
+
+- name: Ensure Kali sources in `/etc/apt/sources.list.d/kali.list`
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/kali.list
+    content: |
+      deb http://http.kali.org/kali kali-bleeding-edge main contrib non-free
+      deb http://http.kali.org/kali kali-rolling main contrib non-free
+      deb-src http://http.kali.org/kali kali-bleeding-edge main contrib non-free
+      deb-src http://http.kali.org/kali kali-rolling main contrib non-free
+    owner: root
+    group: root
+    mode: 0o644
+  become: true
+
+- name: Ensure Debian sources in `/etc/apt/sources.list.d/debian.list`
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/debian.list
+    content: |
+      deb http://ftp.debian.org/debian unstable main contrib non-free
+      deb http://deb.debian.org/debian experimental main
+    owner: root
+    group: root
+    mode: 0o644
+  become: true
+
+- name: Ensure custom APT package priority policy is set.
+  ansible.builtin.copy:
+    dest: '/etc/apt/preferences.d/99-custom-policy'
+    # src: 99-custom-policy
+    content: |
+      # Priority of local package files is 100.
+      # Default priority of packages is 500.
+      # View policy with `apt-cache policy`.
+
+      Package: *
+      Pin: release a=kali-rolling
+      Pin-Priority: 900
+
+      Package: *
+      Pin: release a=kali-bleeding-edge
+      Pin-Priority: 800
+
+      Package: *
+      Pin: release a=unstable
+      Pin-Priority: 600
+
+      # Package: libcrypt1
+      # Pin: version *
+      # Pin-Priority: 1001
+
+      # Package: libc6
+      # Pin: version *
+      # Pin-Priority: 1001
+
+      # Package: perl
+      # Pin: version 5.28*
+      # Pin-Priority: 1001
+    owner: 'root'
+    group: 'root'
+    mode: 0o644
+  become: true
+
+- name: Block for updating APT cache.
+  block:
+    - name: Ensure APT cache is updated for pre-requisites.
+      ansible.builtin.apt:
+        force_apt_get: true
+        update-cache: true
+        cache_valid_time: 1
+      register: apt_update
+      become: true
+
+  rescue:
+    - name: Pause to debug APT result.
+      ansible.builtin.pause:
+
+- name: Ensure changes to `Suite` or `Version` are handled.
+  ansible.builtin.shell:
+    apt-get --allow-releaseinfo-change update
+  args:
+    executable: /bin/bash
+  when:
+    - "'InRelease' in apt_update.stdout"
+    - "'changed its' in apt_update.stdout"
+    - "'Suite' in apt_update.stdout or 'Version' in apt_update.stdout"
+  become: true
+
+- name: Ensure default distribution is `kali-rolling`.
+  ansible.builtin.copy:
+    dest: '/etc/apt/apt.conf.d/local'
+    content: |
+      DPkg::options { "--force-confdef"; "--force-confold"; }
+      APT::Default-Release "kali-rolling";
+    owner: 'root'
+    group: 'root'
+    mode: 0o644
+  become: true
+
+- name: Block to check for broken libcrypt1.so.1 bug.
+  block:
+    - name: Ensure `libcrypt1` installed.
+      ansible.builtin.apt:
+        name:
+          - libcrypt1
+          - libc6
+        state: present
+        update_cache: false
+        autoremove: true
+        force_apt_get: true
+      register: libcrypt1
+      failed_when: "'apt --fix-broken install' in libcrypt1.stdout"
+      become: true
+  rescue:
+    - ansible.builtin.include_tasks: fix_broken_libcrypt
+
+- name: Get current APT policy.
+  ansible.builtin.shell: |
+    set -x
+    apt-cache policy
+    apt-cache policy perl-base libcrypt1 libc6 dpkg
+  changed_when: false
+  register: apt_policy
+  become: true
+
+- name: Debug `apt_policy`.
+  ansible.builtin.debug:
+    var: apt_policy
+    verbosity: 0
+
+- name: Block to ensure packages upgraded.
+  block:
+    - name: Ensure `dist-upgrade` performed.
+      ansible.builtin.apt:
+        update_cache: false
+        install_recommends: true
+        force_apt_get: true
+        upgrade: dist
+      changed_when: false
+      register: dist_upgrade
+      failed_when: "'apt --fix-broken install' in dist_upgrade.stdout"
+      become: true
+
+  rescue:
+    - ansible.builtin.include_tasks: fix_broken_libcrypt.yml
+
+# vim: ft=ansible :
