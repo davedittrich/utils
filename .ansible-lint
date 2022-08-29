@@ -1,6 +1,8 @@
 ---
 
+# isolated: true
 parseable: true
+quiet: false
 skip_list:
   - ANSIBLE0010
   - command-instead-of-shell

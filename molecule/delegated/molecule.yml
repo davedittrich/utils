@@ -19,9 +19,7 @@ lint: |
 provisioner:
   name: ansible
   env:
-    ANSIBLE_COLLECTIONS_PATH: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
-    # Grrr! https://github.com/ansible/ansible/issues/70750
-    ANSIBLE_COLLECTIONS_PATHS: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
+    # ANSIBLE_COLLECTIONS_PATH: "$HOME/.cache/ansible-compat/6fd897/collections:$HOME/.ansible/collections"
     ANSIBLE_FORCE_COLOR: true
     ANSIBLE_ROLES_PATH: "../../roles"
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
