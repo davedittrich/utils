@@ -62,7 +62,7 @@
           # in the '{{ dropin_path }}.d' directory. This text comes from one such file
           # that is managed by Ansible, so you should not edit that file directly either.
           # To extend the contents of `{{ dropin_path }}`, place additional files in
-          # `.d` dirctory (with or without using leading numbers to force the order
+          # `.d` directory (with or without using leading numbers to force the order
           # during concatenation) and then run:
           #
           #    $ update-dotdee {{ dropin_path }}
