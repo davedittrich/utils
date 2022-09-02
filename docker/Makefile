@@ -4,7 +4,7 @@ GROUP_ID=$(shell id -g)
 export COLLECTION_NAMESPACE=davedittrich
 PYTHON_EXE:=$(CONDA_PREFIX)/bin/python
 
-# By default, only build the debian10 image to save time and space.
+# By default, only build the debian11 image to save time and space.
 .PHONY: build
 build: build-default
 
@@ -12,8 +12,8 @@ build: build-default
 build-default:
 	@echo PYTHON_EXE=$(PYTHON_EXE)
 	ansible-playbook -e '{ \
-		"ansible_python_interpreter": $(PYTHON_EXE), \
-		"target_distros": ["debian10"], \
+		"ansible_python_interpreter": "$(PYTHON_EXE)", \
+		"target_distros": ["debian11"], \
 		"docker_user": $(USER_ID), \
 		"docker_group": $(GROUP_ID) \
 		}' -vvv ../playbooks/build_test_images.yml
@@ -22,7 +22,7 @@ build-default:
 .PHONY: build-all
 build-all:
 	ansible-playbook -e '{ \
-		"ansible_python_interpreter": $(PYTHON_EXE), \
+		"ansible_python_interpreter": "$(PYTHON_EXE)", \
 		"docker_user": $(USER_ID), \
 		"docker_group": $(GROUP_ID) \
 		}' -vvv ../playbooks/build_test_images.yml
