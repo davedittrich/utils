@@ -15,7 +15,11 @@ platforms:
   - name: delegated-host
 # ![delegated-molecule.yml-driver]
 lint: |
-  tox -e lint
+  make version
+  make dependencies
+  yamllint molecule/ playbooks/ plugins/ roles/ tasks/
+  flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
+  ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ tasks/
 provisioner:
   name: ansible
   env:
@@ -24,7 +28,6 @@ provisioner:
     ANSIBLE_ROLES_PATH: "../../roles"
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
     COLLECTION_ROOT: "${PWD}"
-    PYTHONPATH: "${PWD}"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
     prepare: ../shared/prepare.yml
