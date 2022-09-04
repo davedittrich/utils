@@ -51,11 +51,13 @@
     owner: "root"
     group: "root"
     mode: 0o644
+  register: sources
   become: true
 
 - name: Ensure APT cache updated after adding Kali repos.
   ansible.builtin.apt:
     update-cache: true
-    cache_valid_time: 1
+  when: sources.changed
   become: true
+
 # vim: ft=ansible :
