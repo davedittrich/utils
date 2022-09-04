@@ -65,3 +65,8 @@ build_ignore:
   - '*/diffs*'
   - 'molecule'
   - 'tox.ini'
+{% if build_ignore_files is defined %}
+{% for item in build_ignore_files %}
+  - '{{ item }}'
+{% endfor %}
+{% endif %}

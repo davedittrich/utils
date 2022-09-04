@@ -63,6 +63,9 @@ help:
 	@echo " $$ make DISTRO=ubuntu2004 test"
 	@echo " $$ make MOLECULE_REPO=davedittrich SCENARIO=branding test"
 
+galaxy.yml:
+	ansible-playbook -i 'localhost,' -e 'galaxy_yml_only=true' build/galaxy_deploy.yml
+
 .PHONY: build
 build:
 	ansible-playbook -vvvv -i 'localhost,' build/galaxy_deploy.yml
@@ -108,19 +111,19 @@ clean-molecule:
 	done
 
 .PHONY: converge
-converge: scenario-exists
+converge: scenario-exists galaxy.yml
 	molecule converge -s $(SCENARIO)
 
 .PHONY: destroy
-destroy: scenario-exists
+destroy: scenario-exists galaxy.yml
 	molecule destroy -s $(SCENARIO)
 
 .PHONY: verify
-verify: scenario-exists
+verify: scenario-exists galaxy.yml
 	molecule verify -s $(SCENARIO)
 
 .PHONY: lint
-lint:
+lint: galaxy.yml
 	molecule lint
 
 .PHONY: login
@@ -152,13 +155,13 @@ scenario-exists:
 spotless: clean clean-images
 
 .PHONY: test
-test: scenario-exists clean-collection
+test: scenario-exists clean-collection galaxy.yml
 	docker info 2>/dev/null | grep -q ID || (echo "[-] docker does not appear to be running" && exit 1)
 	molecule test -s $(SCENARIO)
 	@echo '[+] all tests succeeded'
 
 .PHONY: test-all-distros
-test-all-distros: scenario-exists
+test-all-distros: scenario-exists galaxy.yml
 	set -e; for distro in debian9 debian10 ubuntu1804 ubuntu2004; do MOLECULE_DISTRO=$$distro molecule test -s $(SCENARIO); done
 
 .PHONY: help-delegated-host
@@ -177,7 +180,7 @@ help-delegated-host:
 	@echo "      User ansible-user"
 
 .PHONY: test-delegated
-test-delegated:
+test-delegated: galaxy.yml
 	@if [[ ! -f delegated-ssh-config ]]; then \
 		echo -n "[-] no SSH configuration `delegated-ssh-config` found"; \
 		exit 1; \
