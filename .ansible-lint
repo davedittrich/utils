@@ -1,6 +1,5 @@
 ---
 
-# isolated: true
 parseable: true
 quiet: false
 skip_list:
