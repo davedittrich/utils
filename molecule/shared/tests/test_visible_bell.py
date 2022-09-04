@@ -3,7 +3,7 @@
 import os
 import pytest
 
-from molecule.shared import (  # noqa
+from shared import (  # noqa
     ansible_vars,
     get_homedir,
     skip_unless_role,

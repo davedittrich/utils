@@ -4,7 +4,7 @@ import os
 import pytest
 import stat
 
-from molecule.shared import (
+from shared import (
     ansible_vars,
     get_homedir,
     skip_unless_role,

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from molecule.shared import skip_unless_role
+from shared import skip_unless_role
 
 
 @skip_unless_role('davedittrich.utils.ip_in_issue')
