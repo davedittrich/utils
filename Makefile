@@ -9,9 +9,12 @@ DELEGATED_HOST:=none
 export MOLECULE_DISTRO=debian11
 export MOLECULE_REPO=davedittrich
 PLAYBOOK=playbooks/workstation_setup.yml
+PYTHON_EXE:=$(CONDA_PREFIX)/bin/python
 PYTHONPATH=$(shell pwd)/molecule
 SCENARIO=default
 SHELL=/bin/bash
+USER_ID=$(shell id -u)
+GROUP_ID=$(shell id -g)
 VERSION=$(shell cat VERSION)
 ARTIFACT=davedittrich-utils-$(VERSION).tar.gz
 
@@ -76,7 +79,28 @@ build-images:
 	-molecule destroy
 	-docker kill instance
 	-docker rm instance
-	cd docker && $(MAKE) build
+	ansible-playbook -i docker/hosts.yml \
+		-e '{ \
+		"ansible_python_interpreter": "$(PYTHON_EXE)", \
+		"target_distros": ["debian11"], \
+		"docker_user": "$(USER_ID)", \
+		"docker_group": "$(GROUP_ID)" \
+		}' -vvv playbooks/build_test_images.yml
+	$(MAKE) list-images
+
+.PHONY: list-images
+list-images:
+	docker images | egrep "ID|geerlingguy/docker-.*-ansible|$(COLLECTION_NAMESPACE)/docker-.*-ansible"
+
+.PHONY: clean-images
+clean-images:
+	for image in $(shell docker images \
+		       --format "{{.ID}} {{.Repository}}" | \
+		       egrep "geerlingguy/docker-.*-ansible|$(COLLECTION_NAMESPACE)/docker-.*-ansible" | \
+		       awk '{ print $$1; }'); do \
+		docker rmi $$image; \
+	done
+	rm -f build-docker-*-ansible.log
 
 .PHONY: clean-collection
 clean-collection:
@@ -97,10 +121,6 @@ clean: clean-collection
 	@echo '[+] 2'
 	find * -name __pycache__ -exec rmdir {} ';' || true
 	@echo '[+] 3'
-
-.PHONY: clean-images
-clean-images:
-	cd docker && $(MAKE) clean
 
 .PHONY: clean-molecule
 clean-molecule:
