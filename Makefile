@@ -3,7 +3,7 @@ ANSIBLE_GALAXY_API_KEY:=$(shell psec secrets get ansible_galaxy_api_key 2>/dev/n
 # The following are inter-related components that form a fragile whole that can
 # easily break when one of the components is updated. This can randomly cause a
 # frustratingly difficult situation to fix to pop up when you least expect it.
-ANSIBLE_COMPONENTS=ansible ansible-core ansible-base ansible-lint molecule testinfra
+ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule molecule-testinfra molecule-docker testinfra
 export COLLECTION_NAMESPACE=davedittrich
 DELEGATED_HOST:=none
 export MOLECULE_DISTRO=debian11
@@ -222,8 +222,8 @@ collection-community-docker:
 
 .PHONY: fix-broken-ansible
 fix-broken-ansible:
-	.tox/lint/bin/python -m pip uninstall -y $(ANSIBLE_COMPONENTS)
+	# .tox/lint/bin/python -m pip uninstall -y $(ANSIBLE_COMPONENTS)
 	python -m pip uninstall -y $(ANSIBLE_COMPONENTS)
-	python -m pip install -U -r requirements.txt
+	python -m pip install -U -r requirements-molecule.txt
 
 # EOF
