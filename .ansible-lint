@@ -4,7 +4,7 @@ parseable: true
 quiet: false
 skip_list:
   - ANSIBLE0010
-  - command-instead-of-shell
+  - command-instead-of-module
   - no-handler
 use_default_rules: true
 verbosity: 1
