@@ -1,17 +1,30 @@
-ansible>=6,<7
-ansible-compat>=2.2.0
-ansible-lint>=6.3.0,!=6.5.0,<7.0.0
 docker==6.0.0
-flake8==3.9.2
+flake8
+pytest>=6.2.4
+
+# Use patched pytest-ansible for deconflicted argparse options.
+# git+https://github.com/ansible-community/pytest-ansible
+git+https://github.com/davedittrich/pytest-ansible@develop
+
+git+https://github.com/ansible-community/pytest-molecule
+ansible-core==2.13.3
+ansible>=2.10
+ansible-compat>=2.2.0
+
+# Use patched ansible-lint for link processing fix.
+# ansible-lint==6.4.0
+git+https://github.com/davedittrich/ansible-lint.git@fix-link
+
 molecule==4.0.1
-molecule-docker==2.0.0
+molecule-docker
 yamllint==1.26.1
 pipx>=0.16.4
 pipdeptree
-pytest>=6.2.4
-pytest-ansible>=2.2.2
-pytest-testinfra
 python-secrets>=22.5.0
-testinfra
+
+# Use patched pytest-testinfra for deconflicted argparse options.
+#testinfra==5.3.1
+git+https://github.com/davedittrich/pytest-testinfra@develop
+
 tox
 xmltodict
