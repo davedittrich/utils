@@ -2,6 +2,16 @@
 
 # tasks for davedittrich.utils.ip_in_issue
 
+- name: Debug `ansible_interfaces`.
+  ansible.builtin.debug:
+    msg: '{{ ansible_interfaces }}'
+    verbosity: 1
+  when: ansible_interfaces is defined
+
+- name: Set fact `issue_interfaces`.
+  ansible.builtin.set_fact:
+    issue_interfaces: []
+
 - name: Set fact `exclude_interface_prefix`.
   ansible.builtin.set_fact:
     exclude_interface_prefix: '{{ _exclude_interface_prefix }}'
@@ -10,31 +20,35 @@
 - name: Debug `exclude_interface_prefix`.
   ansible.builtin.debug:
     msg: '{{ exclude_interface_prefix }}'
-    verbosity: 2
+    verbosity: 1
 
-- name: Set fact `exclude_interface`.
-  ansible.builtin.set_fact:
-    exclude_interface: '{{ exclude_interface | default({}) | combine({item.0: true}) }}'
-  with_nested:
-    - '{{ ansible_interfaces }}'
-    - '{{ exclude_interface_prefix }}'
-  when: 'item.0.startswith(item.1) or item.0 == "lo"'
+- name: Block for defining excluded interfaces.
+  when: ansible_interfaces is defined
+  block:
 
-- name: Debug `exclude_interface`.
-  ansible.builtin.debug:
-    msg: '{{ exclude_interface }}'
-    verbosity: 2
+    - name: Set fact `exclude_interface`.
+      ansible.builtin.set_fact:
+        exclude_interface: '{{ exclude_interface | default({}) | combine({item.0: true}) }}'
+      with_nested:
+        - '{{ ansible_interfaces }}'
+        - '{{ exclude_interface_prefix }}'
+      when: 'item.0.startswith(item.1) or item.0 == "lo"'
 
-- name: Set fact `issue_interfaces`.
-  ansible.builtin.set_fact:
-    issue_interfaces: '{{ issue_interfaces | default([]) + [item] }}'
-  with_items: '{{ ansible_interfaces }}'
-  when: 'item not in exclude_interface'
+    - name: Debug `exclude_interface`.
+      ansible.builtin.debug:
+        msg: '{{ exclude_interface }}'
+        verbosity: 2
+
+    - name: Set fact `issue_interfaces`.
+      ansible.builtin.set_fact:
+        issue_interfaces: '{{ issue_interfaces | default([]) + [item] }}'
+      with_items: '{{ ansible_interfaces }}'
+      when: 'item not in exclude_interface'
 
 - name: Debug issue interfaces.
   ansible.builtin.debug:
     msg: '{{ issue_interfaces }}'
-    verbosity: 2
+    verbosity: 1
 
 - name: Stat `/etc/ssh` directory.
   ansible.builtin.stat:
