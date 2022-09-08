@@ -3,7 +3,7 @@
 import os
 import pytest
 
-from shared import (  # noqa
+from helpers import (
     ansible_vars,
     get_homedir,
     skip_unless_role,

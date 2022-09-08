@@ -9,19 +9,23 @@ import yaml
 
 # https://medium.com/opsops/accessing-remote-host-at-test-discovery-stage-in-testinfra-pytest-7296235e804d
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
+try:
+    testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
+        os.environ.get('MOLECULE_INVENTORY_FILE')
+    ).get_hosts('all')
+except RuntimeError as err:
+    testinfra_hosts = []
 
-with open('/tmp/ansible-vars.yml', 'r') as yaml_file:
-    ansible_vars = yaml.safe_load(yaml_file)
-
-assert 'ansible_role_names' in ansible_vars
-
+try:
+    with open('/tmp/ansible-vars.yml', 'r') as yaml_file:
+        ansible_vars = yaml.safe_load(yaml_file)
+except FileNotFoundError:
+    ansible_vars = {}
 
 def in_roles(role, roles=None):
     """Return boolean for inclusion of role in a list of roles."""
     if roles is None:
-        roles = ansible_vars['ansible_role_names']
+        roles = ansible_vars.get('ansible_role_names', [])
     return role in roles
 
 

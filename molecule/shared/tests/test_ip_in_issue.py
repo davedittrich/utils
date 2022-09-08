@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from shared import skip_unless_role
+from helpers import skip_unless_role
 
 
 @skip_unless_role('davedittrich.utils.ip_in_issue')

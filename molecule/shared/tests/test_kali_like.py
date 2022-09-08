@@ -4,7 +4,7 @@ import os
 import pytest
 import stat
 
-from shared import (
+from helpers import (
     ansible_vars,
     get_homedir,
     skip_unless_role,
