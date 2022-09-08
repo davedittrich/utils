@@ -13,7 +13,7 @@ try:
     testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
         os.environ.get('MOLECULE_INVENTORY_FILE')
     ).get_hosts('all')
-except RuntimeError as err:
+except RuntimeError:
     testinfra_hosts = []
 
 try:
@@ -21,6 +21,7 @@ try:
         ansible_vars = yaml.safe_load(yaml_file)
 except FileNotFoundError:
     ansible_vars = {}
+
 
 def in_roles(role, roles=None):
     """Return boolean for inclusion of role in a list of roles."""

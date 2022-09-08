@@ -23,18 +23,18 @@ def test_user_inputrc(host, user):
     assert f.content_string.find(r'set prefer-visible-bell') > -1
 
 
-@skip_unless_role('davedittrich.utils.visible_bell')
-@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
-def test_user_bashrc(host, user):
-    f = host.file(
-        os.path.join(
-            get_homedir(host=host, user=user),
-            '.bashrc'
-        )
-    )
-    assert f.exists
-    assert f.user == user
-    assert f.content_string.find(r'set bellstyle visible') > -1
+# @skip_unless_role('davedittrich.utils.visible_bell')
+# @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
+# def test_user_bashrc(host, user):
+#     f = host.file(
+#         os.path.join(
+#             get_homedir(host=host, user=user),
+#             '.bashrc'
+#         )
+#     )
+#     assert f.exists
+#     assert f.user == user
+#     assert f.content_string.find(r'set bellstyle visible') > -1
 
 
 @skip_unless_role('davedittrich.utils.visible_bell')
