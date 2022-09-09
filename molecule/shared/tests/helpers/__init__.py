@@ -17,10 +17,12 @@ except RuntimeError:
     testinfra_hosts = []
 
 try:
-    with open('/tmp/ansible-vars.yml', 'r') as yaml_file:
+    with open('/tmp/ansible-vars', 'r') as yaml_file:
         ansible_vars = yaml.safe_load(yaml_file)
 except FileNotFoundError:
-    ansible_vars = {}
+    ansible_vars = {"ansible_role_names": []}
+
+assert 'ansible_role_names' in ansible_vars
 
 
 def in_roles(role, roles=None):
