@@ -70,12 +70,25 @@
     msg: '{{ copy }}'
     verbosity: 2
 
-- name: Update udevadm hwdb and trigger update.
+- name: Determine state of `systemd-udevd`.
   ansible.builtin.shell: >
-    udevadm hwdb --update; udevadm trigger
+    systemctl is-active systemd-udevd
   args:
     executable: /bin/bash
-  when: copy.changed
+  register: udevd
+  changed_when: false
+  become: true
+
+- name: Update udevadm hwdb and trigger update.
+  ansible.builtin.shell: >
+    udevadm hwdb --update && udevadm trigger
+  args:
+    executable: /bin/bash
+  register: trigger
+  until: trigger is success
+  retries: 1
+  delay: 30
+  when: "copy.changed and udevd.stdout == 'active'"
   become: true
 
 - name: Ensure Xmodmap files are customized to swap capslock/ctrl.
