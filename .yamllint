@@ -23,16 +23,11 @@ rules:
     level: error
   hyphens:
     level: error
-  indentation: enable
+  indentation: disable
   key-duplicates: enable
-  line-length:
-    max: 130
-  new-line-at-end-of-file: enable
+  line-length: disable
+  new-line-at-end-of-file: disable
   new-lines:
     type: unix
-  trailing-spaces: enable
-  truthy:
-    ignore: |
-      .tox/
-      .github/workflows/
-      bh2022/
+  trailing-spaces: disable
+  truthy: disable
