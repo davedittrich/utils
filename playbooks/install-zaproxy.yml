@@ -13,8 +13,12 @@
   vars:
     zaproxy_version: '2.11.1-0kali1'
     zaproxy_sha256sum: '7da3e4a0307af87fbfeb92bc92b9dda3ee9b9c1c4309660b63d48618b012f35e'
+    zaproxy_installed: false
 
   tasks:
+    - name: Include check_reachable.yml task.
+      include_tasks: ../tasks/check_reachable.yml
+
     - name: Set fact with package source directory.
       ansible.builtin.set_fact:
         zaproxy_deb_dir: '{{ zaproxy_deb_dir | default(cwd) }}/'
@@ -22,6 +26,31 @@
     - name: Set fact with zaproxy DEB file name.
       ansible.builtin.set_fact:
         zaproxy_deb: 'zaproxy_{{ zaproxy_version }}_all.deb'
+
+    - name: Set fact with zaproxy status file.
+      ansible.builtin.set_fact:
+        zaproxy_status: '{{ updates_dir }}/zaproxy'
+
+    - name: Include ensure_update_dir.yml task.
+      include_tasks: ../tasks/ensure_update_dir.yml
+
+    - name: Block for zaproxy installation status check.
+      block:
+
+        - name: Check the install status of the zaproxy package.
+          ansible.builtin.shell:
+            dpkg -l zaproxy | grep 'ii  zaproxy' | grep '{{ zaproxy_version }}'
+          register: dpkg_l
+          changed_when: false
+
+        - name: Set fact with zaproxy installation state.
+          ansible.builtin.set_fact:
+            zaproxy_installed: true
+
+      rescue:
+        - name: Set fact with zaproxy installation state.
+          ansible.builtin.set_fact:
+            zaproxy_installed: false
 
 #   - name: Verify zaproxy DEB checksum.
 #     ansible.builtin.stat:
@@ -31,23 +60,46 @@
 #       register: stat_result
 #       failed_when: stat_result.checksum == '{{ zaproxy_sha256sum }}'
 
-    - name: Copy zaproxy DEB to host.
-      ansible.builtin.copy:
-        src: '{{ zaproxy_deb_dir }}{{ zaproxy_deb }}'
-        dest: '/tmp/{{ zaproxy_deb }}'
-        owner: root
-        group: root
-      delegate_to: localhost
+    - name: Package installation block.
+      block:
 
-    - name: Ensure zaproxy DEB is installed.
+        - name: Copy zaproxy DEB to host.
+          ansible.builtin.copy:
+            src: '{{ zaproxy_deb_dir }}{{ zaproxy_deb }}'
+            dest: '/tmp//{{ zaproxy_deb }}'
+            owner: root
+            group: root
+            mode: 0o660
+          become: true
+
+        - name: Ensure zaproxy DEB is installed.
+          ansible.builtin.shell: >
+            dpkg --install '/tmp/{{ zaproxy_deb }}'
+          changed_when: false
+          become: true
+
+        - name: Ensure zaproxy DEB file is removed.
+          ansible.builtin.file:
+            path: '/tmp/{{ zaproxy_deb }}'
+            state: absent
+          become: true
+
+        - name: Register package installation success.
+          ansible.builtin.set_fact:
+            zaproxy_installed: true
+
+      when: not zaproxy_installed
+
+#     rescue:
+#       - name: Register package installation failure.
+#         ansible.builtin.set_fact:
+#           install_success: false
+
+    - name: Ensure package install status marker is up to date.
       ansible.builtin.shell: >
-        dpkg --install /tmp/{{ zaproxy_deb }}
+        echo "$(date)" > '{{ zaproxy_status }}'
       become: true
-
-    - name: Ensure zaproxy DEB is removed.
-      ansible.builtin.file:
-        path: '/tmp/{{ zaproxy_deb }}'
-        state: absent
-      become: true
+      changed_when: false
+      when: zaproxy_installed
 
 # vim: ft=ansible :
