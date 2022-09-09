@@ -3,6 +3,20 @@ dependency:
   name: galaxy
 driver:
   name: docker
+scenario:
+  destroy_sequence:
+    - dependency
+    - destroy
+  test_sequence:
+    - dependency
+    - lint
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+  verify_sequence:
+    - verify
 lint: |
   make version
   make dependencies
@@ -10,15 +24,19 @@ lint: |
   flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
   ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ tasks/
 platforms:
-  - name: instance
-    image: "davedittrich/docker-${MOLECULE_DISTRO:-debian11}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-"/sbin/init"}
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    cgroupns: host
+  - name: debian_bullseye
+    image: debian:bullseye
+    dockerfile: ../shared/Dockerfile-debian_bullseye.j2
     privileged: true
-    pre_build_image: true
-    pull: false
+    override_command: false
+    tmpfs:
+      - /run
+      - /tmp
+    capabilities:
+      - SYS_ADMIN
+      - NET_ADMIN
+    security_opts:
+      - seccomp=unconfined
 provisioner:
   name: ansible
   env:
@@ -44,5 +62,3 @@ verifier:
   options:
     # Add a -v so you see the individual test names.
     v: true
-  additional_files_or_dirs:
-    - ../shared/*

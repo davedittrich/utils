@@ -4,25 +4,45 @@ dependency:
   name: galaxy
 driver:
   name: docker
+scenario:
+  destroy_sequence:
+    - dependency
+    - destroy
+  test_sequence:
+    - dependency
+    - lint
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+  verify_sequence:
+    - verify
 lint: |
+  set -e
   make version
   make dependencies
   yamllint molecule/ playbooks/ plugins/ roles/ tasks/
   flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
-  ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ tasks/
+  ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 platforms:
-  - name: instance
-    image: "davedittrich/docker-${MOLECULE_DISTRO:-debian11}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-"/sbin/init"}
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    cgroupns: host
+  - name: debian_bullseye
+    image: debian:bullseye
+    dockerfile: ../shared/Dockerfile-debian_bullseye.j2
     privileged: true
-    pre_build_image: true
-    pull: false
+    override_command: false
+    tmpfs:
+      - /run
+      - /tmp
+    capabilities:
+      - SYS_ADMIN
+      - NET_ADMIN
+    security_opts:
+      - seccomp=unconfined
 # [molecule.yml-provisioner]
 provisioner:
   name: ansible
+  log: True
   env:
     ANSIBLE_FORCE_COLOR: true
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
@@ -40,26 +60,10 @@ provisioner:
           mysql_password: '_molecule_mysql_password'
           guacamole_password: '_molecule_guacamole_password'
 # ![molecule.yml-provisioner]
-scenario:
-  destroy_sequence:
-    - dependency
-    - cleanup
-    - destroy
-  test_sequence:
-    - dependency
-    - lint
-    - cleanup
-    - create
-    - prepare
-    - converge
-    - idempotence
-    - verify
 verifier:
   name: testinfra
   directory: ../shared/tests
-  options:
-    # Add a -v so you see the individual test names.
-    vv: true
-    pdb: true
+  env:
+    PYTEST_ADDOPTS: "-vvv --trace-config"
   additional_files_or_dirs:
-    - ../shared/*
+    - ../shared/tests

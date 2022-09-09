@@ -41,8 +41,6 @@ provisioner:
             - 'pirate'
 verifier:
   name: testinfra
-  additional_files_or_dirs:
-    - ../shared/*
   directory: ../shared/tests
   options:
     # Add a -v so you see the individual test names.
