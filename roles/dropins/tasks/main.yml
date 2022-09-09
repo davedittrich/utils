@@ -12,14 +12,6 @@
   loop_control:
     loop_var: user
 
-- name: Ensure `python3-venv` package is installed.
-  ansible.builtin.package:
-    name: python3-venv
-    state: present
-    update_cache: true
-    cache_valid_time: 3600
-  become: true
-
 - name: Ensure `dropin_files` is defined with files to be configured as dropin directories.
   ansible.builtin.set_fact:
     dropin_files: '{{ _dropin_files }}'
@@ -29,6 +21,13 @@
   ansible.builtin.debug:
     var: dropin_files
     verbosity: 0
+
+- name: Ensure `pipx` present in user account.
+  include_tasks:
+    file: '{{ collection_root }}/tasks/check_repair_user_pipx.yml'
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
 
 - name: Ensure `update-dotdee` present in user account via `pipx`.
   include_tasks:
