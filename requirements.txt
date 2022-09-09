@@ -15,7 +15,10 @@ ansible-compat>=2.2.0
 # ansible-lint==6.4.0
 git+https://github.com/davedittrich/ansible-lint.git@fix-link
 
-molecule==4.0.1
+# Use patched molecule for deconflicted argparse options.
+# molecule==4.0.1
+git+https://github.com/davedittrich/molecule.git@develop
+
 molecule-docker
 yamllint==1.26.1
 pipx>=0.16.4
