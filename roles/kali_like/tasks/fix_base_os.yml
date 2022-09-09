@@ -35,29 +35,8 @@
   changed_when: false
   when: gawk_result.changed
 
-- name: Ensure Kali package signing key is present.
-  ansible.builtin.apt_key:
-    keyserver: pgpkeys.mit.edu
-    id: ED444FF07D8D0BF6
-    state: present
-  become: true
-
-- name: Add Kali sources to `/etc/apt/sources.list.d/`
-  ansible.builtin.copy:
-    content: |
-      deb http://http.kali.org/kali kali-rolling main contrib non-free
-      deb-src http://http.kali.org/kali kali-rolling main contrib non-free
-    dest: "/etc/apt/sources.list.d/kali.list"
-    owner: "root"
-    group: "root"
-    mode: 0o644
-  register: sources
-  become: true
-
-- name: Ensure APT cache updated after adding Kali repos.
-  ansible.builtin.apt:
-    update-cache: true
-  when: sources.changed
-  become: true
+- name: Prepare system for installing packages from Kali repos.
+  include_tasks:
+    file:  '{{ collection_root }}/tasks/enable_kali_packages.yml'
 
 # vim: ft=ansible :
