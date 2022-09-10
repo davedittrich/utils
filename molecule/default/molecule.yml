@@ -64,6 +64,5 @@ verifier:
   name: testinfra
   directory: ../shared/tests
   env:
-    PYTEST_ADDOPTS: "-vvv --trace-config"
-  additional_files_or_dirs:
-    - ../shared/tests
+    PYTHONPATH: "${PWD}/molecule/shared/tests"
+    PYTEST_ADDOPTS: "-v --trace-config"
