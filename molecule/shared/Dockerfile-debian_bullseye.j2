@@ -5,6 +5,16 @@ ENV container docker
 ENV LC_ALL C
 ENV DEBIAN_FRONTEND noninteractive
 
+# Ensure that scripts don't fail when run from '/tmp' directory, e.g.:
+#   ...
+#   Preconfiguring packages ...
+#   Can't exec "/tmp/iproute2.config.Dq1Grg": Permission denied at /usr/lib/x86_64-linux-gnu/perl-base/IPC/Open3.pm line 178.
+#   open2: exec of /tmp/iproute2.config.Dq1Grg configure 5.10.0-4 failed: Permission denied at /usr/share/perl5/Debconf/ConfModule.pm line 59.
+#   ...
+
+RUN mkdir /root/tmp
+ENV TMPDIR /root/tmp
+
 RUN apt-get update \
     && apt-get install -y \
       aptitude \
