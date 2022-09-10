@@ -27,7 +27,7 @@
       ansible.builtin.copy:
         content: |
           {{ vars | to_yaml }}
-        dest: /tmp/ansible-vars.yml
+        dest: '{{ molecule_ephemeral_directory }}/ansible-vars.yml'
         mode: 0o600
       changed_when: false
       delegate_to: localhost

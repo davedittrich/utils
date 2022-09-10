@@ -6,6 +6,8 @@ import testinfra.utils.ansible_runner
 import pytest
 import yaml
 
+from pathlib import Path
+
 
 # https://medium.com/opsops/accessing-remote-host-at-test-discovery-stage-in-testinfra-pytest-7296235e804d
 
@@ -17,12 +19,13 @@ except RuntimeError:
     testinfra_hosts = []
 
 try:
-    with open('/tmp/ansible-vars', 'r') as yaml_file:
-        ansible_vars = yaml.safe_load(yaml_file)
+    molecule_ephemeral_directory = Path(
+        os.environ.get('MOLECULE_EPHEMERAL_DIRECTORY')
+    )
+    yaml_file = molecule_ephemeral_directory / 'ansible-vars.yml'
+    ansible_vars = yaml.safe_load(yaml_file.read_bytes())
 except FileNotFoundError:
     ansible_vars = {"ansible_role_names": []}
-
-assert 'ansible_role_names' in ansible_vars
 
 
 def in_roles(role, roles=None):
