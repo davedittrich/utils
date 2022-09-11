@@ -16,7 +16,11 @@ RUN mkdir /root/tmp
 ENV TMPDIR /root/tmp
 
 RUN apt-get update \
-    && apt-get install -y \
+    && apt-get -y \
+         -o APT::Install-Recommends=false \
+         -o APT::Get::AutomaticRemove=true \
+         -o APT::Acquire::Retries=3 \
+         install \
       aptitude \
       arandr \
       bash \
