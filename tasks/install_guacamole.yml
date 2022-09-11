@@ -53,30 +53,25 @@
 
 - block:
     - name: Install Guacamole from source.
-      ansible.builtin.shell: |
-        /bin/bash guac-install.sh --nomfa --installmysql --mysqlpwd {{ mysql_password }} --guacpwd {{ guacamole_password }}
+      ansible.builtin.shell: >
+        /bin/bash guac-install.sh
+          --nomfa
+          --installmysql
+          --mysqlpwd {{ mysql_password }}
+          --guacpwd {{ guacamole_password }} || echo guacamole_*_build.log
       args:
         executable: /bin/bash
         chdir: '{{ tmpdir }}/guac-install'
         creates: '/usr/local/sbin/guacd'
       environment:
         - DEBIAN_FRONTEND: 'noninteractive'
+      register: guacamole_install
       become: true
 
   rescue:
-    - name: Find Guacamole build log file.
-      # FIXME: Find the file, but until then use fixed name.
-      ansible.builtin.find:
-        paths: '{{ tmpdir }}'
-        recurse: false
-        use_regex: false
-        patterns: 'guacamole_*_build.log'
-      register: find_results
-      failed_when: find_results.files|length != 1
-
     - name: Set fact with log file name.
       ansible.builtin.set_fact:
-        guacamole_build_log: '{{ find_results.files[0] }}'
+        guacamole_build_log: '{{ guacamole_install.stdout_lines[-1] }}'
 
     - name: Expose Guacamole build log file contents.
       shell: cat {{ guacamole_build_log }}
