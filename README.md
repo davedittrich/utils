@@ -32,9 +32,9 @@ The development environment and test infrastructure that invokes `molecule`
 for testing has been tested on the following (in order of most-frequently
 to least-frequently used):
 
-* Mac OS X (Darwin) 10.15.7
-* Ubuntu 20.04 LTS on Windows Subsystem for Linux (WSL) 2
-* Kali (Debian 10) Linux (2022-07-07 release)
+- Mac OS X (Darwin) 10.15.7
+- Ubuntu 20.04 LTS on Windows Subsystem for Linux (WSL) 2
+- Kali (Debian 11) Linux (2022-07-07 release)
 
 To help reduce the amount of time taken by all this testing, several optimization
 techniques are employed:
@@ -111,44 +111,44 @@ exhaustive list of all tasks, but rather a summary of the general topics:
 
 #### [`davedittrich.utils.kali_like`](roles/kali_like/) role.
 
-* Install base OS packages necessary for Kali tooling.
-* Set up for installing packages from Kali repo.
-* Install a specific subset of Kali packages.
-* Hush the Kali developer login message.
-* Install templated helper scripts for user convenience.
-* Set up `~/.local/bin` directories in accounts for local add-on programs.
-* Pre-configure Kali menus and desktop.
-* Set host name based on system serial number.
-* Install and configure system for Apache Guacamole (RDP in browser).
-* Set custom timezone.
+- Install base OS packages necessary for Kali tooling.
+- Set up for installing packages from Kali repo.
+- Install a specific subset of Kali packages.
+- Hush the Kali developer login message.
+- Install templated helper scripts for user convenience.
+- Set up `~/.local/bin` directories in accounts for local add-on programs.
+- Pre-configure Kali menus and desktop.
+- Set host name based on system serial number.
+- Install and configure system for Apache Guacamole (RDP in browser).
+- Set custom timezone.
 
 #### [`davedittrich.utils.branding`](roles/branding/) role.
-* Make LXDE/`lightdm` default X11 session manager.
-* Customize LXDE and `lightdm` settings and menus.
-* Customize display wallpaper, login greeter background, and boot splash images.
-* Disable boot logo (e.g., on Raspberry Pi devices.)
-* Disable `clipit` history.
 
+- Make LXDE/`lightdm` default X11 session manager.
+- Customize LXDE and `lightdm` settings and menus.
+- Customize display wallpaper, login greeter background, and boot splash images.
+- Disable boot logo (e.g., on Raspberry Pi devices.)
+- Disable `clipit` history.
 
 #### [`davedittrich.utils.ip_in_issue`](roles/ip_in_issue) role.
 
-* Ensure SSH host key fingerprints are visible on console login screen.
-* Ensure Ethernet device and IP addressing information is visible on console login screen.
+- Ensure SSH host key fingerprints are visible on console login screen.
+- Ensure Ethernet device and IP addressing information is visible on console login screen.
 
 #### [`davedittrich.utils.swapcapslockctrl`](roles/swapcapslockctrl) role.
 
-* Swaps Left keyboard **CapsLock** key with **CTRL**.
+- Swaps Left keyboard **CapsLock** key with **CTRL**.
 
 #### [`davedittrich.utils.visible_bell`](roles/visible_bell) role.
 
-* Disables bell sound for keyboard, `bash`, `csh`, `ex` family editors, `vim` editor
- and instead sets visible bell.
+- Disables bell sound for keyboard, `bash`, `csh`, `ex` family editors, `vim` editor
+  and instead sets visible bell.
 
 #### [`davedittrich.utils.dropins`](roles/dropins) role.
 
-* Ensures `update-dotdee` is installed via `pipx`.
-* Create initial dropin directories with original files appearing at top.
-* By default, enabled use of `update-dotdee` to control users' `~/.bash_aliases`, `~/.bashrc`,
+- Ensures `update-dotdee` is installed via `pipx`.
+- Create initial dropin directories with original files appearing at top.
+- By default, enabled use of `update-dotdee` to control users' `~/.bash_aliases`, `~/.bashrc`,
   `~/.gitconfig`, and `~/.ssh/config` files.
 
 ## Testing
@@ -178,9 +178,6 @@ configured as follows:
 provisioner:
   name: ansible
   env:
-    ANSIBLE_COLLECTIONS_PATH: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
-    # Grrr! https://github.com/ansible/ansible/issues/70750
-    ANSIBLE_COLLECTIONS_PATHS: "$HOME/.ansible/collections.dev:$HOME/.ansible/collections"
     ANSIBLE_ROLES_PATH: "../../roles"
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
     PYTHONPATH: "${PWD}"
@@ -218,10 +215,12 @@ verifier:
     - ../shared/*
 ```
 
-To further reduce redundancy in hard-coding of elements that are part of tests,
-all Ansible variables that were defined during role execution in the `converge`
-phase are dumped to a file so they can be used during later phases (specifically,
-the `verify` phase).
+To further reduce redundancy and hard-coding values in tests, all Ansible variables
+that were defined during the `converge` phase are dumped to a file in the
+`molecule` ephemeral directory for the scenario so they are available for use
+by tests in the `verify` phase. The path to the file for the `default` scenario
+would be `${HOME}/.config/molecule/utils/default/ansible-vars.yml`.
+
 
 Tests can be skipped by use of the `@skip_unless_role()` decorator, which checks
 to see if the role for which they apply is in the `ansible_roles_names` variable
@@ -296,15 +295,17 @@ INFO     Verifier completed successfully.
   . . .
 ```
 
-The file containing the Ansible variables also helps in debugging playbooks.
-By running `molecule converge`, the roles are applied and the variables are
-dumped into the file `/tmp/ansible-vars.yml` at the end. The `molecule converge`
-run then stops, at which point you can look at the file.
+The file containing the Ansible variables from the `converge` phase also help
+in debugging playbooks. They provide "ground truth" of the Ansible runtime state
+and help you identify variables to use in playbooks and tests, or to watch
+while running tests in a debugger. (There is a `pytest` launch rule for
+VSCode defined in the `.vscode/launch.json` file.)
 
-To continue on to testing, you can manually run `molecule verify`, at which point
-the variables are loaded and are available to tests. This allows you to
-redefine some variables during development, re-run `molecule converge` to have
-them take effect, and your tests can then automatically adjust.
+To continue on to testing in `molecule`, you can manually run `molecule
+verify`.  The variables are loaded from the cached file and are available to
+tests. This allows you to redefine some variables during development, re-run
+`molecule converge` to have them take effect, and your tests can then
+automatically adjust.
 
 Only when `molecule destroy` is run will the file be deleted.
 
@@ -316,7 +317,7 @@ Using /Users/dittrich/.cache/molecule/utils/ip_in_issue/ansible.cfg as config fi
 PLAY [Destroy] *****************************************************************
 
 TASK [Delete variables saved from converge step.] ******************************
-ok: [instance -> localhost] => {"changed": false, "path": "/tmp/ansible-vars.yml", "state": "absent"}
+ok: [instance -> localhost] => {"changed": false, "path": "/Users/dittrich/.cache/molecule/utils/ip_in_issue/ansible-vars.yml", "state": "absent"}
 
 PLAY RECAP *********************************************************************
 instance                   : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
@@ -546,51 +547,51 @@ cause idempotence tests to fail. Here are some of the causes and solutions.
       * https://github.com/Rosa-Luxemburgstiftung-Berlin/ansible-role-unbound/blob/main/molecule/default/Dockerfile-debian-bullseye.j2
       * https://github.com/geerlingguy/docker-debian11-ansible/issues/4
 
-  P.S. [2022-08-26] It turns out there were *several* inter-related issues that
+  P.S. [2022-08-26] It turns out there were _several_ inter-related issues that
   conspired to break things and cost weeks in debugging, partly due to the
   requirement of 10-15 minutes per test cycle to run the full test suite to
   resolve the Debian+`systemd`+`libcrypt1`+Docker+... issues. These were
   (for historical and SEO purposes):
 
-    * Debian packages changed such that updates completely broke package
-      installation due to `libcrypt.so.1` being deleted while `dpkg`
-      was updating packages using `perl-base`, which depends on it still
-      being there.
+  - Debian packages changed such that updates completely broke package
+    installation due to `libcrypt.so.1` being deleted while `dpkg`
+    was updating packages using `perl-base`, which depends on it still
+    being there.
 
-          + https://www.youtube.com/watch?v=bbuoHXaNsUg
+        + https://www.youtube.com/watch?v=bbuoHXaNsUg
 
-      While trying to debug this issue, errors about failures to connect to
-      `dbus` occured, but it wasn't clear exactly why. At first it seemed
-      to be a result of...
+    While trying to debug this issue, errors about failures to connect to
+    `dbus` occured, but it wasn't clear exactly why. At first it seemed
+    to be a result of...
 
-    * Docker on Mac switched to using `cgroupns` V2, which required configuring
-      Docker's `daemon.json` file to include setting `cgroupns` to `host`. Not
-      only that, but...
+  - Docker on Mac switched to using `cgroupns` V2, which required configuring
+    Docker's `daemon.json` file to include setting `cgroupns` to `host`. Not
+    only that, but...
 
-    * `systemd` v248 broke Docker's volume mounts of `/sys/fs/cgroup`, requiring
-      changes to `molecule` to allow setting `cgroupns=host` and changing the
-      mounts from `ro` to `rw`.
+  - `systemd` v248 broke Docker's volume mounts of `/sys/fs/cgroup`, requiring
+    changes to `molecule` to allow setting `cgroupns=host` and changing the
+    mounts from `ro` to `rw`.
 
-          + https://github.com/geerlingguy/docker-ubuntu2204-ansible/issues/2#issuecomment-1110602354
-          + https://github.com/johanssone/ansible-unbound/commit/ec3cbb8440109f13d33a057801c7b65bb1b58095
-          + https://github.com/ansible-collections/community.docker/issues/338
+        + https://github.com/geerlingguy/docker-ubuntu2204-ansible/issues/2#issuecomment-1110602354
+        + https://github.com/johanssone/ansible-unbound/commit/ec3cbb8440109f13d33a057801c7b65bb1b58095
+        + https://github.com/ansible-collections/community.docker/issues/338
 
-    * Around the same time, `molecule` changed its package dependencies, causing
-      `pytest` and `testinfra` to break. Updating `molecule` only to the version
-      that fixed the `cgroupns` problem broke the `lint` and `verify` stages.
+  - Around the same time, `molecule` changed its package dependencies, causing
+    `pytest` and `testinfra` to break. Updating `molecule` only to the version
+    that fixed the `cgroupns` problem broke the `lint` and `verify` stages.
 
-   There is a also a number of issues with incompatible versions of `ansible`,
-   `ansible-core`, `ansible-lint`, and maybe also `testinfra` and `pytest`?
-   It is always frustrating to see responses from RedHat like the closing
-   comment on [this thread](https://github.com/ansible-community/ansible-lint-action/issues/41#issuecomment-933663572),
-   but it seems to mean you have to avoid (at all cost?) pinning specific
-   versions of any of the above listed `pip` packages and instead *only*
-   specify the version number of `ansible` (in this case, `==2.9.26`) and
-   and follow `thestevenbell`'s recommendation. Using `2.9.27` fails
-   with the error described and the RedHat response doesn't really help
-   explain "best-practice" for avoiding this problem.
+  There is a also a number of issues with incompatible versions of `ansible`,
+  `ansible-core`, `ansible-lint`, and maybe also `testinfra` and `pytest`?
+  It is always frustrating to see responses from RedHat like the closing
+  comment on [this thread](https://github.com/ansible-community/ansible-lint-action/issues/41#issuecomment-933663572),
+  but it seems to mean you have to avoid (at all cost?) pinning specific
+  versions of any of the above listed `pip` packages and instead _only_
+  specify the version number of `ansible` (in this case, `==2.9.26`) and
+  and follow `thestevenbell`'s recommendation. Using `2.9.27` fails
+  with the error described and the RedHat response doesn't really help
+  explain "best-practice" for avoiding this problem.
 
-   Sigh. (At least everything seems to be stable again. For now...)
+  Sigh. (At least everything seems to be stable again. For now...)
 
 ## See also
 
