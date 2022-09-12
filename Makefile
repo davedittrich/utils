@@ -115,12 +115,10 @@ clean-collection:
 
 .PHONY: clean
 clean: clean-collection
+	-rm -rf ~/.cache/ansible-compat ~/.cache/molecule ~/.cache/pip
 	-rm -f davedittrich-utils-*.tar.gz || true
-	@echo '[+] 1'
-	find * -name '*.pyc' -delete
-	@echo '[+] 2'
+	find * -name '*.pyc' -delete || true
 	find * -name __pycache__ -exec rmdir {} ';' || true
-	@echo '[+] 3'
 
 .PHONY: clean-molecule
 clean-molecule:
