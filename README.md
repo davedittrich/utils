@@ -194,7 +194,7 @@ section, the `PYTHONPATH` environment variable is set, allowing Python code
 to be able to `import` from this module directory as seen here:
 
 ```python
-from molecule.shared import (
+from helpers import (
     ansible_vars,
     get_homedir,
     skip_unless_role,
