@@ -5,4 +5,6 @@ __pycache__
 delegated-ssh-config
 diffs*
 galaxy.yml
+oldstuff/*
 do_not_publish
+pytestdebug.log
