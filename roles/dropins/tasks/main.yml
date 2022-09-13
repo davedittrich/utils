@@ -12,7 +12,7 @@
   loop_control:
     loop_var: user
 
-- name: Ensure `dropin_files` is defined with files to be configured as dropin directories.
+- name: Set fact `dropin_files` with dropin directories to create.
   ansible.builtin.set_fact:
     dropin_files: '{{ _dropin_files }}'
   when: dropin_files is not defined
@@ -48,9 +48,13 @@
     - '{{ accounts }}'
     - '{{ dropin_files }}'
 
-- name: Ensure `PATH` is customized.
-  include_tasks:
-    file: ensure_path.yml
-  loop: '{{ accounts }}'
-  loop_control:
-    loop_var: user
+- name: Ensure `PATH` contains users' `.local/bin` directories.
+  ansible.builtin.copy:
+    src: dotlocal.sh
+    dest: /etc/profile.d/dotlocal.sh
+    owner: root
+    group: root
+    mode: 0o644
+  become: true
+
+# vim: ft=ansible :

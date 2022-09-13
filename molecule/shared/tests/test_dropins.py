@@ -31,6 +31,14 @@ def fixture_dropin_files(request):
 
 
 @skip_unless_role('davedittrich.utils.dropins')
+def test_etc_profile_d_dotlocal(host):
+    f = host.file('/etc/profile.d/dotlocal.sh')
+    assert f.exists
+    assert f.user == 'root'
+    assert f.mode == 0o644
+
+
+@skip_unless_role('davedittrich.utils.dropins')
 def test_bashrc_sources_aliases(host, fixture_users):
     user = fixture_users
     homedir = get_homedir(host=host, user=user)
