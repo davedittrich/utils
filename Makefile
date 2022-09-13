@@ -23,16 +23,13 @@ help:
 	@echo "make [VARIABLE=value] target [target ...]"
 	@echo "...where 'target' is one or more of:"
 	@echo "  build - build version v$(VERSION) of the ansible-galaxy collection"
-	@echo "  build-images - build Docker images from geerlingguy images"
-	@echo "	                with extra packages already installed"
-	@echo "  collection-dev-link - create collections development directory link pointing to repo directory"
 	@echo "  clean - remove temporary and intermediate files"
-	@echo "  clean-images - remove Docker images"
 	@echo "  converge - molecule converge on scenario '$(SCENARIO)'"
 	@echo "  destroy - destroy and clean up scenario '$(SCENARIO)'"
 	@echo "  lint - run 'molecule lint'"
 	@echo "  login - connect to '$(SCENARIO)' molecule instance for debugging"
 	@echo "  publish - publish the artifact to Ansible galaxy (default $(ANSIBLE_GALAXY_SERVER))"
+	@echo "  reset - clean up molecule scenario data"
 	@echo "  scenario-exists - checks to ensure the scenario (variable 'SCENARIO') exists."
 	@echo "  spotless - clean, then get rid of as much else as possible"
 	@echo "  test - run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO))"
@@ -74,47 +71,8 @@ build:
 	ansible-playbook -vvvv -i 'localhost,' -e galaxy_yml_only=false build/galaxy_deploy.yml
 	@tar -tzf $(ARTIFACT) | grep -v '.*/$$' | while read line; do echo ' -->' $$line; done
 
-.PHONY: build-images
-build-images:
-	-molecule destroy
-	-docker kill instance
-	-docker rm instance
-	ansible-playbook -i docker/hosts.yml \
-		-e '{ \
-		"ansible_python_interpreter": "$(PYTHON_EXE)", \
-		"target_distros": ["debian11"], \
-		"docker_user": "$(USER_ID)", \
-		"docker_group": "$(GROUP_ID)" \
-		}' -vvv playbooks/build_test_images.yml
-	$(MAKE) list-images
-
-.PHONY: list-images
-list-images:
-	docker images | egrep "ID|geerlingguy/docker-.*-ansible|$(COLLECTION_NAMESPACE)/docker-.*-ansible"
-
-.PHONY: clean-images
-clean-images:
-	for image in $(shell docker images \
-		       --format "{{.ID}} {{.Repository}}" | \
-		       egrep "geerlingguy/docker-.*-ansible|$(COLLECTION_NAMESPACE)/docker-.*-ansible" | \
-		       awk '{ print $$1; }'); do \
-		docker rmi $$image; \
-	done
-	rm -f build-docker-*-ansible.log
-
-.PHONY: clean-collection
-clean-collection:
-	@for D in $(shell echo ~/.cache/ansible-compat/*/collections/ansible_collections/*); \
-	do \
-		if [ -f $$D/utils/README.md ]; \
-		then \
-			echo "[+] cleaning $$D"; \
-			rm -rf $$D; \
-		fi; \
-	done || true
-
 .PHONY: clean
-clean: clean-collection
+clean:
 	-rm -rf ~/.cache/ansible-compat ~/.cache/molecule ~/.cache/pip
 	-rm -f davedittrich-utils-*.tar.gz || true
 	find * -name '*.pyc' -delete || true
@@ -122,7 +80,6 @@ clean: clean-collection
 
 .PHONY: clean-molecule
 clean-molecule:
-	molecule destroy --all
 	for scenario in default $(shell grep '[-] davedittrich.utils.' molecule/default/converge.yml | cut -d. -f 3); \
 	do \
 		molecule reset -s $$scenario > /dev/null; \
@@ -142,7 +99,7 @@ verify: scenario-exists galaxy.yml
 
 .PHONY: lint
 lint: galaxy.yml
-	molecule lint
+	molecule lint -s $(SCENARIO)
 
 .PHONY: login
 login: scenario-exists
@@ -161,6 +118,10 @@ publish: $(ARTIFACT)
 		--api-key=$(ANSIBLE_GALAXY_API_KEY)
 
 
+.PHONY: reset
+reset:
+	molecule reset -s $(SCENARIO)
+
 .PHONY: scenario-exists
 scenario-exists:
 	@if [[ ! -d molecule/$(SCENARIO) ]]; then \
@@ -173,7 +134,7 @@ scenario-exists:
 spotless: clean clean-images
 
 .PHONY: test
-test: scenario-exists clean-collection galaxy.yml
+test: scenario-exists galaxy.yml
 	docker info 2>/dev/null | grep -q ID || (echo "[-] docker does not appear to be running" && exit 1)
 	molecule test -s $(SCENARIO)
 	@echo '[+] all tests succeeded'
@@ -226,10 +187,6 @@ dependencies:
 
 .PHONY: setup
 setup: collection-community-docker
-
-.PHONY: create-collections-dev-link
-create-collections-dev-link:
-	@bash scripts/create-collections-dev-link
 
 .PHONY: collection-community-docker
 collection-community-docker:
