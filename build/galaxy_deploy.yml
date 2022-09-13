@@ -6,30 +6,40 @@
     # This should be set via the command line at runtime.
     tag: "{{ github_tag.split('/')[-1].lstrip('v') }}"
     nolog: '{{ nolog|default(true) }}'
-    galaxy_yml_only: '{{ galaxy_yml_only|default(false) }}'
 
   pre_tasks:
-    - ansible.builtin.set_fact:
+    - name: Set fact with verbosity.
+      ansible.builtin.set_fact:
         verbose_flag: '-{{ "v" * ansible_verbosity|default(1) }}'
 
-    - ansible.builtin.set_fact:
-        version: '{{ version|default(lookup("file", "../VERSION")) }}'
+    - name: Set fact with version number.
+      ansible.builtin.set_fact:
+        version: '{{ lookup("file", "../VERSION") }}'
+      when: version is not defined
 
-    - ansible.builtin.set_fact:
-        save_galaxy_yml: '{{ save_galaxy_yml|default(true) }}'
+    - name: Set fact with artifact name.
+      ansible.builtin.set_fact:
+        artifact_name: 'davedittrich-utils-{{ version }}.tar.gz'
 
-    - ansible.builtin.set_fact:
-        publish: '{{ publish|default(false) }}'
+    - name: Set fact `galaxy_yml_only`.
+      ansible.builtin.set_fact:
+        galaxy_yml_only: false
+      when: galaxy_yml_only is not defined
 
-    - assert:
-        that:
-          - lookup('env', 'ANSIBLE_GALAXY_SERVER') != ''
-          - lookup('env', 'ANSIBLE_GALAXY_API_KEY') != ''
-      when: publish and not galaxy_yml_only
+    - name: Set fact `save_galaxy_yml`.
+      ansible.builtin.set_fact:
+        save_galaxy_yml: true
+      when:
+        - save_galaxy_yml is not defined
+
+    - name: Set fact `publish`.
+      ansible.builtin.set_fact:
+        publish: false
+      when: publish is not defined
 
     - name: Find files to exclude from build artifact on localhost.
       ansible.builtin.shell: |
-        git status --porcelain | grep '^?? ' | awk '{ print $2; }'
+        git status --porcelain --ignored | egrep '^[?!][?!] ' | awk '{ print $2; }'
       register: git_status
 
     - name: Set fact with list of files for `build_ignore`.
@@ -37,24 +47,29 @@
         build_ignore_files: '{{ build_ignore_files|default([]) + [item] }}'
       loop: '{{ git_status.stdout_lines }}'
 
+    - assert:
+        that:
+          - lookup('env', 'ANSIBLE_GALAXY_SERVER') != ''
+          - lookup('env', 'ANSIBLE_GALAXY_API_KEY') != ''
+      when: publish and not galaxy_yml_only
+
     - name: Ensure the ~/.ansible directory exists.
       ansible.builtin.file:
         path: ~/.ansible
         state: directory
         mode: 0o700
-      when: not galaxy_yml_only
+      when: not galaxy_yml_only|bool
+
+    - name: Debug build settings.
+      ansible.builtin.debug:
+        msg: >
+          artifact_name={{ artifact_name }}
+          galaxy_yml_only={{ galaxy_yml_only|bool }}
+          publish={{ publish|bool }}
+          save_galaxy_yml={{ save_galaxy_yml|bool }}
+          version={{ version }}
 
   tasks:
-    - name: Set fact with artifact name.
-      ansible.builtin.set_fact:
-        artifact_name: 'davedittrich-utils-{{ version }}.tar.gz'
-      when: not galaxy_yml_only
-
-    - name: Debug artifact name.
-      ansible.builtin.debug:
-        msg: '{{ artifact_name }}'
-      when: not galaxy_yml_only
-
     - name: Stat the galaxy.yml file.
       ansible.builtin.stat:
         path: ../galaxy.yml
@@ -67,14 +82,13 @@
       register: new_galaxy_yml
 
     - name: Block to build/publish collection.
-      when: publish and not galaxy_yml_only
+      when: publish|bool or not galaxy_yml_only|bool
       block:
 
         - name: Build the collection. # noqa 503
           ansible.builtin.command: >
             ansible-galaxy {{ verbose_flag }} collection build
             chdir=../
-          when: new_galaxy_yml.changed
 
         - name: Publish the collection. # noqa 503
           ansible.builtin.command: >
@@ -84,13 +98,13 @@
               --api-key ${{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
             chdir=../
           no_log: '{{ nolog }}'
-          when: publish
+          when: publish|bool
 
         - name: Ensure the `galaxy.yml` file is absent.
           ansible.builtin.file:
             path: ../galaxy.yml
             state: absent
-          when: not save_galaxy_yml
+          when: not save_galaxy_yml|bool
 
       rescue:
         - fail:
