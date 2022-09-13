@@ -2,6 +2,7 @@
 __pycache__
 *.pyc
 .vscode/settings.json
+davedittrich-utils-*.tar.gz
 delegated-ssh-config
 diffs*
 galaxy.yml
