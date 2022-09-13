@@ -1,8 +1,15 @@
 davedittrich.utils.kali-like
 ============================
 
-This role ensures that specified Kali Linux features and tooling
+This role ensures that certain Kali Linux features and tooling
 are available.
+
+APT repository policies are set to prioritize Kali repos over Debian
+repos, and to prioritize the Debian `unstable` branch to match that
+followed by Kali. It also does a `dist-upgrade` to bring everything
+up to date. This can cause idempotence failures when this role is
+applied along with other roles, so playbooks that apply multiple
+should apply `kali_like` first.
 
 Requirements
 ------------
