@@ -53,7 +53,7 @@
 
 - block:
     - name: Install Guacamole from source.
-      ansible.builtin.shell: >
+      ansible.builtin.shell: >-
         /bin/bash guac-install.sh
           --nomfa
           --installmysql
