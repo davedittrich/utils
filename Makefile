@@ -67,11 +67,11 @@ help:
 	@echo " $$ make MOLECULE_REPO=davedittrich SCENARIO=branding test"
 
 galaxy.yml:
-	ansible-playbook -i 'localhost,' -e 'galaxy_yml_only=true' build/galaxy_deploy.yml
+	ansible-playbook -i 'localhost,' -e '{"galaxy_yml_only": true}' build/galaxy_deploy.yml
 
 .PHONY: build
 build:
-	ansible-playbook -vvvv -i 'localhost,' build/galaxy_deploy.yml
+	ansible-playbook -vvvv -i 'localhost,' -e galaxy_yml_only=false build/galaxy_deploy.yml
 	@tar -tzf $(ARTIFACT) | grep -v '.*/$$' | while read line; do echo ' -->' $$line; done
 
 .PHONY: build-images
