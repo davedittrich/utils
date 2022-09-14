@@ -1,6 +1,8 @@
 davedittrich.utils.visible_bell
 ===============================
 
+Version: 0.6.0
+
 This role disables auditory bell settings in various apps and system services
 to make a workstation quieter for use in lab environments or other shared
 spaces where constant BONK! BONK! BONK! might get you kicked out.

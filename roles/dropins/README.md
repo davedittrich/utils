@@ -1,6 +1,8 @@
 davedittrich.utils.dropins
 ==========================
 
+Version: 0.6.0
+
 This role ensures that specified files are set up for management using
 [update-dotdee](https://pypi.org/project/update-dotdee/).
 

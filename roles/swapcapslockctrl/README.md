@@ -1,6 +1,8 @@
 davedittrich.utils.swapcapslockctrl
 ===================================
 
+Version: 0.6.0
+
 This role configures the system to permanently swap the *CapsLock* key with
 the *Left CTRL* key (for those who prefer the keyboard layout of the
 original IBM keyboards.)

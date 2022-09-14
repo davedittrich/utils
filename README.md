@@ -1,5 +1,7 @@
 # davedittrich.utils Collection for Ansible
 
+Version: 0.6.0
+
 [![CI](https://github.com/davedittrich/utils/workflows/release/badge.svg?event=push)](https://github.com/davedittrich/utils/actions)
 
 An Ansible collection for my opinionated development workstation configuration and
@@ -23,10 +25,8 @@ roles, both locally and driven by GitHub Actions workflows on `push` actions.
 The operating system distributions supported at this time by this collection
 and its playbooks for `molecule` testing are:
 
-- Debian 10 (default distribution)
-- Debian 9
-- Ubuntu 20.04 LTS
-- Ubuntu 18.04 LTS
+- Debian 11 (default distribution)
+- Ubuntu 22.04 LTS
 
 The development environment and test infrastructure that invokes `molecule`
 for testing has been tested on the following (in order of most-frequently
@@ -39,7 +39,7 @@ to least-frequently used):
 To help reduce the amount of time taken by all this testing, several optimization
 techniques are employed:
 
-1. Local testing during development is done against _only_ Debian 10. Once all
+1. Local testing during development is done against _only_ Debian 11. Once all
    tests are passing, the remaining OS distributions can then be selected for further
    compatibility testing.
 
