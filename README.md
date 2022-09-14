@@ -178,7 +178,6 @@ configured as follows:
 provisioner:
   name: ansible
   env:
-    ANSIBLE_ROLES_PATH: "../../roles"
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
     PYTHONPATH: "${PWD}"
   playbooks:

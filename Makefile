@@ -7,10 +7,7 @@ ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule mol
 export COLLECTION_NAMESPACE=davedittrich
 DELEGATED_HOST:=none
 export MOLECULE_DISTRO=debian11
-export MOLECULE_REPO=davedittrich
 PLAYBOOK=playbooks/workstation_setup.yml
-PYTHON_EXE:=$(CONDA_PREFIX)/bin/python3
-PYTHONPATH=$(shell pwd)/molecule
 SCENARIO=default
 SHELL=/bin/bash
 USER_ID=$(shell id -u)
@@ -45,7 +42,6 @@ help:
 	@echo "  ARTIFACT ('$(ARTIFACT)')"
 	@echo "  COLLECTION_NAMESPACE ('$(COLLECTION_NAMESPACE)')"
 	@echo "  MOLECULE_DISTRO ('$(MOLECULE_DISTRO)')"
-	@echo "  MOLECULE_REPO ('$(MOLECULE_REPO)')"
 	@echo "  SCENARIO ('$(SCENARIO)')"
 	@echo "  VERSION ('$(VERSION)')"
 	@echo ""
@@ -60,8 +56,7 @@ help:
 	@echo "which can make command lines shorter and thus easier to type (less typos!)"
 	@echo ""
 	@echo "Examples:"
-	@echo " $$ make DISTRO=ubuntu2004 test"
-	@echo " $$ make MOLECULE_REPO=davedittrich SCENARIO=branding test"
+	@echo " $$ make SCENARIO=branding test"
 
 galaxy.yml:
 	ansible-playbook -i 'localhost,' -e '{"galaxy_yml_only": true}' build/galaxy_deploy.yml

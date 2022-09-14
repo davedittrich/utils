@@ -41,7 +41,6 @@ provisioner:
   name: ansible
   env:
     ANSIBLE_FORCE_COLOR: true
-    ANSIBLE_ROLES_PATH: "../../roles"
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
     COLLECTION_ROOT: "${PWD}"
   playbooks:

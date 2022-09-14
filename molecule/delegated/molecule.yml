@@ -23,9 +23,7 @@ lint: |
 provisioner:
   name: ansible
   env:
-    # ANSIBLE_COLLECTIONS_PATH: "$HOME/.cache/ansible-compat/6fd897/collections:$HOME/.ansible/collections"
     ANSIBLE_FORCE_COLOR: true
-    ANSIBLE_ROLES_PATH: "../../roles"
     ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
     COLLECTION_ROOT: "${PWD}"
   playbooks:
