@@ -602,6 +602,7 @@ cause idempotence tests to fail. Here are some of the causes and solutions.
 - [Question: accessing values of variables as they are being used for provisioning an instance inside Testinfra tests #151](https://github.com/ansible-community/molecule/issues/151), April 5, 2016
 - [Using Ansible Molecule to test roles in monorepo](https://mariarti0644.medium.com/using-ansible-molecule-to-test-roles-in-monorepo-5f711c716666), by Maria Kotlyarevskaya, Mar 13, 2021
 - [`test infra` modules](https://testinfra.readthedocs.io/en/latest/modules.html)
+- [Advanced `bumpversion` examples](https://github.com/andrivet/ADVbumpversion/blob/master/EXAMPLES.rst)
 
 ## Release notes
 
