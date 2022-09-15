@@ -7,6 +7,7 @@ ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule mol
 export COLLECTION_NAMESPACE=davedittrich
 DELEGATED_HOST:=none
 export MOLECULE_DISTRO=debian11
+MOLECULE_DESTROY=never
 PLAYBOOK=playbooks/workstation_setup.yml
 SCENARIO=default
 SHELL=/bin/bash
@@ -48,6 +49,10 @@ help:
 	@echo ""
 	@echo "The variables 'ANSIBLE_GALAXY_SERVER' and 'ANSIBLE_GALAXY_API_KEY' come from"
 	@echo "the default psec environment ($(shell psec environments default))".
+	@echo ""
+	@echo "Doing 'make test' will do 'molecule test --destroy=never' by default to help"
+	@echo "debugging playbooks and verification tests. To change this (e.g., in the"
+	@echo "continuous integration context) do 'make MOLECULE_DESTROY=always test' instead."
 	@echo ""
 	@echo "Setting variables on the 'make' command line will be propagated as environment"
 	@echo "variables down into command run by 'make'. Look at the 'molecule/default/molecule.yml'"
@@ -136,8 +141,11 @@ spotless: clean clean-images
 .PHONY: test
 test: check-conda scenario-exists galaxy.yml
 	docker info 2>/dev/null | grep -q ID || (echo "[-] docker does not appear to be running" && exit 1)
-	molecule test -s $(SCENARIO)
+	molecule test --destroy=$(MOLECULE_DESTROY) -s $(SCENARIO)
 	@echo '[+] all tests succeeded'
+	@if [[ "$(MOLECULE_DESTROY)" = "never" ]]; then \
+		echo "[+] instance(s) were not destroyed: use 'molecule destroy' or 'molecule reset' manually"; \
+	fi
 
 .PHONY: test-all-distros
 test-all-distros: scenario-exists galaxy.yml
