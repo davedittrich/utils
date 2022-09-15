@@ -7,7 +7,7 @@
 # for storing project configuration, secrets, temporary files, etc.
 
 conda_env=${CONDA_DEFAULT_ENV:-None}
-psec_env=$(psec environments default)
+psec_env=$(psec environments default 2>/dev/null)
 
 if [[ -z "${conda_env}" ]]; then
     echo '[-] conda does not appear to be installed'
