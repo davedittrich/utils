@@ -248,6 +248,7 @@ variable above), this particular test would be skipped.
 
 ```
 $ make SCENARIO=ip_in_issue test
+[+] using 'conda' environment 'utils' and 'psec' environment 'utils'
 molecule test -s ip_in_issue
 INFO     ip_in_issue scenario test matrix: dependency, lint, cleanup, destroy, syntax, create, prepare, converge, idempotence, side_effect, verify, cleanup, destroy
 INFO     Performing prerun...

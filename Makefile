@@ -35,6 +35,7 @@ help:
 	@echo "  test-delegated - run molecule against delegated host ($(DELEGATED_HOST))"
 	@echo "  verify - run tests on scenario '$(SCENARIO)'"
 	@echo "  version - show the current version number from 'VERSION' file"
+	@echo "  check-conda - check 'conda' and 'psec' environment settings"
 	@echo ""
 	@echo "Variables:"
 	@echo "  ANSIBLE_GALAXY_SERVER ('$(ANSIBLE_GALAXY_SERVER)' from psec)"
@@ -58,11 +59,15 @@ help:
 	@echo "Examples:"
 	@echo " $$ make SCENARIO=branding test"
 
+.PHONY: check-conda
+check-conda:
+	@bash scripts/check-conda.sh
+
 galaxy.yml:
 	ansible-playbook -i 'localhost,' -e '{"galaxy_yml_only": true}' build/galaxy_deploy.yml
 
 .PHONY: build
-build:
+build: check-conda
 	ansible-playbook -vvvv -i 'localhost,' -e galaxy_yml_only=false build/galaxy_deploy.yml
 	@tar -tzf $(ARTIFACT) | grep -v '.*/$$' | while read line; do echo ' -->' $$line; done
 
@@ -81,15 +86,15 @@ clean-molecule:
 	done
 
 .PHONY: converge
-converge: scenario-exists galaxy.yml
+converge: check-conda scenario-exists galaxy.yml
 	molecule converge -s $(SCENARIO)
 
 .PHONY: destroy
-destroy: scenario-exists galaxy.yml
+destroy: check-conda scenario-exists galaxy.yml
 	molecule destroy -s $(SCENARIO)
 
 .PHONY: verify
-verify: scenario-exists galaxy.yml
+verify: check-conda scenario-exists galaxy.yml
 	molecule verify -s $(SCENARIO)
 
 .PHONY: lint
@@ -101,7 +106,7 @@ login: scenario-exists
 	molecule login -s $(SCENARIO)
 
 .PHONY: publish
-publish: $(ARTIFACT)
+publish: check-conda $(ARTIFACT)
 	@if [[ ! -f $(ARTIFACT) ]]; then \
 		echo "[-] artifact '$(ARTIFACT)' does not exist. Try one of these:"; \
 		ls davedittrich-utils-*.tar.gz; \
@@ -129,7 +134,7 @@ scenario-exists:
 spotless: clean clean-images
 
 .PHONY: test
-test: scenario-exists galaxy.yml
+test: check-conda scenario-exists galaxy.yml
 	docker info 2>/dev/null | grep -q ID || (echo "[-] docker does not appear to be running" && exit 1)
 	molecule test -s $(SCENARIO)
 	@echo '[+] all tests succeeded'
