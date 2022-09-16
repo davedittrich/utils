@@ -1,17 +1,17 @@
-name: "davedittrich.utils.swapcapslockctrl"
+name: "davedittrich.utils.kdmt"
 on:
   push:
     paths:
-      - 'roles/swapcapslockctrl/**'
-      - 'molecule/swapcapslockctrl/**'
-      - '.github/workflows/swapcapslockctrl.yml'
+      - 'roles/kdmt/**'
+      - 'molecule/kdmt/**'
+      - '.github/workflows/kdmt.yml'
   pull_request:
     paths:
-      - 'roles/swapcapslockctrl/**'
-      - 'molecule/swapcapslockctrl/**'
-      - '.github/workflows/swapcapslockctrl.yml'
+      - 'roles/kdmt/**'
+      - 'molecule/kdmt/**'
+      - '.github/workflows/kdmt.yml'
 jobs:
-  swapcapslockctrl:
+  kdmt:
     runs-on: ubuntu-latest
     if: contains(github.ref, '/feature/') || contains(github.ref, '/bugfix/')
     env:
@@ -33,7 +33,7 @@ jobs:
           # - { "distro":"debian9", "command":"/lib/systemd/systemd" }
           - { "distro":"debian10", "command":"/lib/systemd/systemd" }
         collection_role:
-          - swapcapslockctrl
+          - kdmt
     steps:
       - name: Check out code
         uses: actions/checkout@v1

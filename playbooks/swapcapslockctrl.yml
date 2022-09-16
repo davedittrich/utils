@@ -6,6 +6,7 @@
   gather_facts: true
   vars:
     collection_root: '{{ lookup("env", "COLLECTION_ROOT") }}'
+    keyboard_swapcapslockctrl: true
 
   roles:
-    - davedittrich.utils.swapcapslockctrl
+    - davedittrich.utils.kdmt

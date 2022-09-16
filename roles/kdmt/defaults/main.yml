@@ -1,5 +1,7 @@
 ---
 keyboard_hid_apple: true
+keyboard_hid_apple_iso_layout: '0'
+keyboard_hid_apple_fnmode: '2'
 keyboard_swapcapslockctrl: true
 keyboard_visible_bell: true
 # display_???

@@ -12,7 +12,10 @@
     - name: Ensure `/etc/modprobe.d/hid_apple.conf` file is present.
       ansible.builtin.copy:
         dest: '/etc/modprobe.d/hid_apple.conf'
-        content: 'options hid_apple fnmode=2 iso_layout=0'
+        content: >
+          options hid_apple
+          fnmode={{ keyboard_hid_apple_fnmode }}
+          iso_layout={{ keyboard_hid_apple_iso_layout }}
         owner: root
         group: root
         mode: 0o644
@@ -29,14 +32,14 @@
 
     - name: Ensure `/sys/module/hid_apple/parameters/fnmode` updated.
       ansible.builtin.shell: |
-        echo '2' > /sys/module/hid_apple/parameters/fnmode
+        echo '{{ keyboard_hid_apple_fnmode }}' > /sys/module/hid_apple/parameters/fnmode
       register: result
       when: hid_apple_conf.changed
       failed_when: result is failure and 'Directory nonexistent' not in result.stderr
 
     - name: Ensure `/sys/module/hid_apple/parameters/iso_layout` updated.
       ansible.builtin.shell: |
-        echo '0' > /sys/module/hid_apple/parameters/iso_layout
+        echo '{{ keyboard_hid_apple_iso_layout }}' > /sys/module/hid_apple/parameters/iso_layout
       register: result
       when: hid_apple_conf.changed
       failed_when: result is failure and 'Directory nonexistent' not in result.stderr

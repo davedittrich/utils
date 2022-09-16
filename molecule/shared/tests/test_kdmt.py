@@ -13,13 +13,13 @@ from helpers import (
 # System tests.
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 def test_keyboard_config_packages(host):
     for package in ['keyboard-configuration', 'console-setup', 'udev']:
         assert host.package(package).is_installed
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 def test_custom_load_xmodmap(host):
     f = host.file('/etc/X11/Xsession.d/40custom_load_xmodmap')
     assert f.exists
@@ -27,7 +27,7 @@ def test_custom_load_xmodmap(host):
     assert r'XMODMAP="/usr/bin/xmodmap"' in f.content_string
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 def test_udev_hwdb_file(host):
     f = host.file('/etc/udev/hwdb.d/99-swapcapslockctrl.hwdb')
     assert f.exists
@@ -36,7 +36,7 @@ def test_udev_hwdb_file(host):
     assert r'KEYBOARD_KEY_700E0=capslock' in f.content_string
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 def test_xkboptions(host):
     f = host.file('/etc/default/keyboard')
     assert f.exists
@@ -44,22 +44,24 @@ def test_xkboptions(host):
     assert r'XKBOPTIONS="ctrl:swapcaps"' in f.content_string
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 def test_keyboard_configuration(host):
     with host.sudo():
         result = host.check_output("debconf-show keyboard-configuration")
         assert r'ctrl:swapcaps' in result
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 def test_hid_apple_conf(host):
     f = host.file('/etc/modprobe.d/hid_apple.conf')
     assert f.exists
     assert f.user == 'root'
-    assert r'hid_apple fnmode=2 iso_layout=0' in f.content_string
+    fnmode = ansible_vars.get('keyboard_hid_apple_fnmode')
+    iso_layout = ansible_vars.get('keyboard_hid_apple_iso_layout')
+    assert f'hid_apple fnmode={fnmode} iso_layout={iso_layout}' in f.content_string  # noqa
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 def test_hid_apple_fnmode(host):
     f = host.file('/sys/module/hid_apple/parameters/fnmode')
     try:
@@ -67,10 +69,11 @@ def test_hid_apple_fnmode(host):
     except AssertionError:
         pytest.xfail('no /sys/hid_apple/parameters directory')
     assert f.user == 'root'
-    assert '2\n' == f.content_string
+    fnmode = ansible_vars.get('keyboard_hid_apple_fnmode')
+    assert f.content_string == f'{fnmode}\n'
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 def test_hid_apple_iso_layout(host):
     f = host.file('/sys/module/hid_apple/parameters/iso_layout')
     try:
@@ -78,13 +81,14 @@ def test_hid_apple_iso_layout(host):
     except AssertionError:
         pytest.xfail('no /sys/hid_apple/parameters directory')
     assert f.user == 'root'
-    assert '0\n' == f.content_string
+    iso_layout = ansible_vars.get('keyboard_hid_apple_iso_layout')
+    assert f'{iso_layout}\n' == f.content_string
 
 
 # User tests.
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_inputrc(host, user):
     f = host.file(
@@ -97,7 +101,7 @@ def test_user_inputrc(host, user):
     assert f.content_string.find(r'set prefer-visible-bell') > -1
 
 
-# @skip_unless_role('davedittrich.utils.swapcapslockctrl')
+# @skip_unless_role('davedittrich.utils.kdmt')
 # @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 # def test_user_bashrc(host, user):
 #     f = host.file(
@@ -111,7 +115,7 @@ def test_user_inputrc(host, user):
 #     assert f.content_string.find(r'set bellstyle visible') > -1
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_cshrc(host, user):
     f = host.file(
@@ -125,7 +129,7 @@ def test_user_cshrc(host, user):
     assert f.content_string.find(r'set visiblebell') > -1
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_exrc(host, user):
     f = host.file(
@@ -139,7 +143,7 @@ def test_user_exrc(host, user):
     assert r'set flash' in f.content_string
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_vimrc(host, user):
     f = host.file(
@@ -153,7 +157,7 @@ def test_user_vimrc(host, user):
     assert r'set vb t_vb=' in f.content_string
 
 
-@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@skip_unless_role('davedittrich.utils.kdmt')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_xmodmap(host, user):
     homedir = get_homedir(host=host, user=user)

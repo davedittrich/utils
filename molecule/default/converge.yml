@@ -28,7 +28,7 @@
   roles:
     - davedittrich.utils.kali_like
     - davedittrich.utils.ip_in_issue
-    - davedittrich.utils.swapcapslockctrl
+    - davedittrich.utils.kdmt
     - davedittrich.utils.branding
     - davedittrich.utils.dropins
 

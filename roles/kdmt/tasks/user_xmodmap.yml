@@ -12,7 +12,7 @@
     - name: 'Ensure {{ user_xmodmap }} swaps capslock/ctrl.'
       ansible.builtin.blockinfile:
         path: '{{ user_xmodmap }}'
-        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:capslockctrl]'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:capslockctrl]'
         block: |
           !
           ! Swap Caps_Lock and Control_L
@@ -32,7 +32,7 @@
     - name: 'Ensure {{ user_xmodmap }} does not swap capslock/ctrl.'
       ansible.builtin.blockinfile:
         path: '{{ user_xmodmap }}'
-        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:capslockctrl]'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:capslockctrl]'
         block: ''
         create: true
         owner: '{{ user }}'
@@ -43,7 +43,7 @@
     - name: 'Ensure {{ user_xmodmap }} enables natural scrolling.'
       ansible.builtin.blockinfile:
         path: '{{ user_xmodmap }}'
-        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:mouse_natural_scrolling]'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:mouse_natural_scrolling]'
         block: |
           !
           ! Reverse scrolling direction
@@ -58,7 +58,7 @@
     - name: Ensure {{ user_xmodmap }} does not enable natural scrolling.
       ansible.builtin.blockinfile:
         path: '{{ user_xmodmap }}'
-        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:mouse_natural_scrolling]'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:mouse_natural_scrolling]'
         block: ''
         create: true
         owner: '{{ user }}'

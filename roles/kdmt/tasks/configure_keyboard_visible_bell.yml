@@ -5,7 +5,7 @@
 - name: Ensure applications using `readline` are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir[user] ~ '/.inputrc' }}"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:visible_bell]"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
     block: |
       set prefer-visible-bell
     owner: '{{ user }}'
@@ -17,7 +17,7 @@
 # - name: Ensure `bash` shell sessions are quieted.
 #   ansible.builtin.blockinfile:
 #     path: "{{ homedir[user] ~ '/.bashrc' }}"
-#     marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:visible_bell]"
+#     marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
 #     block: |
 #       set bellstyle visible
 #     owner: '{{ user }}'
@@ -31,7 +31,7 @@
 - name: Ensure `csh` and `tcsh` shell sessions are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir[user] ~ '/.cshrc' }}"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:visible_bell]"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
     block: |
       set visiblebell
     owner: '{{ user }}'
@@ -43,7 +43,7 @@
 - name: Ensure `ex` family editors are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir[user] ~ '/.exrc' }}"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:visible_bell]"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
     block: |
       set flash
     owner: '{{ user }}'
@@ -55,7 +55,7 @@
 - name: Ensure `vim` style editors are quieted.
   ansible.builtin.blockinfile:
     path: "{{ homedir[user] ~ '/.vimrc' }}"
-    marker: '" {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:visible_bell]'
+    marker: '" {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]'
     block: |
       set vb t_vb=
     owner: '{{ user }}'

@@ -135,11 +135,13 @@ exhaustive list of all tasks, but rather a summary of the general topics:
 - Ensure SSH host key fingerprints are visible on console login screen.
 - Ensure Ethernet device and IP addressing information is visible on console login screen.
 
-#### [`davedittrich.utils.swapcapslockctrl`](roles/swapcapslockctrl) role.
+#### [`davedittrich.utils.kdmt`](roles/kdmt) role.
 
 - Swaps Left keyboard **CapsLock** key with **CTRL**.
 - Disables bell sound for keyboard, `bash`, `csh`, `ex` family editors, `vim` editor
   and instead sets visible bell.
+- Enables "natural scrolling" on mouse and trackpad.
+- Configures `hid_apple` keyboard devices to use function keys without needing `Fn` key.
 
 #### [`davedittrich.utils.dropins`](roles/dropins) role.
 

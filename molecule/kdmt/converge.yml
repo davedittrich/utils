@@ -15,7 +15,7 @@
       delay: 2
 
   roles:
-    - davedittrich.utils.swapcapslockctrl
+    - davedittrich.utils.kdmt
 
   post_tasks:
     - name: Dump all variables used to converge for later use.
