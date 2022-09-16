@@ -105,6 +105,10 @@
     owner: root
     group: root
     mode: 0o644
+  register: etc_issue
+  changed_when:
+    - etc_issue.changed
+    - "'davedittrich.utils.kali_like' not in ansible_role_names"
   become: true
 
 - name: Find `/etc/issue.d` templates on control host.
