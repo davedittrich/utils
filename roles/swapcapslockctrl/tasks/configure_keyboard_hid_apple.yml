@@ -30,12 +30,16 @@
     - name: Ensure `/sys/module/hid_apple/parameters/fnmode` updated.
       ansible.builtin.shell: |
         echo '2' > /sys/module/hid_apple/parameters/fnmode
+      register: result
       when: hid_apple_conf.changed
+      failed_when: result is failure and 'Directory nonexistent' not in result.stderr
 
     - name: Ensure `/sys/module/hid_apple/parameters/iso_layout` updated.
       ansible.builtin.shell: |
         echo '0' > /sys/module/hid_apple/parameters/iso_layout
+      register: result
       when: hid_apple_conf.changed
+      failed_when: result is failure and 'Directory nonexistent' not in result.stderr
 
 - name: Block for unconfiguring Apple hid keyboard.
   when:  keyboard_hid_apple is false
@@ -60,11 +64,15 @@
     - name: Ensure `/sys/module/hid_apple/parameters/fnmode` updated.
       ansible.builtin.shell: |
         echo '0' > /sys/module/hid_apple/parameters/fnmode
+      register: result
       when: hid_apple_conf.changed
+      failed_when: result is failure and 'Directory nonexistent' not in result.stderr
 
     - name: Ensure `/sys/module/hid_apple/parameters/iso_layout` updated.
       ansible.builtin.shell: |
         echo '-1' > /sys/module/hid_apple/parameters/iso_layout
+      register: result
       when: hid_apple_conf.changed
+      failed_when: result is failure and 'Directory nonexistent' not in result.stderr
 
 # vim: ft=ansible:
