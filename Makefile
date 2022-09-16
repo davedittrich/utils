@@ -79,6 +79,7 @@ build: check-conda
 .PHONY: clean
 clean:
 	-rm -rf ~/.cache/ansible-compat ~/.cache/molecule ~/.cache/pip
+	-rm -f pytestdebug.log
 	-rm -f davedittrich-utils-*.tar.gz || true
 	find * -name '*.pyc' -delete || true
 	find * -name __pycache__ -exec rmdir {} ';' || true
@@ -140,7 +141,7 @@ spotless: clean clean-images
 
 .PHONY: test
 test: check-conda scenario-exists galaxy.yml
-	docker info 2>/dev/null | grep -q ID || (echo "[-] docker does not appear to be running" && exit 1)
+	@docker info 2>/dev/null | grep -q ID || (echo "[-] docker does not appear to be running" && exit 1)
 	molecule test --destroy=$(MOLECULE_DESTROY) -s $(SCENARIO)
 	@echo '[+] all tests succeeded'
 	@if [[ "$(MOLECULE_DESTROY)" = "never" ]]; then \
