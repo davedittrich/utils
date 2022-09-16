@@ -1,0 +1,7 @@
+---
+keyboard_hid_apple: true
+keyboard_swapcapslockctrl: true
+keyboard_visible_bell: true
+# display_???
+mouse_natural_scrolling: true
+trackpad_natural_scrolling: true

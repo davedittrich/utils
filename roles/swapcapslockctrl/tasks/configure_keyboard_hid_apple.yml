@@ -1,0 +1,70 @@
+---
+
+# Enable function keys first for Apple (and other?) keyboards.
+# https://askubuntu.com/questions/7537/how-can-i-reverse-the-fn-key-on-an-apple-keyboard-so-that-f1-f2-f3-are-us/7553#7553 
+# https://superuser.com/questions/79822/how-to-swap-the-fn-use-of-function-keys-on-an-apple-keyboard-in-linux
+
+- name: Block for configuring Apple hid keyboard.
+  when:  keyboard_hid_apple is true
+  become: true
+  block:
+
+    - name: Ensure `/etc/modprobe.d/hid_apple.conf` file is present.
+      ansible.builtin.copy:
+        dest: '/etc/modprobe.d/hid_apple.conf'
+        content: 'options hid_apple fnmode=2 iso_layout=0'
+        owner: root
+        group: root
+        mode: 0o644
+      register: hid_apple_conf
+
+    - name: Ensure initrd images are updated.
+      ansible.builtin.shell: |
+        update-initramfs -u -k all
+      when: hid_apple_conf.changed
+      changed_when: false
+
+      # Normally, the above requires a reboot to take effect.
+      # Set current parameters directly if changes occured.
+
+    - name: Ensure `/sys/module/hid_apple/parameters/fnmode` updated.
+      ansible.builtin.shell: |
+        echo '2' > /sys/module/hid_apple/parameters/fnmode
+      when: hid_apple_conf.changed
+
+    - name: Ensure `/sys/module/hid_apple/parameters/iso_layout` updated.
+      ansible.builtin.shell: |
+        echo '0' > /sys/module/hid_apple/parameters/iso_layout
+      when: hid_apple_conf.changed
+
+- name: Block for unconfiguring Apple hid keyboard.
+  when:  keyboard_hid_apple is false
+  become: true
+  block:
+
+    - name: Ensure `/etc/modprobe.d/hid_apple.conf` file is absent.
+      ansible.builtin.file:
+        path: '/etc/modprobe.d/hid_apple.conf'
+        state: absent
+      register: hid_apple_conf
+
+    - name: Ensure initrd images are updated.
+      ansible.builtin.shell: |
+        update-initramfs -u -k all
+      when: hid_apple_conf.changed
+      changed_when: false
+
+      # Normally, the above requires a reboot to take effect.
+      # Set back to default parameters directly if changes occured.
+
+    - name: Ensure `/sys/module/hid_apple/parameters/fnmode` updated.
+      ansible.builtin.shell: |
+        echo '0' > /sys/module/hid_apple/parameters/fnmode
+      when: hid_apple_conf.changed
+
+    - name: Ensure `/sys/module/hid_apple/parameters/iso_layout` updated.
+      ansible.builtin.shell: |
+        echo '-1' > /sys/module/hid_apple/parameters/iso_layout
+      when: hid_apple_conf.changed
+
+# vim: ft=ansible:

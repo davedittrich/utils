@@ -1,0 +1,69 @@
+---
+
+- name: Set fact `user_xmodmap`.
+  ansible.builtin.set_fact:
+    user_xmodmap: '{{ homedir[user] }}/.Xmodmap'
+
+- name: 'Block for customizing {{ user_xmodmap }} file.'
+  become: true
+  become_user: '{{ user }}'
+  block:
+
+    - name: 'Ensure {{ user_xmodmap }} swaps capslock/ctrl.'
+      ansible.builtin.blockinfile:
+        path: '{{ user_xmodmap }}'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:capslockctrl]'
+        block: |
+          !
+          ! Swap Caps_Lock and Control_L
+          !
+          remove Lock = Caps_Lock
+          remove Control = Control_L
+          keysym Control_L = Caps_Lock
+          keysym Caps_Lock = Control_L
+          add Lock = Caps_Lock
+          add Control = Control_L
+        create: true
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0o640
+      when: keyboard_swapcapslockctrl is true
+
+    - name: 'Ensure {{ user_xmodmap }} does not swap capslock/ctrl.'
+      ansible.builtin.blockinfile:
+        path: '{{ user_xmodmap }}'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:capslockctrl]'
+        block: ''
+        create: true
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0o640
+      when: keyboard_swapcapslockctrl is false
+
+    - name: 'Ensure {{ user_xmodmap }} enables natural scrolling.'
+      ansible.builtin.blockinfile:
+        path: '{{ user_xmodmap }}'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:mouse_natural_scrolling]'
+        block: |
+          !
+          ! Reverse scrolling direction
+          !
+          pointer = 1 2 3 5 4 7 6 8 9 10 11 12
+        create: true
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0o640
+      when: mouse_natural_scrolling is true
+
+    - name: Ensure {{ user_xmodmap }} does not enable natural scrolling.
+      ansible.builtin.blockinfile:
+        path: '{{ user_xmodmap }}'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.swapcapslockctrl:mouse_natural_scrolling]'
+        block: ''
+        create: true
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0o640
+      when: mouse_natural_scrolling is false
+
+#

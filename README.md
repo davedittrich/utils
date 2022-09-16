@@ -138,9 +138,6 @@ exhaustive list of all tasks, but rather a summary of the general topics:
 #### [`davedittrich.utils.swapcapslockctrl`](roles/swapcapslockctrl) role.
 
 - Swaps Left keyboard **CapsLock** key with **CTRL**.
-
-#### [`davedittrich.utils.visible_bell`](roles/visible_bell) role.
-
 - Disables bell sound for keyboard, `bash`, `csh`, `ex` family editors, `vim` editor
   and instead sets visible bell.
 
@@ -284,11 +281,11 @@ molecule/shared/tests/test_ip_in_issue.py::test_issue_d_interfaces[ansible://ins
 molecule/shared/tests/test_ip_in_issue.py::test_issue_d_fingerprints[ansible://instance] PASSED [ 65%]
 molecule/shared/tests/test_shared.py::test_shared_skip SKIPPED (forc...) [ 70%]
 molecule/shared/tests/test_swapcapslockctrl.py::test_udev_hwdb_file[ansible://instance] SKIPPED [ 75%]
-molecule/shared/tests/test_visible_bell.py::test_inputrc[ansible://instance] SKIPPED [ 80%]
-molecule/shared/tests/test_visible_bell.py::test_bashrc[ansible://instance] SKIPPED [ 85%]
-molecule/shared/tests/test_visible_bell.py::test_cshrc[ansible://instance] SKIPPED [ 90%]
-molecule/shared/tests/test_visible_bell.py::test_exrc[ansible://instance] SKIPPED [ 95%]
-molecule/shared/tests/test_visible_bell.py::test_vimrc[ansible://instance] SKIPPED [100%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_inputrc[ansible://instance] SKIPPED [ 80%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_bashrc[ansible://instance] SKIPPED [ 85%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_cshrc[ansible://instance] SKIPPED [ 90%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_exrc[ansible://instance] SKIPPED [ 95%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_vimrc[ansible://instance] SKIPPED [100%]
 
 =================== 4 passed, 16 skipped in 84.47s (0:01:24) ===================
 INFO     Verifier completed successfully.
@@ -335,7 +332,6 @@ INFO     Running delegated > list
 INFO     Running dropins > list
 INFO     Running ip_in_issue > list
 INFO     Running swapcapslockctrl > list
-INFO     Running visible_bell > list
                  ╷             ╷                  ╷                  ╷         ╷
   Instance Name  │ Driver Name │ Provisioner Name │ Scenario Name    │ Created │ Converged
 ╶────────────────┼─────────────┼──────────────────┼──────────────────┼─────────┼───────────╴
@@ -345,7 +341,6 @@ INFO     Running visible_bell > list
   instance       │ docker      │ ansible          │ dropins          │ false   │ false
   instance       │ docker      │ ansible          │ ip_in_issue      │ false   │ false
   instance       │ docker      │ ansible          │ swapcapslockctrl │ false   │ false
-  instance       │ docker      │ ansible          │ visible_bell     │ false   │ false
                  ╵             ╵                  ╵                  ╵         ╵
 ```
 
@@ -473,16 +468,16 @@ molecule/shared/tests/test_swapcapslockctrl.py::test_udev_package[ansible:/deleg
 molecule/shared/tests/test_swapcapslockctrl.py::test_udev_hwdb_file[ansible:/delegated-host] PASSED [ 88%]
 molecule/shared/tests/test_swapcapslockctrl.py::test_xkboptions[ansible:/delegated-host] PASSED [ 89%]
 molecule/shared/tests/test_swapcapslockctrl.py::test_keyboard_configuration[ansible:/delegated-host] PASSED [ 90%]
-molecule/shared/tests/test_visible_bell.py::test_inputrc[ansible:/delegated-host-root] PASSED [ 91%]
-molecule/shared/tests/test_visible_bell.py::test_inputrc[ansible:/delegated-host-pirate] PASSED [ 92%]
-molecule/shared/tests/test_visible_bell.py::test_bashrc[ansible:/delegated-host-root] PASSED [ 93%]
-molecule/shared/tests/test_visible_bell.py::test_bashrc[ansible:/delegated-host-pirate] PASSED [ 94%]
-molecule/shared/tests/test_visible_bell.py::test_cshrc[ansible:/delegated-host-root] PASSED [ 95%]
-molecule/shared/tests/test_visible_bell.py::test_cshrc[ansible:/delegated-host-pirate] PASSED [ 96%]
-molecule/shared/tests/test_visible_bell.py::test_exrc[ansible:/delegated-host-root] PASSED [ 97%]
-molecule/shared/tests/test_visible_bell.py::test_exrc[ansible:/delegated-host-pirate] PASSED [ 98%]
-molecule/shared/tests/test_visible_bell.py::test_vimrc[ansible:/delegated-host-root] PASSED [ 99%]
-molecule/shared/tests/test_visible_bell.py::test_vimrc[ansible:/delegated-host-pirate] PASSED [100%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_inputrc[ansible:/delegated-host-root] PASSED [ 91%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_inputrc[ansible:/delegated-host-pirate] PASSED [ 92%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_bashrc[ansible:/delegated-host-root] PASSED [ 93%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_bashrc[ansible:/delegated-host-pirate] PASSED [ 94%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_cshrc[ansible:/delegated-host-root] PASSED [ 95%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_cshrc[ansible:/delegated-host-pirate] PASSED [ 96%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_exrc[ansible:/delegated-host-root] PASSED [ 97%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_exrc[ansible:/delegated-host-pirate] PASSED [ 98%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_vimrc[ansible:/delegated-host-root] PASSED [ 99%]
+molecule/shared/tests/test_swapcapslockctrl.py::test_vimrc[ansible:/delegated-host-pirate] PASSED [100%]
 
 ============ 103 passed, 1 skipped, 2 xfailed in 116.30s (0:01:56) =============
 INFO     Verifier completed successfully.

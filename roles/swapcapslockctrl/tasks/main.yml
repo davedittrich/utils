@@ -1,6 +1,8 @@
 ---
 
-# tasks file for davedittrich.utils.swapcapslockctrl
+# Tasks file for davedittrich.utils.kdmt
+# This roles is for configuring custom keyboard, display, mouse,
+# and trackpad settings.
 
 - name: Set fact with users whose accounts need to be configured
   ansible.builtin.set_fact:
@@ -23,101 +25,32 @@
     cache_valid_time: 3600
   become: true
 
-- name: Stat `/etc/X11/Xsession.d` directory.
-  ansible.builtin.stat:
-    path: /etc/X11/Xsession.d
-  register: xsessiond
+  # K is for keyboard.
 
-- name: Ensure Xsession custom xmodmap loading dropin exists.
-  ansible.builtin.copy:
-    content: |
-      SYSMODMAP="/etc/X11/Xmodmap"
-      USERMODMAP="$HOME/.Xmodmap"
-      XMODMAP="/usr/bin/xmodmap"
+- name: Include keyboard function keys configuration tasks.
+  ansible.builtin.include_tasks: configure_keyboard_hid_apple.yml
 
-      if [ -x "$XMODMAP" ]; then
-          for map in "$SYSMODMAP" "$USERMODMAP"; do
-              if [ -f "$map" ]; then
-                  logger "running $XMODMAP $map"
-                  $XMODMAP "$map"
-              fi
-          done
-      fi
-    dest: /etc/X11/Xsession.d/40custom_load_xmodmap
-    owner: root
-    group: root
-    mode: 0o644
-  become: true
-  when: xsessiond.stat.exists
+- name: Include capslockctrl configuration tasks.
+  ansible.builtin.include_tasks: configure_keyboard_capslockctrl.yml
 
-- name: Ensure key remapping file in `/etc/udev/hwdb.d/` directory.
-  ansible.builtin.copy:
-    content: |
-      # Match all usb keyboards
-      evdev:input:b0003v*p*
-      # Remap CapsLock <-> Left CTRL
-      KEYBOARD_KEY_70039=leftctrl
-      KEYBOARD_KEY_700E0=capslock
-    dest: /etc/udev/hwdb.d/99-swapcapslockctrl.hwdb
-    owner: root
-    group: root
-    mode: 0o644
-  register: copy
-  become: true
-
-- name: Debug ``copy``.
-  ansible.builtin.debug:
-    msg: '{{ copy }}'
-    verbosity: 2
-
-- name: Determine state of `systemd-udevd`.
-  ansible.builtin.shell: >
-    systemctl is-active systemd-udevd
-  args:
-    executable: /bin/bash
-  register: udevd
-  changed_when: false
-  become: true
-
-- name: Update udevadm hwdb and trigger update.
-  ansible.builtin.shell: >
-    udevadm hwdb --update && udevadm trigger
-  args:
-    executable: /bin/bash
-  register: trigger
-  until: trigger is success
-  retries: 1
-  delay: 30
-  when: "copy.changed and udevd.stdout == 'active'"
-  become: true
-
-- name: Ensure Xmodmap files are customized to swap capslock/ctrl.
-  include_tasks: xmodmap.yml
+- name: Include visible bell configuration tasks.
+  ansible.builtin.include_tasks: configure_keyboard_visible_bell.yml
   vars:
-    user: '{{ item }}'
+    user: "{{ item }}"
   loop: '{{ accounts }}'
-  when: xsessiond.stat.exists
 
-- name: Ensure `ctrl:swapcaps` in `/etc/default/keyboard`.
-  ansible.builtin.lineinfile:
-    path: '/etc/default/keyboard'
-    regexp: '^XKBOPTIONS=""'
-    line: 'XKBOPTIONS="ctrl:swapcaps"'
-    state: present
-  become: true
+  # D is for display.
 
-- name: Ensure keyboard is reconfigured.
-  ansible.builtin.shell: |
-    dpkg-reconfigure keyboard-configuration && debconf-show keyboard-configuration
-  args:
-    executable: /bin/bash
-  environment:
-    DEBIAN_FRONTEND: "noninteractive"
-  register: result
-  changed_when: false
-  failed_when:
-    - result.rc != 0
-    - "'ctrl:swapcaps' not in result.stdout"
-  become: true
+  # M is for mouse.
+
+  # - name: Include mouse configuration tasks.
+  #   ansible.builtin.include_tasks: configure_mouse.yml
+  #   when: mouse_natural_scrolling is true
+
+  # T is for trackpad.
+
+  # - name: Include trackpad configuration tasks.
+  #   ansible.builtin.include_tasks: configure_trackpad.yml
+  #   when: trackpad_natural_scrolling is true
 
 # EOF

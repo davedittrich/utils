@@ -51,7 +51,100 @@ def test_keyboard_configuration(host):
         assert r'ctrl:swapcaps' in result
 
 
+@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+def test_hid_apple_conf(host):
+    f = host.file('/etc/modprobe.d/hid_apple.conf')
+    assert f.exists
+    assert f.user == 'root'
+    assert r'hid_apple fnmode=2 iso_layout=0' in f.content_string
+
+
+@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+def test_hid_apple_fnmode(host):
+    f = host.file('/sys/module/hid_apple/parameters/fnmode')
+    assert f.exists
+    assert f.user == 'root'
+    assert '2\n' == f.content_string
+
+
+@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+def test_hid_apple_iso_layout(host):
+    f = host.file('/sys/module/hid_apple/parameters/iso_layout')
+    assert f.exists
+    assert f.user == 'root'
+    assert '0\n' == f.content_string
+
+
 # User tests.
+
+
+@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
+def test_user_inputrc(host, user):
+    f = host.file(
+        os.path.join(
+            get_homedir(host=host, user=user),
+            '.inputrc'
+        )
+    )
+    assert f.exists
+    assert f.content_string.find(r'set prefer-visible-bell') > -1
+
+
+# @skip_unless_role('davedittrich.utils.swapcapslockctrl')
+# @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
+# def test_user_bashrc(host, user):
+#     f = host.file(
+#         os.path.join(
+#             get_homedir(host=host, user=user),
+#             '.bashrc'
+#         )
+#     )
+#     assert f.exists
+#     assert f.user == user
+#     assert f.content_string.find(r'set bellstyle visible') > -1
+
+
+@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
+def test_user_cshrc(host, user):
+    f = host.file(
+        os.path.join(
+            get_homedir(host=host, user=user),
+            '.cshrc'
+        )
+    )
+    assert f.exists
+    assert f.user == user
+    assert f.content_string.find(r'set visiblebell') > -1
+
+
+@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
+def test_user_exrc(host, user):
+    f = host.file(
+        os.path.join(
+            get_homedir(host=host, user=user),
+            '.exrc'
+        )
+    )
+    assert f.exists
+    assert f.user == user
+    assert r'set flash' in f.content_string
+
+
+@skip_unless_role('davedittrich.utils.swapcapslockctrl')
+@pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
+def test_user_vimrc(host, user):
+    f = host.file(
+        os.path.join(
+            get_homedir(host=host, user=user),
+            '.vimrc'
+        )
+    )
+    assert f.exists
+    assert f.user == user
+    assert r'set vb t_vb=' in f.content_string
 
 
 @skip_unless_role('davedittrich.utils.swapcapslockctrl')
