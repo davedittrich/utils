@@ -502,9 +502,9 @@ cause idempotence tests to fail. Here are some of the causes and solutions.
   contents. The most common reason for this is different `mode` values in two or
   more plays that manage the same file. This can result in the mode changing
   back and forth between the different values, even when the content remains exactly
-  the same. Avoid setting the `mode` or `group` unless you know it is necessary (e.g.,
-  when `ansible-lint` tells you that a newly created file may end up with insecure
-  settings.) Use `molecule converge` to get all the plays to be run, followed by
+  the same. Pay attention to `mode` and `group` settings. You may get warnings
+  from `ansible-lint` that a newly created file may end up with insecure
+  settings. Use `molecule converge` to get all the plays to run, followed by
   `molecule login` to log into the instance to check file contents and/or file
   system metadata. Running `molecule verify` will run the tests again to debug
   your plays.
@@ -515,78 +515,40 @@ cause idempotence tests to fail. Here are some of the causes and solutions.
   like `molecule`, `testinfra`, and Docker is also part of this particular problem.
 
   I hadn't touched this collection in many months and when I came back to it to
-  continue developing, several things failed that used to work perfectly fine. The
-  most critical of these was the installation of packages with APT in `molecule`'s
-  Docker containers. This collection custom-builds Docker images from `geerlingguy`'s
-  Docker images that supported everyone's most favorite (for this same reason!)
-  Linux love-child, `systemd`.
+  continue developing I got several failures in what previously was working fine.
+  By pinning some packages to attempt to maintain stability, deprecations and
+  non-backward compatible changes and newly set minimum versions above those
+  being pinned resulted in breakages. This included operating system distributions
+  reaching "end-of-life" status.
 
-  As of 2022-07-02, tasks using the `ansible.builtin.apt` module or
-  `ansible.builtin.shell` running `apt` or `apt-get` began to fail with::
+  I rat-holed for days trying to get Debian 10 to run `systemd` processes
+  in Docker to install Kali Linux packages, which failed during `apt-get
+  install` because of a change in `perl-base` and `libc6` that resulted in a
+  dynamic library that was refactored out of a dependent package to `perl-base`
+  (which `dpkg` uses to complete installation of packages, breaking the
+  installation entirely in a way that requires manually re-inserting the missing
+  dynamic library and using APT's `--fix-broken` flag to recover!
 
-      E: Sub-process /usr/bin/dpkg returned an error code (1)
-      . . .
-      Failed to connect to bus: No such file or directory
-      dpkg: error processing package libc6:amd64 (--configure): installed libc6:amd64 package post-installation script subprocess returned error exit status 1
-      Errors were encountered while processing: libc6:amd64
+  After giving up on that and just moving to Debian 11 (which Kali Linux now
+  uses), I ran into a cluster of issues with incompatible versions of `ansible`,
+  `ansible-core`, `ansible-lint`, `ansible-compat`, and `pytest` plugins for
+  `testinfra` and `ansible`.  They interact in very complex ways that are
+  extremely difficult to debug.
 
-  While many people suggest adding `"deprecatedCgroupv1": true` to (on a Mac) the
-  `~/Library/Group Containers/group.com.docker/settings.json` file, disabling `cgroupv2`
-  and sticking with the previously working `cgroupv1`. While this may work, generally
-  staying behind on versions can be a security risk or eventually fail entirely due to
-  deprecated features finally being removed, so the more optimal solution appears to be
-  adding `"default-cgroupns-mode": "host",` to the Docker Engine configuration settings
-  and restarting the Docker daemon.
+  - `molecule` uses `ansible-compat` (behind the scenes, mind you) to run
+    `ansible-playbook`, `ansible-galaxy`, `ansible`, linters, and `pytest`.
 
-  See:
+  - `pytest`, in turn, also runs `ansible` as well as `testinfra` (in my case)
+    for testing. But wait, there's more!
 
-      * https://github.com/docker/for-mac/issues/6073#issuecomment-990718272
-      * https://github.com/Rosa-Luxemburgstiftung-Berlin/ansible-role-unbound/blob/main/molecule/default/Dockerfile-debian-bullseye.j2
-      * https://github.com/geerlingguy/docker-debian11-ansible/issues/4
+  - `testinfra` runs `docker`, in which the Ansible collection is installed
+    and tested.
 
-  P.S. [2022-08-26] It turns out there were _several_ inter-related issues that
-  conspired to break things and cost weeks in debugging, partly due to the
-  requirement of 10-15 minutes per test cycle to run the full test suite to
-  resolve the Debian+`systemd`+`libcrypt1`+Docker+... issues. These were
-  (for historical and SEO purposes):
-
-  - Debian packages changed such that updates completely broke package
-    installation due to `libcrypt.so.1` being deleted while `dpkg`
-    was updating packages using `perl-base`, which depends on it still
-    being there.
-
-        + https://www.youtube.com/watch?v=bbuoHXaNsUg
-
-    While trying to debug this issue, errors about failures to connect to
-    `dbus` occured, but it wasn't clear exactly why. At first it seemed
-    to be a result of...
-
-  - Docker on Mac switched to using `cgroupns` V2, which required configuring
-    Docker's `daemon.json` file to include setting `cgroupns` to `host`. Not
-    only that, but...
-
-  - `systemd` v248 broke Docker's volume mounts of `/sys/fs/cgroup`, requiring
-    changes to `molecule` to allow setting `cgroupns=host` and changing the
-    mounts from `ro` to `rw`.
-
-        + https://github.com/geerlingguy/docker-ubuntu2204-ansible/issues/2#issuecomment-1110602354
-        + https://github.com/johanssone/ansible-unbound/commit/ec3cbb8440109f13d33a057801c7b65bb1b58095
-        + https://github.com/ansible-collections/community.docker/issues/338
-
-  - Around the same time, `molecule` changed its package dependencies, causing
-    `pytest` and `testinfra` to break. Updating `molecule` only to the version
-    that fixed the `cgroupns` problem broke the `lint` and `verify` stages.
-
-  There is a also a number of issues with incompatible versions of `ansible`,
-  `ansible-core`, `ansible-lint`, and maybe also `testinfra` and `pytest`?
-  It is always frustrating to see responses from RedHat like the closing
-  comment on [this thread](https://github.com/ansible-community/ansible-lint-action/issues/41#issuecomment-933663572),
-  but it seems to mean you have to avoid (at all cost?) pinning specific
-  versions of any of the above listed `pip` packages and instead _only_
-  specify the version number of `ansible` (in this case, `==2.9.26`) and
-  and follow `thestevenbell`'s recommendation. Using `2.9.27` fails
-  with the error described and the RedHat response doesn't really help
-  explain "best-practice" for avoiding this problem.
+  I ended up having to get `pytest` testing working under VSCode, single-step
+  through process execution to see data structures at runtime, and forking
+  5 repositories in which I fixed bugs in order to achieve enough stability
+  to finally get everything working and the collection testable on a
+  Raspberry Pi.
 
   Sigh. (At least everything seems to be stable again. For now...)
 
@@ -601,6 +563,8 @@ cause idempotence tests to fail. Here are some of the causes and solutions.
 - [Using Ansible Molecule to test roles in monorepo](https://mariarti0644.medium.com/using-ansible-molecule-to-test-roles-in-monorepo-5f711c716666), by Maria Kotlyarevskaya, Mar 13, 2021
 - [`test infra` modules](https://testinfra.readthedocs.io/en/latest/modules.html)
 - [Advanced `bumpversion` examples](https://github.com/andrivet/ADVbumpversion/blob/master/EXAMPLES.rst)
+- [Five Ansible Techniques I Wish I'd Known Sooner](https://zwischenzugs.com/2021/08/27/five-ansible-techniques-i-wish-id-known-earlier/), by zwischenzugs, August 27, 2021
+- [Mastering Molecule](https://sbarnea.com/molecule/molecule-101/), by Sorin Sbarnea, January 1, 2019
 
 ## Release notes
 
