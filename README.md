@@ -1,6 +1,6 @@
 # davedittrich.utils Collection for Ansible
 
-Version: 0.6.0
+Version: 0.7.0-rc.1
 
 [![CI](https://github.com/davedittrich/utils/workflows/release/badge.svg?event=push)](https://github.com/davedittrich/utils/actions)
 
@@ -484,6 +484,97 @@ molecule/shared/tests/test_swapcapslockctrl.py::test_vimrc[ansible:/delegated-ho
 ============ 103 passed, 1 skipped, 2 xfailed in 116.30s (0:01:56) =============
 INFO     Verifier completed successfully.
 ```
+
+Several environment variables in the `molecule.yml` files that allow you to control the amount
+of output that is produced.  These are:
+
+- `ANSIBLE_VERBOSITY` - Controls verbosity of `ansible-playbook`, `ansible-lint`, and `pipdeptree` output.
+  Set to a numeric value corresponding to output level (default `0`).
+- `ANSIBLE_FORCE_COLOR` - Set to `false` to disable color output from `ansible-playbook`.
+
+
+## Versioning
+
+If you are producing collection artifacts for testing on delegated hosts,
+such as a Raspberry Pi or cloud instance, you will want to bump the
+version number when building artifacts.
+
+Doing a `make build` will first do `bumpversion build` so each new
+artifact will have a unique `build` version number component for the
+artifact and its constituent files.
+
+    $ cat VERSION
+    0.6.0
+
+    $ bumpversion build
+
+    $ git diff VERSION
+    diff --git a/VERSION b/VERSION
+    index a918a2a..758efdb 100644
+    --- a/VERSION
+    +++ b/VERSION
+    @@ -1 +1 @@
+    -0.6.0
+    +0.6.0.1
+
+These artifacts will work for testing by manually loading them, but
+they will not be published when you push to GitHub. The GitHub Actions
+workflows will only run `molecule` tests, which is necessary before
+any artifacts can be published via the GitHub Actions workflows.
+
+Of course you can always manually publish the last built artifact
+using `make publish` if need be.
+
+### Publishing a release candidate
+
+When you are preparing to publish a release candidate, specify the current
+version number and manually set a new version number with the `-rc` pre-release
+identifier like this:
+
+    $ bumpversion --current-version 0.6.0.1 --new-version 0.6.1-rc.1 build
+    $ git diff VERSION
+    diff --git a/VERSION b/VERSION
+    index a918a2a..2f12cd4 100644
+    --- a/VERSION
+    +++ b/VERSION
+    @@ -1 +1 @@
+    -0.6.0
+    +0.6.1-rc.1
+
+When you push to the `develop` branch with a tag containing the `0.6.1-rc.1`
+identifier, it will be published to the Ansible Galaxy development server.
+
+As long as you are continuing to iterate, just keep doing `make build` and
+the release candidate number will increment:
+
+    $ bumpversion build
+    $ git diff VERSION
+    diff --git a/VERSION b/VERSION
+    index a918a2a..2f12cd4 100644
+    --- a/VERSION
+    +++ b/VERSION
+    @@ -1 +1 @@
+    -0.6.0
+    +0.6.1-rc.2
+
+### Publishing a full release
+
+When you are satisfied that all tests work on your development servers and
+GitHub, you are ready to publish a full "production" release artifact.
+
+To do that, you need to do two things:
+
+1. Manually remove the `-rc.N` components from the version number by doing
+   the opposite of what was done above, and
+
+2. Tag the commit with the new version number (in this case, `0.6.1`) on
+   the `main` branch and the GitHub Actions workflow will publish it to
+   the main Ansible Galaxy server.
+
+Again, do frequent `make test` runs whenever making significant changes beyond
+bumping version numbers and updating release history. Each push to GitHub
+before pushing the tags will run tests as well, reassuring you that the
+published artifacts will work.
 
 ## Gotchas
 
