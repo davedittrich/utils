@@ -33,6 +33,7 @@ platforms:
     override_command: false
     tmpfs:
       - /run
+      - /run/lock
       - /tmp
     capabilities:
       - SYS_ADMIN
@@ -42,10 +43,9 @@ platforms:
 # [molecule.yml-provisioner]
 provisioner:
   name: ansible
-  log: True
   env:
-    ANSIBLE_FORCE_COLOR: true
-    ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
+    ANSIBLE_FORCE_COLOR: ${ANSIBLE_FORCE_COLOR:-true}
+    ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-0}
     COLLECTION_ROOT: "${PWD}"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
@@ -66,4 +66,4 @@ verifier:
   env:
     PYTHONPATH: "${PWD}/molecule/shared/tests"
     #PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
-    PYTEST_ADDOPTS: "-v -ra"
+    PYTEST_ADDOPTS: "${PYTEST_ADDOPTS:--v -ra}"
