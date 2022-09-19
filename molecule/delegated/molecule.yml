@@ -19,12 +19,12 @@ lint: |
   make dependencies
   yamllint molecule/ playbooks/ plugins/ roles/ tasks/
   flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
-  ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ tasks/
+  ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 provisioner:
   name: ansible
   env:
-    ANSIBLE_FORCE_COLOR: true
-    ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
+    ANSIBLE_FORCE_COLOR: ${ANSIBLE_FORCE_COLOR:-true}
+    ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-0}
     COLLECTION_ROOT: "${PWD}"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
@@ -40,10 +40,11 @@ provisioner:
 verifier:
   name: testinfra
   directory: ../shared/tests
+  env:
+    PYTHONPATH: "${PWD}/molecule/shared/tests"
+    #PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
+    PYTEST_ADDOPTS: "${PYTEST_ADDOPTS:--v -ra}"
   options:
-    # Add a -v so you see the individual test names.
-    # v: true
-    vv: true
     # The following is necessary to cause `molecule` to run `testinfra` with
     # elevated permissions using `ssh` to access the remote delegated host.
     # Failing to do this results in tests requiring `root` read and/or

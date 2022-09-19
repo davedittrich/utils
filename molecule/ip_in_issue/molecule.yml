@@ -23,11 +23,11 @@ lint: |
   make dependencies
   yamllint molecule/ playbooks/ plugins/ roles/ tasks/
   flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
-  ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
+  ansible-lint -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 platforms:
-  - name: debianbullseye
+  - name: debian_bullseye
     image: debian:bullseye
-    dockerfile: ../shared/Dockerfile-debianbullseye.j2
+    dockerfile: ../shared/Dockerfile-debian_bullseye.j2
     privileged: true
     override_command: false
     tmpfs:
@@ -41,8 +41,8 @@ platforms:
 provisioner:
   name: ansible
   env:
-    ANSIBLE_FORCE_COLOR: true
-    ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
+    ANSIBLE_FORCE_COLOR: ${ANSIBLE_FORCE_COLOR:-true}
+    ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-0}
     COLLECTION_ROOT: "${PWD}"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
@@ -51,6 +51,7 @@ provisioner:
 verifier:
   name: testinfra
   directory: ../shared/tests
-  options:
-    # Add a -v so you see the individual test names.
-    v: true
+  env:
+    PYTHONPATH: "${PWD}/molecule/shared/tests"
+    #PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
+    PYTEST_ADDOPTS: "${PYTEST_ADDOPTS:--v -ra}"
