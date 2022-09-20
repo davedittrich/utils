@@ -14,9 +14,9 @@ ansible>=2.10
 #ansible-compat>=2.2.0
 git+https://github.com/davedittrich/ansible-compat.git@develop
 
-# Use patched ansible-lint for link processing fix.
+# Use patched ansible-lint for link processing fix, ANSIBLE_VERBOSITY.
 # ansible-lint==6.4.0
-git+https://github.com/davedittrich/ansible-lint.git@fix-link
+git+https://github.com/davedittrich/ansible-lint.git@develop
 
 # Use patched molecule for deconflicted argparse options.
 # molecule==4.0.1

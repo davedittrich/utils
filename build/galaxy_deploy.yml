@@ -6,12 +6,9 @@
     # This should be set via the command line at runtime.
     tag: "{{ github_tag.split('/')[-1].lstrip('v') }}"
     nolog: '{{ nolog|default(true) }}'
+    cwd: "{{ lookup('env', 'PWD' }}"
 
   pre_tasks:
-    - name: Set fact with verbosity.
-      ansible.builtin.set_fact:
-        verbose_flag: '-{{ "v" * ansible_verbosity|default(1) }}'
-
     - name: Set fact with version number.
       ansible.builtin.set_fact:
         version: '{{ lookup("file", "../VERSION") }}'
@@ -62,12 +59,13 @@
 
     - name: Debug build settings.
       ansible.builtin.debug:
-        msg: >
-          artifact_name={{ artifact_name }}
-          galaxy_yml_only={{ galaxy_yml_only|bool }}
-          publish={{ publish|bool }}
-          save_galaxy_yml={{ save_galaxy_yml|bool }}
-          version={{ version }}
+        msg: '{{ item }}'
+      loop:
+        - "artifact_name={{ artifact_name }}"
+        - "galaxy_yml_only={{ galaxy_yml_only|bool }}"
+        - "publish={{ publish|bool }}"
+        - "save_galaxy_yml={{ save_galaxy_yml|bool }}"
+        - "version={{ version }}"
 
   tasks:
     - name: Stat the galaxy.yml file.
@@ -86,9 +84,11 @@
       block:
 
         - name: Build the collection. # noqa 503
-          ansible.builtin.command: >
-            ansible-galaxy {{ verbose_flag }} collection build
-            chdir=../
+          ansible.builtin.shell: >
+            ansible-galaxy collection build &&
+            ln -sf {{ artifact_name }} davedittrich-utils-latest.tar.gz
+          args:
+            chdir: ../
 
         - name: Publish the collection. # noqa 503
           ansible.builtin.command: >

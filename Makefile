@@ -3,6 +3,7 @@ ANSIBLE_GALAXY_API_KEY:=$(shell psec secrets get ansible_galaxy_api_key 2>/dev/n
 # The following are inter-related components that form a fragile whole that can
 # easily break when one of the components is updated. This can randomly cause a
 # frustratingly difficult situation to fix to pop up when you least expect it.
+ANSIBLE_VERBOSITY=0
 ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule molecule-testinfra molecule-docker pytest-ansible pytest-testinfra pytest testinfra
 export COLLECTION_NAMESPACE=davedittrich
 DELEGATED_HOST:=none
@@ -13,14 +14,12 @@ SCENARIO=default
 SHELL=/bin/bash
 USER_ID=$(shell id -u)
 GROUP_ID=$(shell id -g)
-VERSION=$(shell cat VERSION)
-ARTIFACT=davedittrich-utils-$(VERSION).tar.gz
 
 .PHONY: help
 help:
 	@echo "make [VARIABLE=value] target [target ...]"
 	@echo "...where 'target' is one or more of:"
-	@echo "  build - build version v$(VERSION) of the ansible-galaxy collection"
+	@echo "  build - build ansible-galaxy collection artifact"
 	@echo "  clean - remove temporary and intermediate files"
 	@echo "  converge - molecule converge on scenario '$(SCENARIO)'"
 	@echo "  destroy - destroy and clean up scenario '$(SCENARIO)'"
@@ -41,11 +40,9 @@ help:
 	@echo "Variables:"
 	@echo "  ANSIBLE_GALAXY_SERVER ('$(ANSIBLE_GALAXY_SERVER)' from psec)"
 	@echo "  ANSIBLE_GALAXY_API_KEY (see 'psec secrets show --no-redact')"
-	@echo "  ARTIFACT ('$(ARTIFACT)')"
 	@echo "  COLLECTION_NAMESPACE ('$(COLLECTION_NAMESPACE)')"
 	@echo "  MOLECULE_DISTRO ('$(MOLECULE_DISTRO)')"
 	@echo "  SCENARIO ('$(SCENARIO)')"
-	@echo "  VERSION ('$(VERSION)')"
 	@echo ""
 	@echo "The variables 'ANSIBLE_GALAXY_SERVER' and 'ANSIBLE_GALAXY_API_KEY' come from"
 	@echo "the default psec environment ($(shell psec environments default))".
@@ -73,16 +70,24 @@ galaxy.yml:
 
 .PHONY: build
 build: check-conda
-	ansible-playbook -vvvv -i 'localhost,' -e galaxy_yml_only=false build/galaxy_deploy.yml
-	@tar -tzf $(ARTIFACT) | grep -v '.*/$$' | while read line; do echo ' -->' $$line; done
+	bumpversion --allow-dirty build
+	ansible-playbook -i 'localhost,' -e galaxy_yml_only=false build/galaxy_deploy.yml
+	@bash scripts/show_last_artifact.sh
+
+.PHONY: flash
+flash:
+	(cd hypriot && make ANSIBLE_COLLECTION=$(bash scripts/get_latest_artifact.sh) flash)
 
 .PHONY: clean
-clean:
+clean: clean-artifacts
 	-rm -rf ~/.cache/ansible-compat ~/.cache/molecule ~/.cache/pip
 	-rm -f pytestdebug.log
-	-rm -f davedittrich-utils-*.tar.gz || true
 	find * -name '*.pyc' -delete || true
 	find * -name __pycache__ -exec rmdir {} ';' || true
+
+.PHONY: clean-artifacts
+clean-artifacts:
+	bash scripts/clean_artifacts.sh || true
 
 .PHONY: clean-molecule
 clean-molecule:
@@ -112,17 +117,14 @@ login: scenario-exists
 	molecule login -s $(SCENARIO)
 
 .PHONY: publish
-publish: check-conda $(ARTIFACT)
-	@if [[ ! -f $(ARTIFACT) ]]; then \
-		echo "[-] artifact '$(ARTIFACT)' does not exist. Try one of these:"; \
-		ls davedittrich-utils-*.tar.gz; \
-		exit 1; \
+publish: check-conda
+	@if [[ $(shell scripts/get_last_artifact.sh) = "None"]]; then \
+		echo "[-] not artifact exists."; exit 1; \
 	fi
 	ansible-galaxy collection publish \
-		$(ARTIFACT) \
+		$(shell scripts/get_last_artifact.sh) \
 		--server=$(ANSIBLE_GALAXY_SERVER) \
 		--api-key=$(ANSIBLE_GALAXY_API_KEY)
-
 
 .PHONY: reset
 reset:
@@ -182,7 +184,7 @@ test-delegated: galaxy.yml
 
 .PHONY: version
 version:
-	@echo davedittrich.utils version $(VERSION)
+	@echo davedittrich.utils version $(shell cat VERSION)
 	@for component in $(ANSIBLE_COMPONENTS); \
 	 do \
 	 $$component --version 2>/dev/null || \
@@ -190,9 +192,10 @@ version:
 	 true; \
 	 done
 
+# Use ANSIBLE_VERBOSITY to control whether to run `pipdeptree`.
 .PHONY: dependencies
 dependencies:
-	pipdeptree -p $(shell sed 's/ /,/g' <<< "$(ANSIBLE_COMPONENTS)")
+	@[ $(ANSIBLE_VERBOSITY) -gt 0 ] && pipdeptree -p $(shell sed 's/ /,/g' <<< "$(ANSIBLE_COMPONENTS)") || true
 
 .PHONY: setup
 setup: collection-community-docker
