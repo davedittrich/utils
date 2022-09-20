@@ -67,8 +67,13 @@ build_ignore:
   - 'molecule'
   - 'oldstuff/*'
   - 'tox.ini'
+  - 'bh2022/*'
 {% if build_ignore_files is defined %}
 {% for item in build_ignore_files %}
+{% if item[-1] == '/' %}
+  - '{{ item[:-1] }}'
+{% else %}
   - '{{ item }}'
+{% endif %}
 {% endfor %}
 {% endif %}
