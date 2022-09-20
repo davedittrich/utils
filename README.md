@@ -22,8 +22,8 @@ Development of this collection is supported by a test-driven design that uses
 [`molecule`](https://molecule.readthedocs.io/en/latest/) to test any or all
 roles, both locally and driven by GitHub Actions workflows on `push` actions.
 
-The operating system distributions supported at this time by this collection
-and its playbooks for `molecule` testing are:
+The operating system distributions supported at this time by the full set of
+roles in this collection for `molecule` testing are:
 
 - Debian 11 (default distribution)
 - Ubuntu 22.04 LTS
@@ -33,36 +33,38 @@ for testing has been tested on the following (in order of most-frequently
 to least-frequently used):
 
 - Mac OS X (Darwin) 10.15.7
-- Ubuntu 20.04 LTS on Windows Subsystem for Linux (WSL) 2
-- Kali (Debian 11) Linux (2022-07-07 release)
+- Ubuntu 20.04 LTS on Windows Subsystem for Linux v2 (WSL2)
+- Kali Linux (Debian 11 experimental, 2022-07-07 release)
+- HypriotOS v1.12.3 (Debian 10, w/o `kali_like` role))
 
-To help reduce the amount of time taken by all this testing, several optimization
+
+To help reduce the amount of time taken by all this testing, some optimization
 techniques are employed:
 
 1. Local testing during development is done against _only_ Debian 11. Once all
    tests are passing, the remaining OS distributions can then be selected for further
    compatibility testing.
 
-2. Customized Docker images are used to pre-load packages expected to be on
-   "production" systems. This significantly reduces the amount of time
-   necessary to perform frequent tests by _only_ performing time-consuming package
-   package installations and setup when you chose to do so (not every time a
-   `molecule` instance is created.)
+2. Testing of all roles except `kali_like` (which requires Debian 11) are done
+   using Raspberry Pi 3 and 4 systems using Hypriot's custom Debian 10 images
+   flashed with a modified version of Hypriot's `flash` program (found in the
+   [`hypriot` directory](hypriot/).
 
 3. GitHub Action testing for release candidates on the `develop` branch and
    releases on the `main` branch are the only ones that test _all_ roles
-   against _all_ distributions. When you `push` to a feature branch with a
+   against multiple distributions. When you `push` to a feature branch with a
    name related to the role you are developing (e.g., `feature/branding` for
    the `davedittrich.utils.branding` role), _only_ that role is tested against
    the distribution matrix. This reduces test time by only testing role-specific
    changes.
 
-All of this comes at a cost, however. The use of custom Docker containers increases
-your local disk storage, and there is a _lot_ of
+All of this comes at a cost, however.  There is a _lot_ of
 non-[DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) repetition of logic,
-code, and `molecule` configuration settings. This is partly a side-effect of the
-limitations in modularity of GitHub Actions. Some repetition in `molecule`
-configuration and tests has been reduced by modularity and cross-inclusion of code.
+code, and `molecule` configuration settings. Some of the non-DRY aspects of GitHub
+Actions workflows could be reduced by refactoring so as to
+[share workflows](https://docs.github.com/en/actions/using-workflows/sharing-workflows-secrets-and-runners-with-your-organization).
+Some repetition in `molecule` configuration and tests has been reduced by
+modularity and cross-inclusion of testing code.
 
 https://github.com/davedittrich/utils
 
@@ -152,44 +154,42 @@ exhaustive list of all tasks, but rather a summary of the general topics:
 
 ## Testing
 
-For `molecule` tests to work on this collection without interfering with existing collections,
-set up an alternate collections directory as follows:
-
-```bash
-$ tree -L 2 ~/.ansible/collections*
-/Users/dittrich/.ansible/collections
-└── ansible_collections
-    ├── ansible
-    └── community
-/Users/dittrich/.ansible/collections.dev
-└── ansible_collections
-    └── davedittrich -> /Users/dittrich/code/davedittrich
-
-6 directories, 0 files
-```
-
-You can create this link using the command `make create-collections-dev-link`.
-
-The `provisioner` section in files like `molecule/default/molecule.yml` are then
-configured as follows:
-
-```yaml
-provisioner:
-  name: ansible
-  env:
-    ANSIBLE_VERBOSITY: ${ANSIBLE_VERBOSITY:-1}
-    PYTHONPATH: "${PWD}"
-  playbooks:
-    converge: ${MOLECULE_PLAYBOOK:-converge.yml}
-    prepare: ../shared/prepare.yml
-    destroy: ../shared/destroy.yml
-```
-
 To reduce redundancy in code across multiple scenarios representing individual
 roles in a larger collection, tests, variables, and functions are located in
-the `molecule/shared` directory. As seen in the code example for the `provisioner`
-section, the `PYTHONPATH` environment variable is set, allowing Python code
-to be able to `import` from this module directory as seen here:
+the `molecule/shared` directory.
+
+```
+$ tree molecule/shared
+molecule/shared
+├── cleanup.yml
+├── Dockerfile-debian_bullseye.j2
+├── files
+│   ├── cmdline.txt
+│   ├── config.txt
+│   └── Hello_World.jpg
+├── __init__.py
+├── prepare.yml
+├── pytest.ini
+├── tasks
+│   └── fix_systemctl.yml
+└── tests
+    ├── conftest.py
+    ├── helpers
+    │   └── __init__.py
+    ├── __init__.py
+    ├── test_branding.py
+    ├── test_dropins.py
+    ├── test_ip_in_issue.py
+    ├── test_kali_like.py
+    ├── test_kdmt.py
+    └── test_shared.py
+
+4 directories, 18 files
+```
+
+The directory `molecule/shared/tests/helpers/` contains shared variables and
+functions used by the tests (as opposed to using `conftest.py`) as seen here:
+
 
 ```python
 from helpers import (
@@ -199,30 +199,33 @@ from helpers import (
 )
 ```
 
-The `verifier` phase includes everything from the shared directory by way
-of relative paths, as seen here in a `molecule.yml` file:
+The `verifier` section in files like `molecule/default/molecule.yml` are
+configured as follows to allow the import to work:
 
 ```yaml
 verifier:
   name: testinfra
   directory: ../shared/tests
-  options:
-    # Add a -v so you see the individual test names.
-    v: true
-  additional_files_or_dirs:
-    - ../shared/*
+  env:
+    PYTHONPATH: "${PWD}/molecule/shared/tests"
+    #PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
+    PYTEST_ADDOPTS: "-v -ra"
 ```
 
-To further reduce redundancy and hard-coding values in tests, all Ansible variables
-that were defined during the `converge` phase are dumped to a file in the
-`molecule` ephemeral directory for the scenario so they are available for use
-by tests in the `verify` phase. The path to the file for the `default` scenario
+When debugging exceptions during the `verify` stage, you may want to swap the
+`PYTEST_ADDOPTS` settings.
+
+To further reduce redundancy and hard-coding values in tests, all Ansible
+variables that were defined during the `converge` phase are dumped to a YAML
+file in the `molecule` scenario's ephemeral directory so they are available to
+tests in the `verify` stage. The path to the file for the `default` scenario
 would be `${HOME}/.config/molecule/utils/default/ansible-vars.yml`.
 
+It is possible to conditionally call `pytest.xfail()` based on these variables.
+Tests can also be skipped by use of the `@skip_unless_role()` decorator, which
+checks to see if the role for which they apply is in the `ansible_roles_names`
+variable (meaning that role was applied and thus needs testing).
 
-Tests can be skipped by use of the `@skip_unless_role()` decorator, which checks
-to see if the role for which they apply is in the `ansible_roles_names` variable
-(meaning that role was applied and thus needs testing).
 
 ```yaml
 . . .
@@ -242,56 +245,168 @@ def test_boot_config(host):
     assert r'disable_splash=1' in f.content_string
 ```
 
-If the `ip_in_issue` role was being tested (as seen in the `ansible_role_names`
+If the `ip_in_issue` scenario was being tested, which only includes the
+`davedittrich.utils.ip_in_issue` role (as seen in the `ansible_role_names`
 variable above), this particular test would be skipped.
 
 ```
 $ make SCENARIO=ip_in_issue test
 [+] using 'conda' environment 'utils' and 'psec' environment 'utils'
-molecule test -s ip_in_issue
-INFO     ip_in_issue scenario test matrix: dependency, lint, cleanup, destroy, syntax, create, prepare, converge, idempotence, side_effect, verify, cleanup, destroy
-INFO     Performing prerun...
-INFO     Guessed /Users/dittrich/git/davedittrich/utils as project root directory
-INFO     Added ANSIBLE_LIBRARY=plugins/modules
-INFO     Added ANSIBLE_COLLECTIONS_PATH=/Users/dittrich/.cache/ansible-lint/6dd05e/collections
-INFO     Added ANSIBLE_ROLES_PATH=~/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:roles
+molecule test --destroy=never -s ip_in_issue
+INFO     ip_in_issue scenario test matrix: dependency, lint, create, prepare, converge, idempotence, verify
+INFO     Performing prerun with role_name_check=0...
+INFO     Set ANSIBLE_LIBRARY=/home/dittrich/.cache/ansible-compat/6fd897/modules:/home/dittrich/.ansible/plugins/modules:/usr/share/ansible/plugins/modules
+INFO     Set ANSIBLE_COLLECTIONS_PATH=/home/dittrich/.cache/ansible-compat/6fd897/collections:/home/dittrich/.ansible/collections:/usr/share/ansible/collections
+INFO     Set ANSIBLE_ROLES_PATH=/home/dittrich/.cache/ansible-compat/6fd897/roles:roles:/home/dittrich/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles
+INFO     Running ansible-galaxy collection install -v --force -p /home/dittrich/.cache/ansible-compat/6fd897/collections .
 INFO     Running ip_in_issue > dependency
   . . .
-INFO     Running ip_in_issue > verify                                                                                                                      [25/10379]
-INFO     Executing Testinfra tests found in /Users/dittrich/git/davedittrich/utils/molecule/ip_in_issue/../shared/tests/...
+INFO     Idempotence completed successfully.
+INFO     Running ip_in_issue > verify
+INFO     Executing Testinfra tests found in /home/dittrich/code/davedittrich/utils/molecule/ip_in_issue/../shared/tests/...
+/home/dittrich/miniconda3/envs/utils/lib/python3.9/site-packages/molecule/config.py:51: DeprecationWarning: molecule.config.ansible_version is deprecated, will be removed in the future.
+  warnings.warn(
 ============================= test session starts ==============================
-platform darwin -- Python 3.9.5, pytest-6.2.4, py-1.10.0, pluggy-0.13.1 -- /usr/local/Caskroom/miniconda/base/envs/ansible/bin/python
-metadata: {'Python': '3.9.5', 'Platform': 'macOS-10.14.6-x86_64-i386-64bit', 'Packages': {'pytest': '6.2.4', 'py': '1.10.0', 'pluggy': '0.13.1'}, 'Plugins':
-{'cov': '2.12.1', 'metadata': '1.11.0', 'helpers-namespace': '0.0.0', 'xdist': '2.3.0', 'html': '3.1.1', 'mock': '3.6.1', 'plus': '0.2', 'verbose-parametrize':
-'1.7.0', 'forked': '1.3.0', 'testinfra': '6.4.0'}}
-rootdir: /Users/dittrich/git/davedittrich/utils, configfile: pytest.ini
-plugins: cov-2.12.1, metadata-1.11.0, helpers-namespace-0.0.0, xdist-2.3.0, html-3.1.1, mock-3.6.1, plus-0.2, verbose-parametrize-1.7.0, forked-1.3.0, testinfra-6.4.0
-collecting ... collected 20 items
+platform linux -- Python 3.9.13, pytest-7.1.3, pluggy-1.0.0 -- /home/dittrich/miniconda3/envs/utils/bin/python
+metadata: {'Python': '3.9.13', 'Platform': 'Linux-5.18.0-kali7-amd64-x86_64-with-glibc2.34', 'Packages': {'pytest': '7.1.3', 'py': '1.11.0', 'pluggy': '1.0.0', 'molecule': '4.0.2.dev19'}, 'Plugins': {'ansible': '2.3.0', 'metadata':
+ '2.0.2', 'testinfra': '6.8.1.dev4+gd423e29', 'html': '3.1.1', 'molecule': '2.0.1.dev8+g236ac70'}, 'Tools': {'ansible': '2.13.3'}, 'env': 'ANSIBLE_COLLECTIONS_PATH=/home/dittrich/.cache/ansible-compat/6fd897/collections:/home/dittr
+ich/.cache/molecule/utils/ip_in_issue/collections:/home/dittrich/.ansible/collections:/usr/share/ansible/collections:/etc/ansible/collections ANSIBLE_CONFIG=/home/dittrich/.cache/molecule/utils/ip_in_issue/ansible.cfg ANSIBLE_FILTE
+R_PLUGINS=/home/dittrich/miniconda3/envs/utils/lib/python3.9/site-packages/molecule/provisioner/ansible/plugins/filter:/home/dittrich/.cache/molecule/utils/ip_in_issue/plugins/filter:/home/dittrich/code/davedittrich/utils/plugins/f
+ilter:/home/dittrich/.ansible/plugins/filter:/usr/share/ansible/plugins/filter ANSIBLE_FORCE_COLOR=True ANSIBLE_LIBRARY=/home/dittrich/miniconda3/envs/utils/lib/python3.9/site-packages/molecule/provisioner/ansible/plugins/modules:/
+home/dittrich/.cache/molecule/utils/ip_in_issue/library:/home/dittrich/code/davedittrich/utils/library:/home/dittrich/.ansible/plugins/modules:/usr/share/ansible/plugins/modules ANSIBLE_ROLES_PATH=/home/dittrich/.cache/ansible-comp
+at/6fd897/roles:/home/dittrich/.cache/molecule/utils/ip_in_issue/roles:/home/dittrich/code/davedittrich:/home/dittrich/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles ANSIBLE_VERBOSITY=1 MOLECULE_DEBUG=False MOLECULE_DEP
+ENDENCY_NAME=galaxy MOLECULE_DISTRO=debian11 MOLECULE_DRIVER_NAME=docker MOLECULE_ENV_FILE=/home/dittrich/code/davedittrich/utils/.env.yml MOLECULE_EPHEMERAL_DIRECTORY=/home/dittrich/.cache/molecule/utils/ip_in_issue MOLECULE_FILE=
+/home/dittrich/.cache/molecule/utils/ip_in_issue/molecule.yml MOLECULE_INSTANCE_CONFIG=/home/dittrich/.cache/molecule/utils/ip_in_issue/instance_config.yml MOLECULE_INVENTORY_FILE=/home/dittrich/.cache/molecule/utils/ip_in_issue/in
+ventory/ansible_inventory.yml MOLECULE_PROJECT_DIRECTORY=/home/dittrich/code/davedittrich/utils MOLECULE_PROVISIONER_NAME=ansible MOLECULE_SCENARIO_DIRECTORY=/home/dittrich/code/davedittrich/utils/molecule/ip_in_issue MOLECULE_SCEN
+ARIO_NAME=ip_in_issue MOLECULE_STATE_FILE=/home/dittrich/.cache/molecule/utils/ip_in_issue/state.yml MOLECULE_VERIFIER_NAME=testinfra MOLECULE_VERIFIER_TEST_DIRECTORY=/home/dittrich/code/davedittrich/utils/molecule/ip_in_issue/../s
+hared/tests '}
+ansible: 2.13.3
+rootdir: /home/dittrich/code/davedittrich/utils/molecule/shared, configfile: pytest.ini
+plugins: ansible-2.3.0, metadata-2.0.2, testinfra-6.8.1.dev4+gd423e29, html-3.1.1, molecule-2.0.1.dev8+g236ac70
+collecting ... collected 43 items
 
-molecule/shared/tests/test_branding.py::test_boot_config[ansible://instance] SKIPPED [  5%]
-molecule/shared/tests/test_branding.py::test_boot_cmdline[ansible://instance] SKIPPED [ 10%]
-molecule/shared/tests/test_branding.py::test_fbi[ansible://instance] SKIPPED [ 15%]
-molecule/shared/tests/test_branding.py::test_splashscreen_service[ansible://instance] SKIPPED [ 20%]
-molecule/shared/tests/test_branding.py::test_user_homedirs[ansible://instance] SKIPPED [ 25%]
-molecule/shared/tests/test_branding.py::test_wallpaper_image[ansible://instance] SKIPPED [ 30%]
-molecule/shared/tests/test_branding.py::test_wallpaper_setting[ansible://instance] SKIPPED [ 35%]
-molecule/shared/tests/test_branding.py::test_LXDE_autostart_xset[ansible://instance] SKIPPED [ 40%]
-molecule/shared/tests/test_dropins.py::test_dropin_directory[ansible://instance] SKIPPED [ 45%]
-molecule/shared/tests/test_ip_in_issue.py::test_issue_file[ansible://instance] PASSED [ 50%]
-molecule/shared/tests/test_ip_in_issue.py::test_issue_d[ansible://instance] PASSED [ 55%]
-molecule/shared/tests/test_ip_in_issue.py::test_issue_d_interfaces[ansible://instance] PASSED [ 60%]
-molecule/shared/tests/test_ip_in_issue.py::test_issue_d_fingerprints[ansible://instance] PASSED [ 65%]
-molecule/shared/tests/test_shared.py::test_shared_skip SKIPPED (forc...) [ 70%]
-molecule/shared/tests/test_swapcapslockctrl.py::test_udev_hwdb_file[ansible://instance] SKIPPED [ 75%]
-molecule/shared/tests/test_swapcapslockctrl.py::test_inputrc[ansible://instance] SKIPPED [ 80%]
-molecule/shared/tests/test_swapcapslockctrl.py::test_bashrc[ansible://instance] SKIPPED [ 85%]
-molecule/shared/tests/test_swapcapslockctrl.py::test_cshrc[ansible://instance] SKIPPED [ 90%]
-molecule/shared/tests/test_swapcapslockctrl.py::test_exrc[ansible://instance] SKIPPED [ 95%]
-molecule/shared/tests/test_swapcapslockctrl.py::test_vimrc[ansible://instance] SKIPPED [100%]
+molecule/shared/tests/test_branding.py::test_boot_config[ansible:/debian_bullseye] SKIPPED [  2%]
+molecule/shared/tests/test_branding.py::test_boot_cmdline[ansible:/debian_bullseye] SKIPPED [  4%]
+molecule/shared/tests/test_branding.py::test_fbi_package[ansible:/debian_bullseye] SKIPPED [  6%]
+molecule/shared/tests/test_branding.py::test_splashscreen_service[ansible:/debian_bullseye] SKIPPED [  9%]
+molecule/shared/tests/test_branding.py::test_wallpaper_image[ansible:/debian_bullseye] SKIPPED [ 11%]
+molecule/shared/tests/test_branding.py::test_x11_session_manager_is_lxde[ansible:/debian_bullseye] SKIPPED [ 13%]
+molecule/shared/tests/test_branding.py::test_lightdm_login_background[ansible:/debian_bullseye] SKIPPED [ 16%]
+molecule/shared/tests/test_branding.py::test_user_homedir[ansible:/debian_bullseye-user0] SKIPPED [ 18%]
+molecule/shared/tests/test_branding.py::test_user_wallpaper_setting[ansible:/debian_bullseye-user0] SKIPPED [ 20%]
+molecule/shared/tests/test_branding.py::test_user_LXDE_autostart_xset[ansible:/debian_bullseye-user0] SKIPPED [ 23%]
+molecule/shared/tests/test_branding.py::test_config_files[fixture_users0-fixture_config_files0-ansible:/debian_bullseye] SKIPPED [ 25%]
+molecule/shared/tests/test_dropins.py::test_etc_profile_d_dotlocal[ansible:/debian_bullseye] SKIPPED [ 27%]
+molecule/shared/tests/test_dropins.py::test_bashrc_sources_aliases[fixture_users0-ansible:/debian_bullseye] SKIPPED [ 30%]
+molecule/shared/tests/test_dropins.py::test_dropin_files[fixture_users0-fixture_dropin_files0-ansible:/debian_bullseye] SKIPPED [ 32%]
+molecule/shared/tests/test_dropins.py::test_dropin_directories[fixture_users0-fixture_dropin_files0-ansible:/debian_bullseye] SKIPPED [ 34%]
+molecule/shared/tests/test_dropins.py::test_pipx[fixture_users0-pipx-ansible:/debian_bullseye] SKIPPED [ 37%]
+molecule/shared/tests/test_dropins.py::test_pipx[fixture_users0-update-dotdee-ansible:/debian_bullseye] SKIPPED [ 39%]
+molecule/shared/tests/test_dropins.py::test_update_dotdee_write_bash_profile[fixture_users0-ansible:/debian_bullseye] SKIPPED [ 41%]
+molecule/shared/tests/test_ip_in_issue.py::test_issue_file[ansible:/debian_bullseye] PASSED [ 44%]
+molecule/shared/tests/test_ip_in_issue.py::test_issue_d[ansible:/debian_bullseye] PASSED [ 46%]
+molecule/shared/tests/test_ip_in_issue.py::test_issue_d_interfaces[ansible:/debian_bullseye] PASSED [ 48%]
+molecule/shared/tests/test_ip_in_issue.py::test_issue_d_fingerprints[ansible:/debian_bullseye] PASSED [ 51%]
+molecule/shared/tests/test_kali_like.py::test_kali_apt_list[ansible:/debian_bullseye] SKIPPED [ 53%]
+molecule/shared/tests/test_kali_like.py::test_script_files[fixture_users0-fixture_helper_script_files0-ansible:/debian_bullseye] SKIPPED [ 55%]
+molecule/shared/tests/test_kali_like.py::test_kali_like_packages[fixture_kali_like_packages0-ansible:/debian_bullseye] SKIPPED [ 58%]
+molecule/shared/tests/test_kali_like.py::test_gawk[ansible:/debian_bullseye] SKIPPED [ 60%]
+molecule/shared/tests/test_kali_like.py::test_kali_application_menu[ansible:/debian_bullseye] SKIPPED [ 62%]
+molecule/shared/tests/test_kali_like.py::test_guacamole_guacd[ansible:/debian_bullseye] SKIPPED [ 65%]
+molecule/shared/tests/test_kali_like.py::test_guacamole_services[fixture_guac_services0-ansible:/debian_bullseye] SKIPPED [ 67%]
+molecule/shared/tests/test_kdmt.py::test_keyboard_config_packages[ansible:/debian_bullseye] SKIPPED [ 69%]
+molecule/shared/tests/test_kdmt.py::test_custom_load_xmodmap[ansible:/debian_bullseye] SKIPPED [ 72%]
+molecule/shared/tests/test_kdmt.py::test_udev_hwdb_file[ansible:/debian_bullseye] SKIPPED [ 74%]
+molecule/shared/tests/test_kdmt.py::test_xkboptions[ansible:/debian_bullseye] SKIPPED [ 76%]
+molecule/shared/tests/test_kdmt.py::test_keyboard_configuration[ansible:/debian_bullseye] SKIPPED [ 79%]
+molecule/shared/tests/test_kdmt.py::test_hid_apple_conf[ansible:/debian_bullseye] SKIPPED [ 81%]
+molecule/shared/tests/test_kdmt.py::test_hid_apple_fnmode[ansible:/debian_bullseye] SKIPPED [ 83%]
+molecule/shared/tests/test_kdmt.py::test_hid_apple_iso_layout[ansible:/debian_bullseye] SKIPPED [ 86%]
+molecule/shared/tests/test_kdmt.py::test_user_inputrc[ansible:/debian_bullseye-user0] SKIPPED [ 88%]
+molecule/shared/tests/test_kdmt.py::test_user_cshrc[ansible:/debian_bullseye-user0] SKIPPED [ 90%]
+molecule/shared/tests/test_kdmt.py::test_user_exrc[ansible:/debian_bullseye-user0] SKIPPED [ 93%]
+molecule/shared/tests/test_kdmt.py::test_user_vimrc[ansible:/debian_bullseye-user0] SKIPPED [ 95%]
+molecule/shared/tests/test_kdmt.py::test_user_xmodmap[ansible:/debian_bullseye-user0] SKIPPED [ 97%]
+molecule/shared/tests/test_shared.py::test_shared_skip SKIPPED (forc...) [100%]
 
-=================== 4 passed, 16 skipped in 84.47s (0:01:24) ===================
+=========================== short test summary info ============================
+SKIPPED [1] molecule/shared/tests/test_branding.py:16: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:24: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:32: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:37: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:43: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:52: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:60: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:74: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:83: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:106: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_branding.py:148: role davedittrich.utils.branding only
+SKIPPED [1] molecule/shared/tests/test_dropins.py:33: role davedittrich.utils.dropins only
+SKIPPED [1] molecule/shared/tests/test_dropins.py:41: role davedittrich.utils.dropins only
+SKIPPED [1] molecule/shared/tests/test_dropins.py:52: role davedittrich.utils.dropins only
+SKIPPED [1] molecule/shared/tests/test_dropins.py:63: role davedittrich.utils.dropins only
+SKIPPED [2] molecule/shared/tests/test_dropins.py:75: role davedittrich.utils.dropins only
+SKIPPED [1] molecule/shared/tests/test_dropins.py:87: role davedittrich.utils.dropins only
+SKIPPED [1] molecule/shared/tests/test_kali_like.py:52: role davedittrich.utils.kali_like only
+SKIPPED [1] molecule/shared/tests/test_kali_like.py:61: role davedittrich.utils.kali_like only
+SKIPPED [1] molecule/shared/tests/test_kali_like.py:72: role davedittrich.utils.kali_like only
+SKIPPED [1] molecule/shared/tests/test_kali_like.py:78: role davedittrich.utils.kali_like only
+SKIPPED [1] molecule/shared/tests/test_kali_like.py:85: role davedittrich.utils.kali_like only
+SKIPPED [1] molecule/shared/tests/test_kali_like.py:94: role davedittrich.utils.kali_like only
+SKIPPED [1] molecule/shared/tests/test_kali_like.py:103: role davedittrich.utils.kali_like only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:16: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:22: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:30: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:39: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:47: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:54: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:64: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:76: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:91: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:118: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:132: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:146: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_kdmt.py:160: role davedittrich.utils.kdmt only
+SKIPPED [1] molecule/shared/tests/test_shared.py:6: force skip
+======================== 4 passed, 39 skipped in 1.70s =========================
 INFO     Verifier completed successfully.
+[+] all tests succeeded
+[+] instance(s) were not destroyed: use 'molecule destroy' or 'molecule reset' manually
   . . .
+```
+
+Using the `pytest` option `-rP` instead, the output from the `verify` stage is much
+shorter:
+
+```
+$ PYTEST_ADDOPTS="-rP" molecule verify -s ip_in_issue
+INFO     ip_in_issue scenario test matrix: verify
+INFO     Performing prerun with role_name_check=0...
+INFO     Set ANSIBLE_LIBRARY=/home/dittrich/.cache/ansible-compat/6fd897/modules:/home/dittrich/.ansible/plugins/modules:/usr/share/ansible/plugins/modules
+INFO     Set ANSIBLE_COLLECTIONS_PATH=/home/dittrich/.cache/ansible-compat/6fd897/collections:/home/dittrich/.ansible/collections:/usr/share/ansible/collections
+INFO     Set ANSIBLE_ROLES_PATH=/home/dittrich/.cache/ansible-compat/6fd897/roles:roles:/home/dittrich/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles
+INFO     Running ansible-galaxy collection install -v --force -p /home/dittrich/.cache/ansible-compat/6fd897/collections .
+INFO     Running ip_in_issue > verify
+INFO     Executing Testinfra tests found in /home/dittrich/code/davedittrich/utils/molecule/ip_in_issue/../shared/tests/...
+/home/dittrich/miniconda3/envs/utils/lib/python3.9/site-packages/molecule/config.py:51: DeprecationWarning: molecule.config.ansible_version is deprecated, will be removed in the future.
+  warnings.warn(
+============================= test session starts ==============================
+platform linux -- Python 3.9.13, pytest-7.1.3, pluggy-1.0.0
+ansible: 2.13.3
+rootdir: /home/dittrich/code/davedittrich/utils/molecule/shared, configfile: pytest.ini
+plugins: ansible-2.3.0, metadata-2.0.2, testinfra-6.8.1.dev4+gd423e29, html-3.1.1, molecule-2.0.1.dev8+g236ac70
+collected 43 items
+
+molecule/shared/tests/test_branding.py sssssssssss                       [ 25%]
+molecule/shared/tests/test_dropins.py sssssss                            [ 41%]
+molecule/shared/tests/test_ip_in_issue.py ....                           [ 51%]
+molecule/shared/tests/test_kali_like.py sssssss                          [ 67%]
+molecule/shared/tests/test_kdmt.py sssssssssssss                         [ 97%]
+molecule/shared/tests/test_shared.py s                                   [100%]
+
+==================================== PASSES ====================================
+======================== 4 passed, 39 skipped in 1.76s =========================
+INFO     Verifier completed successfully.
 ```
 
 The file containing the Ansible variables from the `converge` phase also help
@@ -309,18 +424,35 @@ automatically adjust.
 Only when `molecule destroy` is run will the file be deleted.
 
 ```
-  . . .
+$ molecule destroy -s ip_in_issue
+INFO     ip_in_issue scenario test matrix: dependency, destroy
+INFO     Performing prerun with role_name_check=0...
+INFO     Set ANSIBLE_LIBRARY=/home/dittrich/.cache/ansible-compat/6fd897/modules:/home/dittrich/.ansible/plugins/modules:/usr/share/ansible/plugins/modules
+INFO     Set ANSIBLE_COLLECTIONS_PATH=/home/dittrich/.cache/ansible-compat/6fd897/collections:/home/dittrich/.ansible/collections:/usr/share/ansible/collections
+INFO     Set ANSIBLE_ROLES_PATH=/home/dittrich/.cache/ansible-compat/6fd897/roles:roles:/home/dittrich/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles
+INFO     Running ansible-galaxy collection install -v --force -p /home/dittrich/.cache/ansible-compat/6fd897/collections .
+INFO     Running ip_in_issue > dependency
+WARNING  Skipping, missing the requirements file.
+WARNING  Skipping, missing the requirements file.
 INFO     Running ip_in_issue > destroy
-Using /Users/dittrich/.cache/molecule/utils/ip_in_issue/ansible.cfg as config file
+INFO     Sanity checks: 'docker'
+Using /home/dittrich/.cache/molecule/utils/ip_in_issue/ansible.cfg as config file
 
 PLAY [Destroy] *****************************************************************
 
-TASK [Delete variables saved from converge step.] ******************************
-ok: [instance -> localhost] => {"changed": false, "path": "/Users/dittrich/.cache/molecule/utils/ip_in_issue/ansible-vars.yml", "state": "absent"}
+TASK [Destroy molecule instance(s)] ********************************************
+changed: [localhost] => (item=debian_bullseye) => {"ansible_job_id": "151811718162.2756561", "ansible_loop_var": "item", "changed": true, "finished": 0, "item": {"capabilities": ["SYS_ADMIN"], "dockerfile": "../shared/Dockerfile-debian_bullseye.j2", "image": "debian:bullseye", "name": "debian_bullseye", "override_command": false, "privileged": true, "security_opts": ["seccomp=unconfined"], "tmpfs": ["/run", "/run/lock", "/tmp"]}, "results_file": "/home/dittrich/.ansible_async/151811718162.2756561", "started": 1}
+
+TASK [Wait for instance(s) deletion to complete] *******************************
+FAILED - RETRYING: [localhost]: Wait for instance(s) deletion to complete (300 retries left).
+changed: [localhost] => (item=debian_bullseye) => {"ansible_job_id": "151811718162.2756561", "ansible_loop_var": "item", "attempts": 2, "changed": true, "finished": 1, "item": {"ansible_job_id": "151811718162.2756561", "ansible_loop_var": "item", "changed": true, "failed": 0, "finished": 0, "item": {"capabilities": ["SYS_ADMIN"], "dockerfile": "../shared/Dockerfile-debian_bullseye.j2", "image": "debian:bullseye", "name": "debian_bullseye", "override_command": false, "privileged": true, "security_opts": ["seccomp=unconfined"], "tmpfs": ["/run", "/run/lock", "/tmp"]}, "results_file": "/home/dittrich/.ansible_async/151811718162.2756561", "started": 1}, "results_file": "/home/dittrich/.ansible_async/151811718162.2756561", "started": 1, "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+
+TASK [Delete docker networks(s)] ***********************************************
 
 PLAY RECAP *********************************************************************
-instance                   : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-  . . .
+localhost                  : ok=2    changed=2    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+
+INFO     Pruning extra files from scenario ephemeral directory
 ```
 
 You can see the defined scenarios and state information about related instances
@@ -333,21 +465,20 @@ INFO     Running default > list
 INFO     Running delegated > list
 INFO     Running dropins > list
 INFO     Running ip_in_issue > list
-INFO     Running swapcapslockctrl > list
-                 ╷             ╷                  ╷                  ╷         ╷
-  Instance Name  │ Driver Name │ Provisioner Name │ Scenario Name    │ Created │ Converged
-╶────────────────┼─────────────┼──────────────────┼──────────────────┼─────────┼───────────╴
-  instance       │ docker      │ ansible          │ branding         │ false   │ false
-  instance       │ docker      │ ansible          │ default          │ true    │ false
-  delegated-host │ delegated   │ ansible          │ delegated        │ unknown │ true
-  instance       │ docker      │ ansible          │ dropins          │ false   │ false
-  instance       │ docker      │ ansible          │ ip_in_issue      │ false   │ false
-  instance       │ docker      │ ansible          │ swapcapslockctrl │ false   │ false
-                 ╵             ╵                  ╵                  ╵         ╵
+INFO     Running kali_like > list
+INFO     Running kdmt > list
+                  ╷             ╷                  ╷               ╷         ╷
+  Instance Name   │ Driver Name │ Provisioner Name │ Scenario Name │ Created │ Converged
+╶─────────────────┼─────────────┼──────────────────┼───────────────┼─────────┼───────────╴
+  debian_bullseye │ docker      │ ansible          │ branding      │ false   │ false
+  debian_bullseye │ docker      │ ansible          │ default       │ true    │ false
+  delegated-host  │ delegated   │ ansible          │ delegated     │ unknown │ false
+  debian_bullseye │ docker      │ ansible          │ dropins       │ false   │ false
+  debian_bullseye │ docker      │ ansible          │ ip_in_issue   │ false   │ false
+  debian_bullseye │ docker      │ ansible          │ kali_like     │ false   │ false
+  debian_bullseye │ docker      │ ansible          │ kdmt          │ false   │ false
+                  ╵             ╵                  ╵               ╵         ╵
 ```
-
-(Hint: The above shows the `default` scenario is running, with the instance `created`,
-but not yet `converged`.)
 
 When using the `delegated` scenario--in this case against a Raspberry Pi with users
 `root` and `pirate`--all of the roles and their associated tests for all users

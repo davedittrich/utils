@@ -16,7 +16,9 @@ should apply `kali_like` first.
 Requirements
 ------------
 
-There are no pre-requisites.
+This role installs [Kali Linux](https://www.kali.org/), which is
+[based on the Debian Testing release](docs/policy/kali-linux-relationship-with-debian/).
+As such, it is not compatible with Debian 10.
 
 Role Variables
 --------------
@@ -26,7 +28,9 @@ Role Variables
 Dependencies
 ------------
 
-There are no dependencies.
+This role is dependent on Debian 11 and Kali Linux package repositories
+that are configured to take priority over the standard Debian package
+branch.
 
 Example Playbook
 ----------------
