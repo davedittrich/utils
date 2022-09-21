@@ -707,6 +707,47 @@ bumping version numbers and updating release history. Each push to GitHub
 before pushing the tags will run tests as well, reassuring you that the
 published artifacts will work.
 
+## Using `conda`
+
+This repo is set up assuming `miniconda` is installed for two reasons:
+
+1. It allows you to avoid conflicts with your system's `python` installation by
+   using virtual environments for managing your `python` executable and manage
+   packages in its `site-packages` directory, and
+
+2. It [sets environment variables](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#macos-and-linux)
+   automatically when activating virtual environments. This allows you to
+   associate the `python-secrets` environment you will be using for storing
+   configuration variables, secrets like API keys and passwords, and storing
+   temporary files that contain secrets (e.g., a Raspberry Pi `cloud-config` file).
+
+Create your virtual environment. For this example, the name `utils` is used.
+
+```
+$ conda create -n utils python=3.9
+```
+
+Set environment variables for `python-secrets` to use for finding where your
+secrets will be stored and which environment identifier to use.
+
+```
+$ conda env config vars set D2_SECRETS_BASEDIR=~/.secrets D2_ENVIRONMENT=utils CLIFF_FIT_WIDTH=1
+To make your changes take effect please reactivate your environment
+```
+
+Follow the guidance the first time you do this to get these environment variables set. When
+the values change, you will be notified of this fact.
+
+To see what variables are set by `conda` on activation, do:
+
+```
+$ conda env config vars list
+D2_SECRETS_BASEDIR = /home/dittrich/.secrets
+D2_ENVIRONMENT = utils
+CLIFF_FIT_WIDTH = 1
+```
+
+
 ## Gotchas
 
 When developing and testing your new roles, you may find that some Ansible plays
