@@ -136,7 +136,7 @@
       become: true
 
 - name: Ensure user Xmodmap files are customized.
-  include_tasks: user_xmodmap.yml
+  ansible.builtin.include_tasks: user_xmodmap.yml
   vars:
     user: '{{ item }}'
   loop: '{{ accounts }}'

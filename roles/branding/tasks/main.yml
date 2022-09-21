@@ -55,7 +55,7 @@
     verbosity: 2
 
 - name: Ensure user home directories are mapped.
-  include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
+  ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
@@ -168,22 +168,22 @@
       become: true
 
 - name: Ensure boot splash is customized.
-  include_tasks:
+  ansible.builtin.include_tasks:
     file: boot_splash.yml
 
 - name: Ensure customized LXDE + lightdm.
-  include_tasks:
+  ansible.builtin.include_tasks:
     file: lxde-desktop.yml
 
 - name: Ensure LXDE desktop is customized for users.
-  include_tasks:
+  ansible.builtin.include_tasks:
     file: lxde-desktop-configure.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
 
 - name: Ensure clipit history is disabled.
-  include_tasks:
+  ansible.builtin.include_tasks:
     file: clipit-nohistory.yml
   loop: '{{ accounts }}'
   loop_control:
