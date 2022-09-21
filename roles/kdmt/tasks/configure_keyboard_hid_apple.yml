@@ -10,7 +10,7 @@
   block:
 
     - name: Ensure `/etc/modprobe.d/hid_apple.conf` file is present.
-      ansible.builtin.copy:
+      ansible.builtin.template:
         dest: '/etc/modprobe.d/hid_apple.conf'
         content: >
           options hid_apple

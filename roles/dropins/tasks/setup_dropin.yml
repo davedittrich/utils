@@ -55,7 +55,7 @@
 - name: Block
   block:
     - name: Ensure a dropin source file exists.
-      ansible.builtin.copy:
+      ansible.builtin.template:
         content: |
           # If you are currently editing the file '{{ dropin_path }}', be aware that
           # its contents are generated using the program 'update-dotdee' from files
