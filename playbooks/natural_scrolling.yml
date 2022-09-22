@@ -1,12 +1,12 @@
 ---
 
-# Playbook to just swap CapsLock and Left CTRL keys.
+# Playbook to just enable natural scrolling for mouse and trackpad.
 
 - hosts: "{{ host | default('localhost') }}"
   gather_facts: true
   vars:
     collection_root: "{{ lookup('env', 'COLLECTION_ROOT')|default(playbook_dir|dirname) }}"
-    keyboard_swapcapslockctrl: true
+    natural_scrolling: true
 
   roles:
     - davedittrich.utils.kdmt

@@ -5,7 +5,7 @@
 - hosts: all
   gather_facts: true
   vars:
-    collection_root: '{{ lookup("env", "COLLECTION_ROOT") }}'
+    collection_root: "{{ lookup('env', 'COLLECTION_ROOT')|default(playbook_dir|dirname) }}"
 
   pre_tasks:
     - name: Set fact `keyboard_swapcapslockctrl` for `kdmt` role.
