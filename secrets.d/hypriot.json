@@ -84,5 +84,11 @@
     "Type": "string",
     "Prompt": "Keyboard layout",
     "Options": "us,*"
+  },
+  {
+    "Variable": "hypriot_keyboard_swapcapslockctrl",
+    "Type": "boolean",
+    "Prompt": "Swap L-CapsLock and CTRL keys",
+    "Options": "false,true"
   }
 ]

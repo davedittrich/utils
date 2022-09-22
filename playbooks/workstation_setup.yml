@@ -8,6 +8,13 @@
     collection_root: '{{ lookup("env", "COLLECTION_ROOT") }}'
 
   pre_tasks:
+    - name: Set fact `keyboard_swapcapslockctrl` for `kdmt` role.
+      ansible.builtin.set_fact:
+        keyboard_swapcapslockctrl: '{{ hypriot_keyboard_swapcapslockctrl }}'
+      when:
+        - keyboard_swapcapslockctrl is not defined
+        - hypriot_keyboard_swapcapslockctrl is defined
+
     - name: Set fact `natural_scrolling` for `kdmt` role.
       ansible.builtin.set_fact:
         natural_scrolling: '{{ hypriot_natural_scrolling }}'
