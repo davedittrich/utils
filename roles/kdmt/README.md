@@ -54,8 +54,7 @@ Role Variables
 | `keyboard_hid_apple_fnmode` | String | Function key mode |
 | `keyboard_swapcapslockctrl` | Boolean | Swap Left CapsLock and CTRL keys |
 | `keyboard_visible_bell`| Boolean | Enable visible bell to silence the system's bell |
-| `mouse_natural_scrolling` | Boolean | Enable natural scrolling on the mouse |
-| `trackpad_natural_scrolling` | Boolean | Enable natural scrolling on the trackpad |
+| `natural_scrolling` | Boolean | Enable natural scrolling on the mouse and trackpad |
 
 Dependencies
 ------------
@@ -72,8 +71,7 @@ This role can be applied as follows:
         keyboard_hid_apple: true
         keyboard_swapcapslockctrl: true
         keyboard_visible_bell: true
-        mouse_natural_scrolling: true
-        trackpad_natural_scrolling: true
+        natural_scrolling: true
       roles:
          - { role: davedittrich.utils.kdmt }
 

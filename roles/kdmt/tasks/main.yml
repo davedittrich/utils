@@ -45,12 +45,12 @@
 
   # - name: Include mouse configuration tasks.
   #   ansible.builtin.include_tasks: configure_mouse.yml
-  #   when: mouse_natural_scrolling is true
+  #   when: natural_scrolling is true
 
   # T is for trackpad.
 
   # - name: Include trackpad configuration tasks.
   #   ansible.builtin.include_tasks: configure_trackpad.yml
-  #   when: trackpad_natural_scrolling is true
+  #   when: natural_scrolling is true
 
 # EOF

@@ -8,6 +8,13 @@
     collection_root: '{{ lookup("env", "COLLECTION_ROOT") }}'
 
   pre_tasks:
+    - name: Set fact `natural_scrolling` for `kdmt` role.
+      ansible.builtin.set_fact:
+        natural_scrolling: '{{ hypriot_natural_scrolling }}'
+      when:
+        - natural_scrolling is not defined
+        - hypriot_natural_scrolling is defined
+
     - name: Ensure required packages are present.
       ansible.builtin.apt:
         name: "{{ packages }}"

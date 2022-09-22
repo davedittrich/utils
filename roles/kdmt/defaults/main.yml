@@ -5,5 +5,4 @@ keyboard_hid_apple_fnmode: '2'
 keyboard_swapcapslockctrl: true
 keyboard_visible_bell: true
 # display_???
-mouse_natural_scrolling: true
-trackpad_natural_scrolling: true
+natural_scrolling: true

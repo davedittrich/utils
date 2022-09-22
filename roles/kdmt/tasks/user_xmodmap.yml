@@ -43,7 +43,7 @@
     - name: 'Ensure {{ user_xmodmap }} enables natural scrolling.'
       ansible.builtin.blockinfile:
         path: '{{ user_xmodmap }}'
-        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:mouse_natural_scrolling]'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:natural_scrolling/mouse]'
         block: |
           !
           ! Reverse scrolling direction
@@ -53,17 +53,17 @@
         owner: '{{ user }}'
         group: '{{ user }}'
         mode: 0o640
-      when: mouse_natural_scrolling is true
+      when: natural_scrolling is true
 
     - name: Ensure {{ user_xmodmap }} does not enable natural scrolling.
       ansible.builtin.blockinfile:
         path: '{{ user_xmodmap }}'
-        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:mouse_natural_scrolling]'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:natural_scrolling/mouse]'
         block: ''
         create: true
         owner: '{{ user }}'
         group: '{{ user }}'
         mode: 0o640
-      when: mouse_natural_scrolling is false
+      when: natural_scrolling is false
 
 #
