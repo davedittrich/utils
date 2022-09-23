@@ -45,10 +45,11 @@ verifier:
     #PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
     PYTEST_ADDOPTS: "${PYTEST_ADDOPTS:--v -ra}"
   options:
-    # The following is necessary to cause `molecule` to run `testinfra` with
-    # elevated permissions using `ssh` to access the remote delegated host.
+    # The following is necessary to cause `molecule` to run `pytest` with
+    # the argument `--testinfra-sudo`, which causes `testinfra` to use
+    # elevated permissions via `ssh` when accessing the delegated host.
     # Failing to do this results in tests requiring `root` read and/or
-    # execute access to directories and files to fail (and thus those tests
-    # will also fail.)
+    # execute access to directories and files to fail (and thus those
+    # tests will fail.)
     # See: https://github.com/ansible-community/molecule/issues/555
-    sudo: true
+    testinfra_sudo: true
