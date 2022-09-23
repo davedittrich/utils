@@ -5,7 +5,7 @@
 
 - name: Set fact with user's `~/.local/bin` directory path.
   ansible.builtin.set_fact:
-    dot_local_bin: '{{ homedir[user] ~ "/.local/bin/" }}'
+    dot_local_bin: '{{ homedir[user] }}/.local/bin/'
 
 - name: Stat `~/.local/bin` directory.
   ansible.builtin.stat:
@@ -30,8 +30,8 @@
 
 - name: Ensure helper files exist.
   ansible.builtin.template:
-    src: '{{ kali_like_script_templates_dir ~ item }}'
-    dest: '{{ dot_local_bin ~ item | replace(".sh.j2", "") }}'
+    src: '{{ kali_like_script_templates_dir + item }}'
+    dest: "{{ dot_local_bin + item | replace('.sh.j2', '') }}"
     owner: '{{ user }}'
     group: '{{ user }}'
     mode: 0o755
