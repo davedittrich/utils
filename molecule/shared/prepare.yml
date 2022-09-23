@@ -36,7 +36,7 @@
 
     - name: Set fact with users whose accounts need to be configured.
       ansible.builtin.set_fact:
-        accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
+        accounts: "{{ accounts | default(['root', ansible_user]) | unique }}"
 
     - name: Ensure user home directories are mapped.
       include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'

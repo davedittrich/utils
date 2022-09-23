@@ -4,9 +4,9 @@
 # This roles is for configuring custom keyboard, display, mouse,
 # and trackpad settings.
 
-- name: Set fact with users whose accounts need to be configured
+- name: Set fact with user accounts to be configured
   ansible.builtin.set_fact:
-    accounts: '{{ accounts | default(["root", ansible_user_id]) | unique }}'
+    accounts: '{{ accounts | default(["root", ansible_user]) | unique }}'
 
 - name: Ensure user home directories are mapped.
   include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
