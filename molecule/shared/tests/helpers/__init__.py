@@ -12,7 +12,15 @@ from pathlib import Path
 # https://medium.com/opsops/accessing-remote-host-at-test-discovery-stage-in-testinfra-pytest-7296235e804d
 
 molecule_ephemeral_directory = os.environ.get('MOLECULE_EPHEMERAL_DIRECTORY')
+if molecule_ephemeral_directory is None:
+    raise RuntimeError(
+        "[-] missing environment variable: 'MOLECULE_EPHEMERAL_DIRECTORY'"
+    )
 molecule_inventory_file = os.environ.get('MOLECULE_INVENTORY_FILE')
+if molecule_inventory_file is None:
+    raise RuntimeError(
+        "[-] missing environment variable: 'MOLECULE_INVENTORY_FILE"
+    )
 
 
 def load_ansible_vars():
@@ -21,9 +29,6 @@ def load_ansible_vars():
     yaml_file = ephemeral_directory / 'ansible-vars.yml'
     ansible_vars = yaml.safe_load(yaml_file.read_bytes())
     print(f"[+] read runtime variables from '{yaml_file}'")
-    # except FileNotFoundError:
-    #     print(f"[-] failed to read runtime variables from '{yaml_file}'")
-    #     ansible_vars = {"ansible_role_names": []}
     return ansible_vars
 
 
