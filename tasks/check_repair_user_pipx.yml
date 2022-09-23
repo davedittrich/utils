@@ -23,13 +23,14 @@
 
 - name: Check to see if `.bash_aliases` is already being sourced.
   ansible.builtin.command: "egrep '. ~/.bash_aliases' {{ homedir[user] }}/.bashrc"
+  become: true
   register: source_aliases
   failed_when: false
   changed_when: false
 
 - name: Ensure `.bashrc` sources `.bash_aliases`.
   ansible.builtin.blockinfile:
-    path: '{{ homedir[user] ~ "/.bashrc" }}'
+    path: '{{ homedir[user] }}/.bashrc'
     owner: '{{ user }}'
     mode: 0o640
     block: |
@@ -37,21 +38,22 @@
           . ~/.bash_aliases
       fi
     marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.dropins:setup_update_dotdee]"
+  become: true
   when: source_aliases.rc != 0
 
 - name: 'Stat `{{ pipx_bin_path }}`.'
   ansible.builtin.stat:
     path: '{{ pipx_bin_path }}'
-  register: bin_pipx
   become: true
+  register: bin_pipx
 
 - name: Block to check for broken `pipx`.
-  become: true
   when: bin_pipx.stat.exists
   block:
     - name: Check for broken `pipx` (Python upgraded)
       ansible.builtin.shell: |
         '{{ pipx_bin_path }}' list
+      become: true
       register: result
       changed_when: false
       failed_when: "'ModuleNotFoundError' in result.stderr"
@@ -61,6 +63,7 @@
       ansible.builtin.file:
         path: '{{ pipx_shared_path }}'
         state: absent
+      become: true
       changed_when: false
 
     - name: Ensure `python3-venv` is up-to-date.
@@ -68,6 +71,7 @@
         name: python3-venv
         update_cache: true
         state: latest
+      become: true
       changed_when: false
 
     - name: Ensure `pipx` and related programs are installed for user.
@@ -76,13 +80,13 @@
         '{{ pipx_bin_path }}' reinstall-all
       args:
         executable: /bin/bash
+      become: true
       become_user: '{{ user }}'
       changed_when: false
 
 
 - name: Block for new `pipx` installation.
   when: not bin_pipx.stat.exists
-  become: true
   block:
 
     - name: Ensure `python3-venv` package is installed.
@@ -91,12 +95,14 @@
         state: present
         update_cache: true
         cache_valid_time: 3600
+      become: true
 
     - name: Ensure `pipx` installed for user.
       ansible.builtin.shell: |
         python3 -m pip install pipx --user
       args:
         executable: /bin/bash
+      become: true
       become_user: '{{ user }}'
 
 # vim: ft=ansible :
