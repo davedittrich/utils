@@ -1,0 +1,244 @@
+#cloud-config
+{# This configuration file is templated using Jinja -#}
+{# http://jinja.pocoo.org/docs/2.10/templates/      -#}
+{% set default_eth0_addr='192.168.50.1' -%}
+#
+# See also the comment about ``cloud-init`` in sample file 'wifi-user-data.yml'.
+#
+# This example controls all variables and secrets using ``python_secrets``
+# (a.k.a., ``psec``). It gets the values for templating from the process
+# environment, so run ``flash`` using ``psec -E --run -- flash [flash_options]``
+#
+# The variables available are:
+# $ psec secrets describe
+#
+# +-----------------------------------+---------+----------+-------------------------------------------------+-------------------------------------------------------------+------+
+# |  Variable                          | Group   | Type     | Prompt                                          | Options                                                     | Help |
+# +-----------------------------------+---------+----------+-------------------------------------------------+-------------------------------------------------------------+------+
+# | ansible_galaxy_server             | ansible | string   | Ansible Galaxy server URL                       | https://galaxy-dev.ansible.com,https://galaxy.ansible.com,* | *    |
+# | ansible_galaxy_api_key            | ansible | string   | Ansible Galaxy API key                          | *                                                           | *    |
+# | hypriot_user                      | hypriot | string   | User name for primary account                   | pirate,*                                                    | *    |
+# | hypriot_password                  | hypriot | password | Password for primary account                    | *                                                           | *    |
+# | hypriot_hostname                  | hypriot | string   | Host name for your RPi                          | hypriot,*                                                   | *    |
+# | hypriot_natural_scrolling         | hypriot | boolean  | Enable natural scrolling for mouse and trackpad | false,true                                                  | *    |
+# | hypriot_boot_graphical            | hypriot | boolean  | Set default target to boot into GUI             | true,false                                                  | *    |
+# | hypriot_eth0_addr                 | hypriot | string   | Static IP address for eth0:1 interface          | 192.168.50.1,*                                              | *    |
+# | hypriot_eth0_netmask              | hypriot | string   | Network mask for eth0:1 interface               | 255.255.255.0,*                                             | *    |
+# | hypriot_client_psk                | hypriot | string   | Pre-shared key for HypriotOS client WiFi AP     | *                                                           | *    |
+# | hypriot_client_ssid               | hypriot | string   | SSID for HypriotOS client WiFi AP               | *                                                           | *    |
+# | hypriot_pubkey                    | hypriot | string   | SSH public key for accessing primary account    | *                                                           | *    |
+# | hypriot_locale                    | hypriot | string   | Locale                                          | en_US.UTF-8,*                                               | *    |
+# | hypriot_timezone                  | hypriot | string   | Timezone                                        | America/Los_Angeles,*                                       | *    |
+# | hypriot_wifi_country              | hypriot | string   | WiFi country code                               | US,*                                                        | *    |
+# | hypriot_keyboard_model            | hypriot | string   | Keyboard model                                  | pc105,*                                                     | *    |
+# | hypriot_keyboard_layout           | hypriot | string   | Keyboard layout                                 | us,*                                                        | *    |
+# | hypriot_keyboard_swapcapslockctrl | hypriot | boolean  | Swap L-CapsLock and CTRL keys                   | false,true                                                  | *    |
+# +-----------------------------------+---------+----------+-------------------------------------------------+-------------------------------------------------------------+------+
+
+hostname: {{ hypriot_hostname|default('hypriot', true) }}
+manage_etc_hosts: true
+
+users:
+  - name: {{ hypriot_user|default('pirate', true) }}
+    gecos: "Hypriot Pirate"
+    primary-group: users
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: {{ hypriot_user }},users,docker,adm,dialout,audio,plugdev,netdev,video
+    plain_text_passwd: "{{ hypriot_password }}"
+    lock_passwd: false
+    ssh-import-id: None
+    ssh-authorized-keys:
+      - {{ hypriot_pubkey }}
+    ssh_pwauth: true
+    chpasswd: { expire: false }
+
+locale: "{{ hypriot_locale }}"
+# Value of 'timezone' must exist in /usr/share/zoneinfo
+timezone: "{{ hypriot_timezone }}"
+
+# Update apt packages on first boot?
+package_update: true
+package_upgrade: false
+package_reboot_if_required: false
+
+# Install any additional apt packages you need here
+packages:
+ - console-setup
+ - dnsutils
+ - keyboard-configuration
+ - ntp
+ - tree
+ - vim
+
+# # WiFi connect to HotSpot
+# To make wifi work with RPi3 and RPi0
+# you also have to set "enable_uart=0" in config.txt
+# See no-uart-config.txt for an example.
+#
+# # - use `wpa_passphrase SSID PASSWORD` to encrypt the psk
+write_files:
+  - content: |
+      allow-hotplug wlan0
+      iface wlan0 inet dhcp
+      wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+      iface default inet dhcp
+    path: /etc/network/interfaces.d/wlan0
+    owner: root:root
+    permissions: '0644'
+
+  - content: |
+      auto eth0
+      allow-hotplug eth0
+      iface eth0 inet dhcp
+
+      auto eth0:1
+      allow-hotplug eth0:1
+      iface eth0:1 inet static
+      address {{ hypriot_eth0_addr }}
+      netmask {{ hypriot_eth0_netmask }}
+    path: /etc/network/interfaces.d/eth0
+    owner: root:root
+    permissions: '0644'
+
+  - content: |
+      127.0.1.1 {{ hypriot_hostname }}.localdomain {{ hypriot_hostname }}
+      127.0.0.1 localhost
+      {{ hypriot_eth0_addr }} setup client
+
+      ::1 ipv6-localhost ipv6-loopback
+      fe00::0 ipv6-localnet
+      ff00::0 ipv6-mcastprefix
+      ff02::1 ipv6-allnodes
+      ff02::2 ipv6-allrouters
+      ff02::3 ipv6-allhosts
+    path: /etc/hosts
+    owner: root:root
+    permissions: '0644'
+
+  - content: |
+      # Ansible hosts file for bootstrapping.
+      [all]
+      localhost
+    path: /root/hosts
+    owner: root:root
+    permissions: '0644'
+
+  - content: |
+      # Ansible configuration file for bootstrapping.
+      [defaults]
+      transport=local
+      inventory=/root/hosts
+      interpreter_python=/usr/bin/python3
+      callback_enable=timer,ansible.posix.profile_tasks,ansible.posix.profile_roles
+    path: /root/ansible.cfg
+    owner: root:root
+    permissions: '0644'
+
+  - content: |
+      country={{ hypriot_wifi_country }}
+      ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+      update_config=1
+      network={
+        ssid="{{ hypriot_client_ssid }}"
+        psk="{{ hypriot_client_psk }}"
+        proto=RSN
+        key_mgmt=WPA-PSK
+        pairwise=CCMP
+        auth_alg=OPEN
+      }
+    path: /etc/wpa_supplicant/wpa_supplicant.conf
+    owner: root:root
+    permissions: '0644'
+
+  - content: |
+      #!/bin/bash
+      # This script performs all of the bootstrapping functions for first boot.
+      # When debugging, it will remain on the system in `/root/bootstrap.sh` so
+      # you can force it to be run again manually by removing the file
+      # `/root/.firstboot` and rebooting. (Also, do *not* forget to make *sure*
+      # you have copied any changes you made before you re-flash the SD card!)
+      #
+      if [[ -f /root/.installed ]]; then exit 0; fi
+      #
+      set -ex
+      #
+      export ANSIBLE_FORCE_COLOR=true
+      export DEBIAN_FRONTEND=noninteractive
+      DAVEDITTRICH_UTILS_VERSION="${DAVEDITTRICH_UTILS_VERSION:-0.7.0-rc.46}"
+      DAVEDITTRICH_UTILS_COLLECTION="${DAVEDITTRICH_UTILS_COLLECTION:-davedittrich.utils:==${DAVEDITTRICH_UTILS_VERSION}}"
+      DAVEDITTRICH_UTILS_ARTIFACT="${DAVEDITTRICH_UTILS_ARTIFACT:-davedittrich-utils-${DAVEDITTRICH_UTILS_VERSION}.tar.gz}"
+      UTILS_PATH=/root/.ansible/collections/ansible_collections/davedittrich/utils
+      #
+      cd /root
+      service --status-all
+      #
+      # The file `/boot/.custom-hook-completed` is used to trigger delayed installation
+      # of any files cached in the system image to speed up customization. This feature
+      # helps work around a problem encountered while attempting to use `image-build-rpi`
+      # and its `chroot` method of package installation that can fail when some packages
+      # cannot be configured properly cause image creation to fail.
+      #
+      if [[ -f /var/cache/apt/.preload ]]; then
+          PRELOADED_PACKAGES="$(
+              find /var/cache/apt -name '*.deb' -newer /var/cache/apt/.preload
+          )"
+          if [[ ! -z "${PRELOADED_PACKAGES}" ]]; then
+              dpkg -i ${PRELOADED_PACKAGES}
+              apt-get -f install
+              apt-get clean
+          fi
+      fi
+      #
+      # Ensure we have an Ansible version that works.
+      #
+      python3 -m pip install -U pip --user
+      python3 -m pip install "ansible==4.3.0" "ansible-core==2.11.3" --user
+      #
+      # Use Ansible ad-hoc mode to ensure it is in root's PATH.
+      #
+      /root/.local/bin/ansible -i localhost, \
+          localhost \
+          -c local \
+          -m lineinfile \
+          -a "dest=/root/.bashrc line='PATH=/root/.local/bin:$PATH' insertafter='EOF' mode=0o600"
+      source /root/.bashrc
+      ansible --version
+      #
+      # This conditional allows you to insert the collection artifact into the
+      # boot image rather than requiring it be uploaded/downloaded remotely.
+      #
+      if [[ -f "/boot/${DAVEDITTRICH_UTILS_ARTIFACT}" ]]; then
+          ansible-galaxy collection install "/boot/${DAVEDITTRICH_UTILS_ARTIFACT}"
+      else
+          ansible-galaxy collection install "${DAVEDITTRICH_UTILS_COLLECTION}" --server=https://galaxy-dev.ansible.com
+      fi
+      ansible-playbook -v \
+          -e '{"accounts": ["root","pirate"]}' \
+          ${UTILS_PATH}/playbooks/workstation_setup.yml
+      touch /root/.installed
+      #
+      exit 0
+    path: /root/bootstrap.sh
+    owner: root:root
+    permissions: '0750'
+
+# These commands will be run once on first boot only.
+runcmd:
+  - 'ifdown --force eth0'
+  - 'ifdown --force wlan0'
+  - 'ifup eth0'
+  - 'ifup wlan0'
+  - 'service networking restart'
+  - 'systemctl restart avahi-daemon'
+  - '[ -f /boot/bootstrap.sh ] && bash /boot/bootstrap.sh && touch /root/.installed'
+
+# We want to reboot after first install. Wait for it....!!
+power_state:
+  delay: "now"
+  mode: reboot
+  message: "[+] installation complete; rebooting system..."
+  timeout: 30
+  condition: "test -f /root/.installed"
+
+# vim: syntax=yaml

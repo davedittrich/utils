@@ -1,0 +1,8 @@
+dtparam=audio=on
+disable_overscan=1
+force_hdmi_hotplug=1
+hdmi_drive=2
+hdmi_group=2
+hdmi_mode=23
+framebuffer_width=1280
+framebuffer_height=720
