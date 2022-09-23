@@ -10,10 +10,9 @@ driver:
     login_cmd_template: 'ssh {instance} -F delegated-ssh-config'
     ansible_connection_options:
       connection: ssh
-      ansible_ssh_common_args: -F delegated-ssh-config
+# ![delegated-molecule.yml-driver]
 platforms:
   - name: delegated-host
-# ![delegated-molecule.yml-driver]
 lint: |
   make version
   make dependencies
