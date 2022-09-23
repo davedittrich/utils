@@ -1,0 +1,41 @@
+---
+
+# Customize user .Xmodmap file for capslock/ctrl keys.
+
+- name: 'Block for customizing {{ user_xmodmap[user] }} file.'
+  become: true
+  become_user: '{{ user }}'
+  block:
+
+    - name: 'Ensure {{ user_xmodmap[user] }} swaps capslock/ctrl.'
+      ansible.builtin.blockinfile:
+        path: '{{ user_xmodmap[user] }}'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:capslockctrl]'
+        block: |
+          !
+          ! Swap Caps_Lock and Control_L
+          !
+          remove Lock = Caps_Lock
+          remove Control = Control_L
+          keysym Control_L = Caps_Lock
+          keysym Caps_Lock = Control_L
+          add Lock = Caps_Lock
+          add Control = Control_L
+        create: true
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0o640
+      when: keyboard_swapcapslockctrl | bool
+
+    - name: 'Ensure {{ user_xmodmap[user] }} does not swap capslock/ctrl.'
+      ansible.builtin.blockinfile:
+        path: '{{ user_xmodmap[user] }}'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:capslockctrl]'
+        block: ''
+        create: true
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0o640
+      when: not keyboard_swapcapslockctrl | bool
+
+# vim: ft=ansible:

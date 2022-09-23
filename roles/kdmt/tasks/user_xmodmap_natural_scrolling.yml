@@ -1,0 +1,37 @@
+---
+
+# Customize user .Xmodmap file for natural scrolling.
+# This task file must be looped on 'user'.
+
+- name: 'Block for customizing {{ user_xmodmap[user] }} file.'
+  become: true
+  become_user: '{{ user }}'
+  block:
+
+    - name: 'Ensure {{ user_xmodmap[user] }} enables natural scrolling.'
+      ansible.builtin.blockinfile:
+        path: '{{ user_xmodmap[user] }}'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:natural_scrolling]'
+        block: |
+          !
+          ! Reverse scrolling direction
+          !
+          pointer = 1 2 3 5 4 7 6 8 9 10 11 12
+        create: true
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0o640
+      when: natural_scrolling | bool
+
+    - name: Ensure {{ user_xmodmap }} does not enable natural scrolling.
+      ansible.builtin.blockinfile:
+        path: '{{ user_xmodmap[user] }}'
+        marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:natural_scrolling]'
+        block: ''
+        create: true
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0o640
+      when: not natural_scrolling | bool
+
+# vim: ft=ansible:

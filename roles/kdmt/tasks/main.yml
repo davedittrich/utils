@@ -14,6 +14,11 @@
   loop_control:
     loop_var: user
 
+- name: Ensure user .Xmodmap file paths are defined.
+  ansible.builtin.set_fact:
+    user_xmodmap: "{{ user_xmodmap | default({}) | combine({item: homedir[item] + '/.Xmodmap'}) }}"
+  loop: '{{ accounts }}'
+
 - name: Ensure required packages are present.
   ansible.builtin.package:
     name:
@@ -25,32 +30,20 @@
     cache_valid_time: 3600
   become: true
 
-  # K is for keyboard.
+- name: Include Xsession.d dropin setup tasks.
+  ansible.builtin.include_tasks: setup_xsessiond_dropin.yml
 
-- name: Include keyboard function keys configuration tasks.
+- name: Include Apple keyboard function keys configuration tasks.
   ansible.builtin.include_tasks: configure_keyboard_hid_apple.yml
+  when: keyboard_hid_apple | bool
 
 - name: Include capslockctrl configuration tasks.
   ansible.builtin.include_tasks: configure_keyboard_capslockctrl.yml
 
 - name: Include visible bell configuration tasks.
   ansible.builtin.include_tasks: configure_keyboard_visible_bell.yml
-  vars:
-    user: "{{ item }}"
-  loop: '{{ accounts }}'
 
-  # D is for display.
-
-  # M is for mouse.
-
-  # - name: Include mouse configuration tasks.
-  #   ansible.builtin.include_tasks: configure_mouse.yml
-  #   when: natural_scrolling is true
-
-  # T is for trackpad.
-
-  # - name: Include trackpad configuration tasks.
-  #   ansible.builtin.include_tasks: configure_trackpad.yml
-  #   when: natural_scrolling is true
+- name: Include natural scrolling configuration tasks.
+  ansible.builtin.include_tasks: configure_natural_scrolling.yml
 
 # EOF

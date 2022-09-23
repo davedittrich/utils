@@ -1,0 +1,15 @@
+# Employ user .Xmodmap files for mapping keys, configuring scrolling, etc.
+# Part of `davedittrich.utils.kdmt` role.
+
+SYSMODMAP="/etc/X11/Xmodmap"
+USERMODMAP="$HOME/.Xmodmap"
+XMODMAP="/usr/bin/xmodmap"
+
+if [ -x "$XMODMAP" ]; then
+    for map in "$SYSMODMAP" "$USERMODMAP"; do
+        if [ -f "$map" ]; then
+            logger "running $XMODMAP $map"
+            $XMODMAP "$map"
+        fi
+    done
+fi

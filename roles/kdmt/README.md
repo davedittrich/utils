@@ -30,6 +30,31 @@ different preferences).
   a dropin configuration file ('/etc/modprobe.d/hid_apple.conf') and
   running `update-initramfs -u -k all`.
 
+Role task structure
+-------------------
+
+This role is a bit complicated in that (a) some configuration takes
+place at the system level, (b) some must take place at the user level,
+and (c) there must be a dropin-style connection between the two in
+specific cases.
+
+The `main.yml` task file includes setup and configuration task files for each
+high-level component. Each of these in turn either performs system-level
+tasks and/or include user-level tasks in a loop.
+
+The calling hierarchy looks like this:
+
+```
+main.yml
+├─> setup_xsessiond_dropin.yml
+├─> configure_keyboard_hid_apple.yml
+├─> configure_keyboard_capslockctrl.yml
+│   └─> user_xmodmap_capslockctrl.yml
+├─> configure_keyboard_visible_bell.yml
+│   └─> user_visible_bell.yml
+└─> configure_natural_scrolling.yml
+    └─> user_xmodmap_natural_scrolling.yml
+```
 
 References
 ----------

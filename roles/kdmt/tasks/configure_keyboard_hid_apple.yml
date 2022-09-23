@@ -5,7 +5,7 @@
 # https://superuser.com/questions/79822/how-to-swap-the-fn-use-of-function-keys-on-an-apple-keyboard-in-linux
 
 - name: Block for configuring Apple hid keyboard.
-  when:  keyboard_hid_apple is true
+  when:  keyboard_hid_apple | bool
   become: true
   block:
 
@@ -42,7 +42,7 @@
       failed_when: result is failure and 'Directory nonexistent' not in result.stderr
 
 - name: Block for unconfiguring Apple hid keyboard.
-  when:  keyboard_hid_apple is false
+  when:  not keyboard_hid_apple | bool
   become: true
   block:
 

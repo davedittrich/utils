@@ -1,0 +1,68 @@
+---
+
+# Customize user init files for visible bell.
+# This task file must be looped on 'user'.
+
+- name: Ensure applications using `readline` are quieted.
+  ansible.builtin.blockinfile:
+    path: '{{ homedir[user] }}/.inputrc'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
+    block: |
+      set prefer-visible-bell
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    create: true
+  become: true
+
+# - name: Ensure `bash` shell sessions are quieted.
+#   ansible.builtin.blockinfile:
+#     path: '{{ homedir[user] }}/.bashrc'
+#     marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
+#     block: |
+#       set bellstyle visible
+#     owner: '{{ user }}'
+#     group: '{{ user }}'
+#     mode: 0o640
+#     create: true
+#   # Hack to get idempotence test to pass for now.
+#   changed_when: false
+#   become: true
+
+- name: Ensure `csh` and `tcsh` shell sessions are quieted.
+  ansible.builtin.blockinfile:
+    path: '{{ homedir[user] }}/.cshrc'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
+    block: |
+      set visiblebell
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    create: true
+  become: true
+
+- name: Ensure `ex` family editors are quieted.
+  ansible.builtin.blockinfile:
+    path: '{{ homedir[user] }}/.exrc'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
+    block: |
+      set flash
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    create: true
+  become: true
+
+- name: Ensure `vim` style editors are quieted.
+  ansible.builtin.blockinfile:
+    path: '{{ homedir[user] }}/.vimrc'
+    marker: '" {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]'
+    block: |
+      set vb t_vb=
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: 0o640
+    create: true
+  become: true
+
+# vim: ft=ansible:

@@ -2,20 +2,10 @@
 
 # Configure left CapsLock and CTRL keys.
 
-- name: Set fact `custom_xmodmap`.
-  ansible.builtin.set_fact:
-    custom_xmodmap: '/etc/X11/Xsession.d/40custom_load_xmodmap'
-  when: custom_xmodmap is not defined
-
 - name: Set fact `custom_udev_hwdb`.
   ansible.builtin.set_fact:
     custom_udev_hwdb: '/etc/udev/hwdb.d/99-swapcapslockctrl.hwdb'
   when: custom_udev_hwdb is not defined
-
-- name: Stat `/etc/X11/Xsession.d` directory.
-  ansible.builtin.stat:
-    path: /etc/X11/Xsession.d
-  register: xsessiond
 
 - name: Determine state of `systemd-udevd`.
   ansible.builtin.shell: >
@@ -27,30 +17,9 @@
   become: true
 
 - name: Block for swapping left CapsLock and CTRL keys.
-  when: keyboard_swapcapslockctrl is true
+  when: keyboard_swapcapslockctrl | bool
   become: true
   block:
-
-    - name: Ensure `{{ custom_xmodmap }}` dropin exists.
-      ansible.builtin.copy:
-        dest: '{{ custom_xmodmap }}'
-        content: |
-          SYSMODMAP="/etc/X11/Xmodmap"
-          USERMODMAP="$HOME/.Xmodmap"
-          XMODMAP="/usr/bin/xmodmap"
-
-          if [ -x "$XMODMAP" ]; then
-              for map in "$SYSMODMAP" "$USERMODMAP"; do
-                  if [ -f "$map" ]; then
-                      logger "running $XMODMAP $map"
-                      $XMODMAP "$map"
-                  fi
-              done
-          fi
-        owner: root
-        group: root
-        mode: 0o644
-      when: xsessiond.stat.exists
 
     - name: Ensure `{{ custom_udev_hwdb }}` file exists.
       ansible.builtin.copy:
@@ -107,15 +76,9 @@
       become: true
 
 - name: Block for restoring normal CapsLock and CTRL keys.
-  when: keyboard_swapcapslockctrl is false
+  when: not keyboard_swapcapslockctrl | bool
   become: true
   block:
-
-    - name: Ensure `{{ custom_xmodmap }}` is absent.
-      ansible.builtin.file:
-        path: '{{ custom_xmodmap }}'
-        state: absent
-      register: xmodmap
 
     - name: Ensure `{{ custom_udev_hwdb }}` is absent.
       ansible.builtin.file:
@@ -135,12 +98,10 @@
       when: "udevd.stdout == 'active' and udev_hwdb.changed"
       become: true
 
-- name: Ensure user Xmodmap files are customized.
-  ansible.builtin.include_tasks: user_xmodmap.yml
+- name: Ensure user .Xmodmap files customize CapsLock / CTRL keys.
+  ansible.builtin.include_tasks: user_xmodmap_capslockctrl.yml
   vars:
     user: '{{ item }}'
   loop: '{{ accounts }}'
-  when: xsessiond.stat.exists
-
 
 # vim: ft=ansible:
