@@ -4,10 +4,13 @@ import os
 import pytest
 
 from helpers import (
-    ansible_vars,
     get_homedir,
+    load_ansible_vars,
     skip_unless_role,
 )
+
+
+ansible_vars = load_ansible_vars()
 
 
 # Use one fixture to return the list of users, and another to return the
