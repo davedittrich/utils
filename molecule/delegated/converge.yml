@@ -1,6 +1,7 @@
 ---
 - name: Converge
   hosts: all
+  gather_facts: true
   vars:
     collection_root: '{{ lookup("env", "COLLECTION_ROOT") }}'
 
@@ -25,7 +26,10 @@
     - davedittrich.utils.ip_in_issue
     - davedittrich.utils.kdmt
     - davedittrich.utils.dropins
-    - davedittrich.utils.kali_like
+    - role: davedittrich.utils.kali_like
+      when:
+        - ansible_distribution == 'Debian'
+        - ansible_distribution_major_version|int >= 11
 
   post_tasks:
     - name: Dump all variables used to converge for later use.
