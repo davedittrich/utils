@@ -5,7 +5,7 @@
   vars:
     # This should be set via the command line at runtime.
     tag: "{{ github_tag.split('/')[-1].lstrip('v') }}"
-    no_log: "{{ no_log | default(true) }}"
+    _no_log: "{{ _no_log | default(true) }}"
     cwd: "{{ lookup('env', 'PWD') }}"
 
   pre_tasks:
@@ -89,7 +89,7 @@
             ln -sf {{ artifact_name }} davedittrich-utils-latest.tar.gz
           args:
             chdir: ../
-          no_log: '{{ no_log }}'
+          no_log: '{{ _no_log }}'
 
         - name: Publish the collection. # noqa 503
           ansible.builtin.command: >
@@ -98,7 +98,7 @@
               --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
               --api-key {{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
             chdir=../
-          no_log: '{{ no_log }}'
+          no_log: '{{ _no_log }}'
           when: publish | bool
 
         - name: Ensure the `galaxy.yml` file is absent.

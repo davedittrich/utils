@@ -71,7 +71,7 @@ galaxy.yml:
 .PHONY: build
 build: check-conda
 	bumpversion --allow-dirty build
-	ansible-playbook -i 'localhost,' -e galaxy_yml_only=false build/galaxy_deploy.yml
+	ansible-playbook -i 'localhost,' -e '{"galaxy_yml_only": false, "_no_log": true}' build/galaxy_deploy.yml
 	@bash scripts/show_last_artifact.sh
 
 .PHONY: flash
