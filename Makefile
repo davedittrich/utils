@@ -140,6 +140,7 @@ scenario-exists:
 
 .PHONY: spotless
 spotless: clean clean-images
+	-rm -f davedittrich-utils-latest.tar.gz davedittrich-utils-[0-9]*[0-9].tar.gz
 
 .PHONY: test
 test: check-conda scenario-exists galaxy.yml
