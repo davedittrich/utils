@@ -36,6 +36,7 @@ help:
 	@echo "  verify - run tests on scenario '$(SCENARIO)'"
 	@echo "  version - show the current version number from 'VERSION' file"
 	@echo "  check-conda - check 'conda' and 'psec' environment settings"
+	@echo "  update-requirements - update pip packages defined in requirements.txt"
 	@echo ""
 	@echo "Variables:"
 	@echo "  ANSIBLE_GALAXY_SERVER ('$(ANSIBLE_GALAXY_SERVER)' from psec)"
@@ -208,10 +209,14 @@ collection-community-docker:
 		ansible-galaxy collection install community.docker; \
 	fi
 
+.PHONY: update-requirements
+update-requirements:
+	python3 -m pip install -U -r requirements.txt
+
 .PHONY: fix-broken-ansible
 fix-broken-ansible:
 	# .tox/lint/bin/python3 -m pip uninstall -y $(ANSIBLE_COMPONENTS)
 	python3 -m pip uninstall -y $(ANSIBLE_COMPONENTS)
-	python3 -m pip install -U -r requirements.txt
+	$(MAKE) update-requirements
 
 # EOF
