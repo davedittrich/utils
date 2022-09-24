@@ -13,6 +13,16 @@
       "justMyCode": true
     },
     {
+      "name": "molecule lint",
+      "type": "python",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "program": "${env:CONDA_PREFIX}/bin/molecule",
+      "justMyCode": false,
+      "args": ["--debug", "lint"],
+      "stopOnEntry": false
+    },
+    {
       "name": "molecule converge",
       "type": "python",
       "request": "launch",
@@ -20,6 +30,20 @@
       "program": "${env:CONDA_PREFIX}/bin/molecule",
       "justMyCode": false,
       "args": ["--debug", "converge"],
+      "env": {
+        "MOLECULE_EPHEMERAL_DIRECTORY": "${env:HOME}/.cache/molecule/utils/default",
+        "MOLECULE_INVENTORY_FILE": "${env:HOME}/.cache/molecule/utils/default/inventory/ansible_inventory.yml"
+      },
+      "stopOnEntry": false
+    },
+    {
+      "name": "molecule idempotence",
+      "type": "python",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "program": "${env:CONDA_PREFIX}/bin/molecule",
+      "justMyCode": false,
+      "args": ["--debug", "idempotence"],
       "env": {
         "MOLECULE_EPHEMERAL_DIRECTORY": "${env:HOME}/.cache/molecule/utils/default",
         "MOLECULE_INVENTORY_FILE": "${env:HOME}/.cache/molecule/utils/default/inventory/ansible_inventory.yml"
@@ -41,13 +65,31 @@
       "stopOnEntry": false
     },
     {
-      "name": "molecule lint",
+      "name": "molecule test --destroy=never",
       "type": "python",
       "request": "launch",
       "console": "integratedTerminal",
       "program": "${env:CONDA_PREFIX}/bin/molecule",
       "justMyCode": false,
-      "args": ["--debug", "lint"],
+      "args": ["--debug", "test", "--destroy=never"],
+      "env": {
+        "MOLECULE_EPHEMERAL_DIRECTORY": "${env:HOME}/.cache/molecule/utils/default",
+        "MOLECULE_INVENTORY_FILE": "${env:HOME}/.cache/molecule/utils/default/inventory/ansible_inventory.yml"
+      },
+      "stopOnEntry": false
+    },
+    {
+      "name": "molecule destroy",
+      "type": "python",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "program": "${env:CONDA_PREFIX}/bin/molecule",
+      "justMyCode": false,
+      "args": ["--debug", "destroy"],
+      "env": {
+        "MOLECULE_EPHEMERAL_DIRECTORY": "${env:HOME}/.cache/molecule/utils/default",
+        "MOLECULE_INVENTORY_FILE": "${env:HOME}/.cache/molecule/utils/default/inventory/ansible_inventory.yml"
+      },
       "stopOnEntry": false
     },
     {
@@ -68,12 +110,7 @@
         "MOLECULE_EPHEMERAL_DIRECTORY": "${env:HOME}/.cache/molecule/utils/default",
         "MOLECULE_INVENTORY_FILE": "${env:HOME}/.cache/molecule/utils/default/inventory/ansible_inventory.yml",
         "PYTHONPATH": "${workspaceFolder}/molecule/shared/tests"
-      },
-      "debugOptions": [
-        "WaitOnAbnormalExit",
-        "WaitOnNormalExit",
-        "RedirectOutput"
-      ]
+      }
     }
   ]
 }
