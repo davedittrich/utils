@@ -107,15 +107,19 @@
           when: not save_galaxy_yml | bool
 
       rescue:
-        - name: Show directory contents.
+        - name: Get directory contents.
           ansible.builtin.shell: >
-            tree
+            tree -Chup
           args:
             chdir: ../
+          register: tree
 
-        - fail:
+        - name: Debug tree output.
+          ansible.builtin.debug:
+            msg: '{{ tree.stdout }}'
+
+        - ansible.builtin.fail:
             msg: >
-              '{{ artifact_name }} not built: ' +
-              "file 'build/galaxy.yml' kept for reference"
+              '{{ artifact_name }} not built: file 'build/galaxy.yml' kept for reference"
 
 # EOF
