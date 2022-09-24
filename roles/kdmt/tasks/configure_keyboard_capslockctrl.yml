@@ -21,7 +21,7 @@
   become: true
   block:
 
-    - name: Ensure `{{ custom_udev_hwdb }}` file exists.
+    - name: 'Ensure file exists: {{ custom_udev_hwdb }}'
       ansible.builtin.copy:
         dest: '{{ custom_udev_hwdb }}'
         content: |
@@ -80,7 +80,7 @@
   become: true
   block:
 
-    - name: Ensure `{{ custom_udev_hwdb }}` is absent.
+    - name: 'Ensure file is absent: {{ custom_udev_hwdb }}'
       ansible.builtin.file:
         path: '{{ custom_xmodmap }}'
         state: absent

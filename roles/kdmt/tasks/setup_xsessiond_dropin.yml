@@ -12,7 +12,7 @@
     custom_xmodmap: '/etc/X11/Xsession.d/40custom_load_xmodmap'
   when: custom_xmodmap is not defined
 
-- name: Ensure `{{ custom_xmodmap }}` dropin exists.
+- name: 'Ensure dropin exists: {{ custom_xmodmap }}'
   ansible.builtin.copy:
     src: 'custom_load_xmodmap'
     dest: '{{ custom_xmodmap }}'

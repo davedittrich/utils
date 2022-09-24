@@ -115,7 +115,7 @@
   become: true
   when: not framebuffer.stat.exists
 
-- name: Ensure `{{ lxde_wallpapers_directory }}` exists.
+- name: 'Ensure directory exists: {{ lxde_wallpapers_directory }}'
   ansible.builtin.file:
     path: '{{ lxde_wallpapers_directory }}'
     state: directory

@@ -6,8 +6,8 @@ skip_list:
   - ANSIBLE0010
   - command-instead-of-module
   - no-handler
+  - experimental  # all rules tagged as experimental
 use_default_rules: true
-verbosity: 1
 exclude_paths:
   - __pycache__
   - build
