@@ -89,7 +89,7 @@
             ln -sf {{ artifact_name }} davedittrich-utils-latest.tar.gz
           args:
             chdir: ../
-          register: build
+          register: collection_build
 
         - name: Publish the collection. # noqa 503
           ansible.builtin.command: >
@@ -99,7 +99,7 @@
               --api-key {{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
             chdir=../
           no_log: '{{ _no_log }}'
-          register: publish
+          register: collection_publish
           when: publish | bool
 
         - name: Ensure the `galaxy.yml` file is absent.
@@ -112,17 +112,21 @@
         - name: Debug build.stderr.
           ansible.builtin.debug:
             msg: "{{ build.stderr.split('\n') }}"
-          when: build is failed
+          when:
+            - collection_build is defined
+            - collection_build is failed
 
         - name: Debug publish.stderr.
           ansible.builtin.debug:
             msg: "{{ publish.stderr.split('\n') }}"
-          when: publish is failed
+          when:
+            - collection_publish is defined
+            - collection_publish is failed
 
         - ansible.builtin.fail:
-            msg: >
-              '{{ artifact_name }} not built: file 'build/galaxy.yml' kept for reference"
-          when: build is failed
+            msg:
+              - "[-] build or publish of {{ artifact_name }} failed"
+              - "[-] file 'build/galaxy.yml' kept for reference"
 
       always:
         - name: Get directory contents.
