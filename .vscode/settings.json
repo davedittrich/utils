@@ -1,7 +1,7 @@
 {
   "python.linting.enabled": true,
   "python.linting.lintOnSave": true,
-  "python.pythonPath": "${env:CONDA_PREFIX}/bin/python3",
+  "python.defaultInterpreterPath": "${env:CONDA_PREFIX}/bin/python3",
   "python.terminal.activateEnvironment": true,
   "python.testing.autoTestDiscoverOnSaveEnabled": true,
   "python.testing.cwd": "${workspaceFolder}/molecule/shared",
