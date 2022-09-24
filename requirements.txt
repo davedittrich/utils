@@ -10,9 +10,7 @@ git+https://github.com/davedittrich/pytest-ansible@develop
 git+https://github.com/ansible-community/pytest-molecule
 ansible-core==2.13.3
 ansible>=2.10
-# Use patched ansible-compat for improved debugging.
-#ansible-compat>=2.2.0
-git+https://github.com/davedittrich/ansible-compat.git@develop
+ansible-compat>=2.2.0
 
 ansible-lint==6.7.0
 
