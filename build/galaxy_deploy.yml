@@ -112,17 +112,17 @@
         - name: Debug build.stderr.
           ansible.builtin.debug:
             msg: "{{ build.stderr.split('\n') }}"
-          when: build is failure
+          when: build is failed
 
         - name: Debug publish.stderr.
           ansible.builtin.debug:
             msg: "{{ publish.stderr.split('\n') }}"
-          when: publish is failure
+          when: publish is failed
 
         - ansible.builtin.fail:
             msg: >
               '{{ artifact_name }} not built: file 'build/galaxy.yml' kept for reference"
-          when: build is failure
+          when: build is failed
 
       always:
         - name: Get directory contents.
