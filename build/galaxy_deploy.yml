@@ -96,7 +96,7 @@
             ansible-galaxy collection publish
               "./{{ artifact_name }}"
               --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
-              --api-key ${{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
+              --api-key {{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
             chdir=../
           no_log: '{{ no_log }}'
           when: publish | bool
