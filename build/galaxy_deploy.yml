@@ -89,7 +89,6 @@
             ln -sf {{ artifact_name }} davedittrich-utils-latest.tar.gz
           args:
             chdir: ../
-          no_log: '{{ _no_log }}'
 
         - name: Publish the collection. # noqa 503
           ansible.builtin.command: >
@@ -108,6 +107,12 @@
           when: not save_galaxy_yml | bool
 
       rescue:
+        - name: Show directory contents.
+          ansible.builtin.shell: >
+            tree
+          args:
+            chdir: ../
+
         - fail:
             msg: >
               '{{ artifact_name }} not built: ' +
