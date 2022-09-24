@@ -80,7 +80,7 @@
       register: new_galaxy_yml
 
     - name: Block to build/publish collection.
-      when: publish | bool or not galaxy_yml_only | bool
+      when: "(publish | bool) or (not galaxy_yml_only | bool)"
       block:
 
         - name: Build the collection. # noqa 503
@@ -89,6 +89,7 @@
             ln -sf {{ artifact_name }} davedittrich-utils-latest.tar.gz
           args:
             chdir: ../
+          register: build
 
         - name: Publish the collection. # noqa 503
           ansible.builtin.command: >
@@ -98,6 +99,7 @@
               --api-key {{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
             chdir=../
           no_log: '{{ _no_log }}'
+          register: publish
           when: publish | bool
 
         - name: Ensure the `galaxy.yml` file is absent.
@@ -107,19 +109,31 @@
           when: not save_galaxy_yml | bool
 
       rescue:
+        - name: Debug build.stderr.
+          ansible.builtin.debug:
+            msg: "{{ build.stderr.split('\n') }}"
+          when: build is failure
+
+        - name: Debug publish.stderr.
+          ansible.builtin.debug:
+            msg: "{{ publish.stderr.split('\n') }}"
+          when: publish is failure
+
+        - ansible.builtin.fail:
+            msg: >
+              '{{ artifact_name }} not built: file 'build/galaxy.yml' kept for reference"
+          when: build is failure
+
+      always:
         - name: Get directory contents.
           ansible.builtin.shell: >
-            tree -Chup
+            tree -nhup -L 2
           args:
             chdir: ../
           register: tree
 
         - name: Debug tree output.
           ansible.builtin.debug:
-            msg: '{{ tree.stdout }}'
-
-        - ansible.builtin.fail:
-            msg: >
-              '{{ artifact_name }} not built: file 'build/galaxy.yml' kept for reference"
+            msg: "{{ tree.stdout.split('\n') }}"
 
 # EOF
