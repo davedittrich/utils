@@ -1,0 +1,79 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "molecule converge",
+      "type": "python",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "program": "${env:CONDA_PREFIX}/bin/molecule",
+      "justMyCode": false,
+      "args": ["--debug", "converge"],
+      "env": {
+        "MOLECULE_EPHEMERAL_DIRECTORY": "${env:HOME}/.cache/molecule/utils/default",
+        "MOLECULE_INVENTORY_FILE": "${env:HOME}/.cache/molecule/utils/default/inventory/ansible_inventory.yml"
+      },
+      "stopOnEntry": false
+    },
+    {
+      "name": "molecule verify",
+      "type": "python",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "program": "${env:CONDA_PREFIX}/bin/molecule",
+      "justMyCode": false,
+      "args": ["--debug", "verify"],
+      "env": {
+        "MOLECULE_EPHEMERAL_DIRECTORY": "${env:HOME}/.cache/molecule/utils/default",
+        "MOLECULE_INVENTORY_FILE": "${env:HOME}/.cache/molecule/utils/default/inventory/ansible_inventory.yml"
+      },
+      "stopOnEntry": false
+    },
+    {
+      "name": "molecule lint",
+      "type": "python",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "program": "${env:CONDA_PREFIX}/bin/molecule",
+      "justMyCode": false,
+      "args": ["--debug", "lint"],
+      "stopOnEntry": false
+    },
+    {
+      "name": "py.test",
+      "type": "python",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "module": "pytest",
+      "cwd": "${workspaceFolder}/molecule/shared",
+      "stopOnEntry": false,
+      "args": [
+        "-rav",
+        "--trace-config"
+        // "-p", "no:molecule",
+      ],
+      "justMyCode": false,
+      "env": {
+        "MOLECULE_EPHEMERAL_DIRECTORY": "${env:HOME}/.cache/molecule/utils/default",
+        "MOLECULE_INVENTORY_FILE": "${env:HOME}/.cache/molecule/utils/default/inventory/ansible_inventory.yml",
+        "PYTHONPATH": "${workspaceFolder}/molecule/shared/tests"
+      },
+      "debugOptions": [
+        "WaitOnAbnormalExit",
+        "WaitOnNormalExit",
+        "RedirectOutput"
+      ]
+    }
+  ]
+}
