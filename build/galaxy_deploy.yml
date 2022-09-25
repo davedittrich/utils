@@ -109,16 +109,16 @@
           when: not save_galaxy_yml | bool
 
       rescue:
-        - name: Debug build.stderr.
+        - name: Debug collection_build.stderr_lines.
           ansible.builtin.debug:
-            msg: "{{ build.stderr.split('\n') }}"
+            msg: "{{ collection_build.stderr_lines }}"
           when:
             - collection_build is defined
             - collection_build is failed
 
-        - name: Debug publish.stderr.
+        - name: Debug collection_publish.stderr_lines.
           ansible.builtin.debug:
-            msg: "{{ publish.stderr.split('\n') }}"
+            msg: "{{ collection_publish.stderr_lines }}"
           when:
             - collection_publish is defined
             - collection_publish is failed
@@ -138,6 +138,6 @@
 
         - name: Debug tree output.
           ansible.builtin.debug:
-            msg: "{{ tree.stdout.split('\n') }}"
+            msg: "{{ tree.stdout_lines }}"
 
 # EOF
