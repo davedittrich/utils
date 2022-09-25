@@ -47,7 +47,7 @@
 
 - name: Set fact with user accounts to be configured.
   ansible.builtin.set_fact:
-    accounts: "{{ accounts | default(['root', ansible_user]) | unique }}"
+    accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
 
 - name: Debug `accounts`.
   ansible.builtin.debug:
