@@ -45,20 +45,8 @@
     var: monitors
     verbosity: 0
 
-- name: Set fact with user accounts to be configured.
-  ansible.builtin.set_fact:
-    accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
-
-- name: Debug `accounts`.
-  ansible.builtin.debug:
-    msg: '{{ accounts }}'
-    verbosity: 2
-
-- name: Ensure user home directories are mapped.
-  ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
-  loop: '{{ accounts }}'
-  loop_control:
-    loop_var: user
+- name: Ensure `accounts` is defined.
+  ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_accounts.yml'
 
 # See https://shallowsky.com/linux/x-screen-blanking.html
 - name: Set fact with X11 settings to use.

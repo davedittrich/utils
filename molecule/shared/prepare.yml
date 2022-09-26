@@ -34,15 +34,8 @@
         mode: 0o640
       when: boot_cmdline.stat.exists is false
 
-    - name: Set fact with users whose accounts need to be configured.
-      ansible.builtin.set_fact:
-        accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
-
-    - name: Ensure user home directories are mapped.
-      include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
-      loop: '{{ accounts }}'
-      loop_control:
-        loop_var: user
+    - name: Ensure `accounts` is defined.
+      ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_accounts.yml'
 
     - name: Ensure SSH directory exists for `davedittrich.utils.dropin` role.
       ansible.builtin.file:
