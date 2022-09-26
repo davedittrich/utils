@@ -91,10 +91,10 @@
             chdir: ../
           register: collection_build
 
-        - name: Publish the collection. # noqa 503
+        - name: Publish the collection.
           ansible.builtin.command: >
-            ansible-galaxy collection publish
-              "./{{ artifact_name }}"
+            ansible-galaxy collection publish -vvv
+              {{ artifact_name }}
               --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
               --api-key {{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
             chdir=../
