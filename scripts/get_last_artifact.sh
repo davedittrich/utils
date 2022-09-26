@@ -20,10 +20,10 @@ fi
 latest_artifact=$(ls -l ${dir}/davedittrich-utils-latest.tar.gz 2>/dev/null | awk '{ print $NF; }')
 highest_version_artifact=$(ls ${dir}/davedittrich-utils-[0-9]*[0-9].tar.gz 2>/dev/null | sort -r | head -n 1)
 
-if [[ ! -z "${dir}/${latest_artifact}" ]]; then
-  echo "${dir}/${latest_artifact}"
-elif [[ ! -z "${dir}/${highest_version_artifact}" ]]; then
-  echo "${dir}/${highest_version_artifact}"
+if [[ ! -z "${latest_artifact}" ]]; then
+  echo "${latest_artifact}"
+elif [[ ! -z "${highest_version_artifact}" ]]; then
+  echo "${highest_version_artifact}"
 else
   echo "None"
 fi

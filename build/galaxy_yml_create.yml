@@ -1,0 +1,37 @@
+---
+# This playbook generates a `galaxy.yml` file from a template, inserting
+# the current version number from the contents of the file `VERSION`
+# and adding `build_ignore` items from files that are untracked by
+# Git). This still leaks file and directory names, but is less likely
+# to accidentally leak secrets or other files that you do not wish to
+# end up in an Ansible Galaxy artifact as you CANNOT DELETE ANY FILES
+# that are published there.
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    cwd: "{{ lookup('env', 'PWD') }}"
+
+  tasks:
+    - name: Set fact with version number.
+      ansible.builtin.set_fact:
+        version: '{{ lookup("file", "../VERSION") }}'
+      when: version is not defined
+
+    - name: Find files to exclude from build artifact on localhost.
+      ansible.builtin.shell: |
+        git status --porcelain --ignored | egrep '^[?!][?!] ' | awk '{ print $2; }'
+      register: git_status
+
+    - name: Set fact with list of files for `build_ignore`.
+      ansible.builtin.set_fact:
+        build_ignore_files: '{{ build_ignore_files | default([]) + [item] }}'
+      loop: '{{ git_status.stdout_lines }}'
+
+    - name: Template out the galaxy.yml file.
+      ansible.builtin.template:
+        src: templates/galaxy.yml.j2
+        dest: ../galaxy.yml
+
+# EOF

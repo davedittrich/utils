@@ -1,112 +1,63 @@
 ---
+# This playbook assumes that the `galaxy.yml` file has already been
+# prepared in the current working directory of the process running
+# this playbook, containing the current version number for the
+# artifact to build or publish that matches the contents of the
+# file `VERSION`.
+
 - hosts: localhost
   connection: local
   gather_facts: false
   vars:
-    # This should be set via the command line at runtime.
-    tag: "{{ github_tag.split('/')[-1].lstrip('v') }}"
     _no_log: "{{ _no_log | default(true) }}"
     cwd: "{{ lookup('env', 'PWD') }}"
 
   pre_tasks:
     - name: Set fact with version number.
       ansible.builtin.set_fact:
-        version: '{{ lookup("file", "../VERSION") }}'
-      when: version is not defined
+        version: '{{ lookup("file", "{{ cwd }}" + "/VERSION") }}'
 
     - name: Set fact with artifact name.
       ansible.builtin.set_fact:
         artifact_name: 'davedittrich-utils-{{ version }}.tar.gz'
-
-    - name: Set fact `galaxy_yml_only`.
-      ansible.builtin.set_fact:
-        galaxy_yml_only: false
-      when: galaxy_yml_only is not defined
-
-    - name: Set fact `save_galaxy_yml`.
-      ansible.builtin.set_fact:
-        save_galaxy_yml: true
-      when:
-        - save_galaxy_yml is not defined
 
     - name: Set fact `publish`.
       ansible.builtin.set_fact:
         publish: false
       when: publish is not defined
 
-    - name: Find files to exclude from build artifact on localhost.
-      ansible.builtin.shell: |
-        git status --porcelain --ignored | egrep '^[?!][?!] ' | awk '{ print $2; }'
-      register: git_status
-
-    - name: Set fact with list of files for `build_ignore`.
-      ansible.builtin.set_fact:
-        build_ignore_files: '{{ build_ignore_files | default([]) + [item] }}'
-      loop: '{{ git_status.stdout_lines }}'
-
     - assert:
         that:
           - lookup('env', 'ANSIBLE_GALAXY_SERVER') != ''
           - lookup('env', 'ANSIBLE_GALAXY_API_KEY') != ''
-      when: publish and not galaxy_yml_only
+      when: publish | bool
 
-    - name: Ensure the ~/.ansible directory exists.
-      ansible.builtin.file:
-        path: ~/.ansible
-        state: directory
-        mode: 0o700
-      when: not galaxy_yml_only | bool
+#   - name: Ensure the ~/.ansible directory exists.
+#     ansible.builtin.file:
+#       path: ~/.ansible
+#       state: directory
+#       mode: 0o700
+#     when: not galaxy_yml_only | bool
 
     - name: Debug build settings.
       ansible.builtin.debug:
         msg: '{{ item }}'
       loop:
         - "artifact_name={{ artifact_name }}"
-        - "galaxy_yml_only={{ galaxy_yml_only | bool }}"
         - "publish={{ publish | bool }}"
-        - "save_galaxy_yml={{ save_galaxy_yml | bool }}"
         - "version={{ version }}"
 
   tasks:
-    - name: Stat the galaxy.yml file.
-      ansible.builtin.stat:
-        path: ../galaxy.yml
-      register: galaxy_yml
-
-    - name: Template out the galaxy.yml file.
-      ansible.builtin.template:
-        src: templates/galaxy.yml.j2
-        dest: ../galaxy.yml
-      register: new_galaxy_yml
-
-    - name: Block to build/publish collection.
-      when: "(publish | bool) or (not galaxy_yml_only | bool)"
+    - name: Block to build collection.
       block:
 
-        - name: Build the collection. # noqa 503
+        - name: Build the collection.
           ansible.builtin.shell: >
             ansible-galaxy collection build --force &&
             ln -sf {{ artifact_name }} davedittrich-utils-latest.tar.gz
           args:
-            chdir: ../
+            chdir: '{{ cwd }}'
           register: collection_build
-
-        - name: Publish the collection.
-          ansible.builtin.command: >
-            ansible-galaxy collection publish -vvv
-              {{ artifact_name }}
-              --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
-              --api-key {{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
-            chdir=../
-          no_log: '{{ _no_log }}'
-          register: collection_publish
-          when: publish | bool
-
-        - name: Ensure the `galaxy.yml` file is absent.
-          ansible.builtin.file:
-            path: ../galaxy.yml
-            state: absent
-          when: not save_galaxy_yml | bool
 
       rescue:
         - name: Debug collection_build.stderr_lines.
@@ -116,6 +67,35 @@
             - collection_build is defined
             - collection_build is failed
 
+      always:
+        - name: Get directory contents.
+          ansible.builtin.shell: >
+            tree -nhup -L 2
+          args:
+            chdir: '{{ cwd }}'
+          register: tree
+
+        - name: Debug tree output.
+          ansible.builtin.debug:
+            msg: "{{ tree.stdout_lines }}"
+
+    - name: Block to publish collection.
+      when: publish | bool
+      block:
+
+        - name: Publish the collection.
+          ansible.builtin.shell: >
+            ansible-galaxy collection publish -vvv
+              {{ artifact_name }}
+              --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
+              --api-key {{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
+          args:
+            chdir: '{{ cwd }}'
+          no_log: '{{ _no_log }}'
+          register: collection_publish
+          when: publish | bool
+
+      rescue:
         - name: Debug collection_publish.stderr_lines.
           ansible.builtin.debug:
             msg: "{{ collection_publish.stderr_lines }}"
@@ -125,19 +105,6 @@
 
         - ansible.builtin.fail:
             msg:
-              - "[-] build or publish of {{ artifact_name }} failed"
-              - "[-] file 'build/galaxy.yml' kept for reference"
-
-      always:
-        - name: Get directory contents.
-          ansible.builtin.shell: >
-            tree -nhup -L 2
-          args:
-            chdir: ../
-          register: tree
-
-        - name: Debug tree output.
-          ansible.builtin.debug:
-            msg: "{{ tree.stdout_lines }}"
+              - "[-] publish of {{ artifact_name }} failed"
 
 # EOF

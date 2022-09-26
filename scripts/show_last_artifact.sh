@@ -12,7 +12,7 @@
 # This script relies on another script that is assumed to exist
 # in the same directory as this script.
 
-last_artifact="$(bash $(dirname $0)/get_last_artifact.sh)"
+last_artifact="$(bash $(dirname $0)/get_last_artifact.sh ${PWD})"
 artifact="${1:-${last_artifact}}"
 
 if [[ -z "${artifact}" ]]; then

@@ -67,13 +67,11 @@ check-conda:
 	@bash scripts/check-conda.sh
 
 galaxy.yml:
-	ansible-playbook -i 'localhost,' -e '{"galaxy_yml_only": true}' build/galaxy_deploy.yml
+	ansible-playbook -i 'localhost,' build/galaxy_yml_create.yml
 
 .PHONY: build
 build: check-conda
-	bumpversion --allow-dirty build
-	ansible-playbook -i 'localhost,' -e '{"galaxy_yml_only": false, "_no_log": true}' build/galaxy_deploy.yml
-	@bash scripts/show_last_artifact.sh
+	bash scripts/build_artifact.sh
 
 .PHONY: flash
 flash:
@@ -122,7 +120,7 @@ publish: check-conda
 	@if [[ $(shell scripts/get_last_artifact.sh) = "None"]]; then \
 		echo "[-] not artifact exists."; exit 1; \
 	fi
-	ansible-galaxy collection publish \
+	ansible-galaxy collection publish -vvv \
 		$(shell scripts/get_last_artifact.sh) \
 		--server=$(ANSIBLE_GALAXY_SERVER) \
 		--api-key=$(ANSIBLE_GALAXY_API_KEY)
