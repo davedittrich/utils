@@ -1,7 +1,7 @@
 davedittrich.utils.branding
 ===========================
 
-Version: 0.7.0-rc.69
+Version: 0.7.0-rc.77
 
 This role ensures a custom boot splash and desktop background image are
 set up.
