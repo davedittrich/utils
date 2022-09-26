@@ -1,6 +1,3 @@
-{% if geometry_columns is not defined %}{% set geometry_columns=140 %}{% endif %}
-{% if geometry_rows is not defined %}{% set geometry_rows=36 %}{% endif %}
-
 [general]
 fontname=Monospace 10
 selchars=-A-Za-z0-9,./?%&#:_
@@ -29,8 +26,8 @@ cursorblinks=false
 cursorunderline=false
 audiblebell=false
 tabpos=top
-geometry_columns={{ geometry_columns }}
-geometry_rows={{ geometry_rows }}
+geometry_columns={{ lxterminal_geometry_columns }}
+geometry_rows={{ lxterminal_geometry_rows }}
 hidescrollbar=false
 hidemenubar=false
 hideclosebutton=false

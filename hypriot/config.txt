@@ -1,8 +1,8 @@
+# See: https://raspberrypi.stackexchange.com/tags/config.txt/info
+
 dtparam=audio=on
 disable_overscan=1
-force_hdmi_hotplug=1
-hdmi_drive=2
-hdmi_group=2
-hdmi_mode=23
-framebuffer_width=1280
-framebuffer_height=720
+force_hdmi_hotplug=1  # Use HDMI mode if if no HDMI monitor is detected
+hdmi_drive=2  # 1==Normal DVI mode; 2==Normal HDMI mode
+hdmi_group=2  # 1==CEA; 2==DMT
+hdmi_mode=16  # 1024x768 60Hz
