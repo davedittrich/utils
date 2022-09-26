@@ -1,0 +1,31 @@
+---
+
+# Ensure that the variable `accounts` is defined with a list of accounts
+# on which to operate, and that a mapping of their home directory paths
+# exists for referencing files and directories relative to the home
+# directories.
+
+- when: accounts is not defined
+  block:
+
+    - name: Ensure fact for ansible_user_id is collected.
+      ansible.builtin.setup:
+        filter:
+          - 'ansible_user_id'
+
+    - name: Set fact with users whose accounts need to be configured.
+      ansible.builtin.set_fact:
+        accounts: "{{ accounts | default(['root', ansible_user_id]) | unique }}"
+
+    - name: Debug `accounts`.
+      ansible.builtin.debug:
+        msg: '{{ accounts }}'
+        verbosity: 2
+
+- name: Ensure user home directories are mapped.
+  ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
+  loop: '{{ accounts }}'
+  loop_control:
+    loop_var: user
+
+# vim: ft=ansible :
