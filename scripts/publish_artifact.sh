@@ -5,11 +5,11 @@
 
 # Make error messages a little easier to read than `ansible.builtin.assert`.
 
-if [[ -z "${ANSIBLE_GALAXY_SERVER}" ]]; then
-	echo "[-] no environment variable found: ANSIBLE_GALAXY_SERVER"
+if ! env | grep -q '^ANSIBLE_GALAXY_SERVER='; then
+	echo "[-] environment variable not found: ANSIBLE_GALAXY_SERVER"
 	exit 1
-elif [[ -z "${ANSIBLE_GALAXY_API_KEY}" ]]; then
-	echo "[-] no environment variable found: ANSIBLE_GALAXY_SERVER"
+elif ! env | grep -q '^ANSIBLE_GALAXY_API_KEY='; then
+	echo "[-] environment variable not found: ANSIBLE_GALAXY_API_KEY"
 	exit 1
 fi
 

@@ -55,5 +55,5 @@ jobs:
           make build publish
         env:
           ANSIBLE_GALAXY_SERVER: 'https://galaxy.ansible.com/'
-          ANSIBLE_GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
-          ANSIBLE_FORCE_COLOR: 1
+          ANSIBLE_GALAXY_API_KEY: '${{ secrets.GALAXY_API_KEY }}'
+          ANSIBLE_FORCE_COLOR: '1'
