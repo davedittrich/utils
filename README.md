@@ -1,6 +1,6 @@
 # davedittrich.utils Collection for Ansible
 
-Version: 0.7.0-rc.80
+Version: 0.7.0-rc.81
 
 [![CI](https://github.com/davedittrich/utils/workflows/release/badge.svg?event=push)](https://github.com/davedittrich/utils/actions)
 
