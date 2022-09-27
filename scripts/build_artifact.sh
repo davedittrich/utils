@@ -16,7 +16,9 @@ function remove_broken_link() {
     fi
 }
 
-if ! bumpversion --allow-dirty build; then
+if [[ "$GITHUB_ACTIONS" == "true" ]]; then
+    echo '[+] running in a GitHub Actions workflow'
+elif ! bumpversion --allow-dirty build; then
     echo "[-] failed to bump version number"
     exit 1
 fi
