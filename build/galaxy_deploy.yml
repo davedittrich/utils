@@ -32,13 +32,6 @@
           - lookup('env', 'ANSIBLE_GALAXY_API_KEY') != ''
       when: publish | bool
 
-#   - name: Ensure the ~/.ansible directory exists.
-#     ansible.builtin.file:
-#       path: ~/.ansible
-#       state: directory
-#       mode: 0o700
-#     when: not galaxy_yml_only | bool
-
     - name: Debug build settings.
       ansible.builtin.debug:
         msg: '{{ item }}'
@@ -107,4 +100,4 @@
             msg:
               - "[-] publish of {{ artifact_name }} failed"
 
-# EOF
+# vim: ft=ansible:
