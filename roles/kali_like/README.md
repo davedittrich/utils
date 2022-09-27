@@ -1,7 +1,7 @@
 davedittrich.utils.kali-like
 ============================
 
-Version: 0.7.0-rc.86
+Version: 0.7.0-rc.87
 
 This role ensures that certain Kali Linux features and tooling
 are available.
