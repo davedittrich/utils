@@ -59,6 +59,5 @@ jobs:
           python3 -m pip install -r requirements.txt
 
       - name: Run the Ansible Galaxy release playbook
-        run: >-
-          ansible-playbook -i 'localhost,' build/galaxy_yml_create.yml &&
-          ansible-playbook -i 'localhost,' -e '{"github_tag": "${{ github.ref }}", "publish": true}' build/galaxy_deploy.yml
+        run: |
+          make publish

@@ -117,11 +117,11 @@ login: scenario-exists
 
 .PHONY: publish
 publish: check-conda
-	@if [[ $(shell scripts/get_last_artifact.sh) = "None"]]; then \
-		echo "[-] not artifact exists."; exit 1; \
+	@if [[ "$(shell scripts/get_last_artifact.sh)" = "None" ]]; then \
+		echo "[-] no artifact found to publish"; exit 1; \
 	fi
 	ansible-galaxy collection publish -vvv \
-		$(shell scripts/get_last_artifact.sh) \
+		$(shell bash scripts/get_last_artifact.sh) \
 		--server=$(ANSIBLE_GALAXY_SERVER) \
 		--api-key=$(ANSIBLE_GALAXY_API_KEY)
 
