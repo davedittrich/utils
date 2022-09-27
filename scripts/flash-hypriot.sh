@@ -8,7 +8,7 @@
 # `/boot` directory (which is limited in space, so be sparing).
 
 FLASH=${FLASH:-$(command -v flash)}
-USAGE="$0 image cloud-config collection_artifact [files_for_boot]"
+USAGE="$0 image cloud-config collection_artifact [files_for_boot ...]"
 
 # Process command line arguments.
 IMAGE=$1; shift
