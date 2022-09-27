@@ -6,6 +6,11 @@
 # configuration are managed using 'conda', with 'python-secrets' ('psec')
 # for storing project configuration, secrets, temporary files, etc.
 
+if [[ "$GITHUB_ACTIONS" == "true" ]]; then
+    echo '[-] running in a GitHub Actions workflow'
+	exit 0
+fi
+
 conda_env=${CONDA_DEFAULT_ENV:-None}
 psec_env=$(psec environments default 2>/dev/null)
 
