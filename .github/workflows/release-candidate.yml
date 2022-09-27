@@ -60,4 +60,4 @@ jobs:
 
       - name: Run the Ansible Galaxy release playbook
         run: |
-          make build publish
+          make publish

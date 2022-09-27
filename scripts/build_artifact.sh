@@ -7,6 +7,9 @@
 # This script relies on another script that is assumed to exist
 # in the same directory as this script.
 
+# Set `DAVEDITTICH_UTILS_PUBLISH` in environment to publish after build.
+DAVEDITTRICH_UTILS_PUBLISH=${DAVEDITTRICH_UTILS_PUBLISH:-false}
+
 function remove_broken_link() {
 	if [[ -L "${artifact_link}" ]]; then
 	    if [[ "$(md5sum ${artifact_link})"  != "$(md5sum ${artifact})" ]]; then
@@ -32,19 +35,25 @@ ansible-playbook -i 'localhost,' build/galaxy_yml_create.yml
 artifact="davedittrich-utils-${VERSION}.tar.gz"
 artifact_link="davedittrich-utils-latest.tar.gz"
 
-echo "[+] building artifact: ${artifact}"
-ansible-playbook -i 'localhost,' -e '{"_no_log": true, "publish": false}' build/galaxy_deploy.yml
-if [[ $? -ne 0 ]]; then
-    echo "[-] failed to build artifact"
-	remove_broken_link
-    exit 1
-fi
-
-new_artifact=$($(dirname $0)/get_last_artifact.sh ${PWD})
-if [[ ! "${new_artifact}" =~ "${artifact}" ]]; then
-    echo "[-] expected artifact not found: ${artifact} (got '${new_artifact}')"
-	remove_broken_link
-	exit 1
+if [[ "${DAVEDITTRICH_UTILS_PUBLISH}" = "true" ]]; then
+    echo "[+] preparing to publish artifact: ${artifact}"
+    ansible-playbook -i 'localhost,' -e '{"_no_log": true, "publish": true}' build/galaxy_deploy.yml
+    if [[ $? -ne 0 ]]; then
+        echo "[-] publishing artifact failed: cleaning up"
+        remove_broken_link
+        exit 1
+    fi
+    echo "[+] successfully published artifact: ${artifact}"
+else
+    echo "[+] building artifact: ${artifact}"
+    ansible-playbook -i 'localhost,' -e '{"_no_log": true, "publish": false}' build/galaxy_deploy.yml
+    new_artifact=$($(dirname $0)/get_last_artifact.sh ${PWD})
+    if [[ ! "${new_artifact}" =~ "${artifact}" ]]; then
+        echo "[-] expected artifact not found: ${artifact} (got '${new_artifact}')"
+        remove_broken_link
+        exit 1
+    fi
+    echo "[+] successfully built artifact: ${artifact}"
 fi
 exit 0
 
