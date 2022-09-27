@@ -1,8 +1,7 @@
 ---
 
-# Playbook for setting up a development workstation.
-
-- hosts: all
+- name: Playbook for setting up a development workstation.
+  hosts: all
   gather_facts: true
   vars:
     collection_root: "{{ lookup('env', 'COLLECTION_ROOT')|default(playbook_dir|dirname) }}"
@@ -41,3 +40,5 @@
     - davedittrich.utils.ip_in_issue
     - davedittrich.utils.kdmt
     - davedittrich.utils.dropins
+
+# vim: ft=ansible:

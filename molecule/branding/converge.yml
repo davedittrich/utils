@@ -18,7 +18,7 @@
     - davedittrich.utils.branding
 
   post_tasks:
-    - name: Dump all variables used to converge for later use.
+    - name: Dump all variables used to converge for later use.  # noqa
       ansible.builtin.copy:
         content: |
           {{ vars | to_yaml }}

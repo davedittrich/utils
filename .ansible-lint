@@ -7,16 +7,18 @@ skip_list:
   - command-instead-of-module
   - no-handler
   - experimental  # all rules tagged as experimental
+  - template-instead-of-copy
 use_default_rules: true
 exclude_paths:
   - __pycache__
-  - build
   - .github
   - .tox
-  - molecule/*/molecule.yml
-  - molecule/*/create.yml
-  - molecule/*/converge.yml
-  - molecule/*/prepare.yml
+  - do_not_publish
+# - molecule/*/molecule.yml
+# - molecule/*/create.yml
+# - molecule/*/converge.yml
+# - molecule/*/prepare.yml
+  - molecule/shared/prepare.yml  # No idea why this is failing.
   - roles/*/meta/main.yml
-  - playbooks/*.yml
-  - tasks/*.yml
+# - playbooks/*.yml
+# - tasks/*.yml

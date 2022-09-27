@@ -5,7 +5,8 @@
 # exists for referencing files and directories relative to the home
 # directories.
 
-- when: accounts is not defined
+- name: Block for ensuring user accounts defined.
+  when: accounts is not defined
   block:
 
     - name: Ensure fact for ansible_user_id is collected.

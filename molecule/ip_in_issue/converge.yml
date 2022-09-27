@@ -23,7 +23,7 @@
     - davedittrich.utils.ip_in_issue
 
   post_tasks:
-    - name: Dump all variables used to converge for later use.
+    - name: Dump all variables used to converge for later use.  # noqa
       ansible.builtin.copy:
         content: |
           {{ vars | to_yaml }}

@@ -18,7 +18,8 @@
     homedir: {}
   when: homedir is not defined
 
-- name: Block
+- name: Block for defining user home directories.
+  when: user not in homedir
   block:
 
     - name: Get user home directory with `getent`.
@@ -32,12 +33,10 @@
 
     - name: Append to `homedir` dictionary.
       ansible.builtin.set_fact:
-        homedir: "{{ homedir | combine({ user: getent.stdout }) }}"
+        homedir: "{{ homedir | combine({user: getent.stdout}) }}"
 
     - name: Debug `homedir`.
       ansible.builtin.debug:
         var: homedir
 
-  when: user not in homedir
-
-# EOF
+# vim: ft=ansible:

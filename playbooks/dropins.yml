@@ -1,6 +1,7 @@
 ---
 
-- hosts: all
+- name: Apply `davedittrich.utils.dropins` role.
+  hosts: all
   gather_facts: true
   vars:
     collection_root: "{{ lookup('env', 'COLLECTION_ROOT')|default(playbook_dir|dirname) }}"
@@ -13,3 +14,5 @@
           - '.bash_aliases'
           - '.gitconfig'
           - '.ssh/config'
+
+# vim: ft=ansible:

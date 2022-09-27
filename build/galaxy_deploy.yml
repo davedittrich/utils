@@ -28,8 +28,9 @@
 
     - assert:
         that:
-          - lookup('env', 'ANSIBLE_GALAXY_SERVER') != ''
-          - lookup('env', 'ANSIBLE_GALAXY_API_KEY') != ''
+          - "{{ lookup('env', 'ANSIBLE_GALAXY_SERVER') != '' }}"
+          - "{{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') != '' }}"
+      no_log: '{{ _no_log }}'
       when: publish | bool
 
     - name: Debug build settings.

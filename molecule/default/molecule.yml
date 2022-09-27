@@ -24,7 +24,7 @@ lint: |
   make dependencies
   yamllint molecule/ playbooks/ plugins/ roles/ tasks/
   flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
-  ansible-lint -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
+  ansible-lint -c .ansible-lint -vv molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 platforms:
   - name: debian_bullseye
     image: debian:bullseye

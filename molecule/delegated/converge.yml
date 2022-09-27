@@ -32,7 +32,7 @@
         - ansible_distribution_major_version|int >= 11
 
   post_tasks:
-    - name: Dump all variables used to converge for later use.
+    - name: Dump all variables used to converge for later use.  # noqa
       ansible.builtin.copy:
         content: |
           {{ vars | to_yaml }}

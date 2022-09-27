@@ -1,7 +1,7 @@
 ---
 # Ensure temporary resources are cleaned up.
 
-- name: Destroy
+- name: Destroy instance.
   hosts: all
   gather_facts: false
   tasks:

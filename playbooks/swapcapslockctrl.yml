@@ -1,8 +1,7 @@
 ---
 
-# Playbook to just swap CapsLock and Left CTRL keys.
-
-- hosts: "{{ host | default('localhost') }}"
+- name: Playbook to swap CapsLock and Left CTRL keys.
+  hosts: "{{ host | default('localhost') }}"
   gather_facts: true
   vars:
     collection_root: "{{ lookup('env', 'COLLECTION_ROOT')|default(playbook_dir|dirname) }}"
@@ -10,3 +9,5 @@
 
   roles:
     - davedittrich.utils.kdmt
+
+# vim: ft=ansible:

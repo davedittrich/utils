@@ -41,7 +41,7 @@
   become: true
   when: source_aliases.rc != 0
 
-- name: 'Stat `{{ pipx_bin_path }}`.'
+- name: "Stat directory path: {{ pipx_bin_path }}"
   ansible.builtin.stat:
     path: '{{ pipx_bin_path }}'
   become: true
@@ -66,7 +66,7 @@
       become: true
       changed_when: false
 
-    - name: Ensure `python3-venv` is up-to-date.
+    - name: Ensure `python3-venv` is up-to-date.  # noqa: package-latest
       ansible.builtin.apt:
         name: python3-venv
         update_cache: true
@@ -102,6 +102,7 @@
         python3 -m pip install pipx --user
       args:
         executable: /bin/bash
+      changed_when: false
       become: true
       become_user: '{{ user }}'
 

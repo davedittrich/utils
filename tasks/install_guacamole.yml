@@ -34,7 +34,7 @@
     state: present
   become: true
 
-- name: Ensure directory '{{ tmpdir }}' exists.
+- name: "Ensure directory exists: {{ tmpdir }}"
   ansible.builtin.file:
     dest: '{{ tmpdir }}'
     state: directory
@@ -43,7 +43,7 @@
     mode: 0o770
   become: true
 
-- name: Clone Guacamole repo.
+- name: Clone Guacamole repo.  # noqa: latest[git]
   ansible.builtin.git:
     clone: true
     repo: https://github.com/MysticRyuujin/guac-install.git
@@ -51,7 +51,8 @@
   changed_when: false
   become: true
 
-- block:
+- name: Block for installing Guacamole.
+  block:
     - name: Install Guacamole from source.
       ansible.builtin.shell: >-
         /bin/bash guac-install.sh
@@ -74,7 +75,7 @@
         guacamole_build_log: '{{ guacamole_install.stdout_lines[-1] }}'
 
     - name: Expose Guacamole build log file contents.
-      shell: cat {{ guacamole_build_log }}
+      ansible.builtin.shell: cat {{ guacamole_build_log }}
       args:
         executable: /bin/bash
       changed_when: false
@@ -94,15 +95,13 @@
   become: true
 
 - name: Ensure user home directories are mapped.
-  include_tasks:
-    file: ../../../tasks/get_homedir.yml
+  ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
   loop: "{{ accounts }}"
   loop_control:
     loop_var: user
 
 - name: Ensure TigerVNC is enabled for users.
-  include_tasks:
-    file: setup-vnc.yml
+  ansible.builtin.include_tasks: 'setup-vnc.yml'
   loop: "{{ accounts }}"
   loop_control:
     loop_var: user
