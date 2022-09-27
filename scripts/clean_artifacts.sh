@@ -23,3 +23,5 @@ for artifact in $(ls davedittrich-utils-[0-9]*[0-9].tar.gz 2>/dev/null | sort -r
 done
 
 exit 0
+
+# vim: set ts=4 sw=4 tw=0 et :
