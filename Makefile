@@ -120,10 +120,8 @@ publish: check-conda
 	@if [[ "$(shell scripts/get_last_artifact.sh)" = "None" ]]; then \
 		echo "[-] no artifact found to publish"; exit 1; \
 	fi
-	ansible-galaxy collection publish -vvv \
-		$(shell bash scripts/get_last_artifact.sh) \
-		--server=$(ANSIBLE_GALAXY_SERVER) \
-		--api-key=$(ANSIBLE_GALAXY_API_KEY)
+	bash scripts/build_artifact.sh
+	bash scripts/publish_artifact.sh "$(shell scripts/get_last_artifact.sh)"
 
 .PHONY: reset
 reset:
