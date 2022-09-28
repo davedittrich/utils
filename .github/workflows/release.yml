@@ -15,21 +15,29 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+
       - name: Set up Python 3.9
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
+          check-latest: true
+
+      - run: python --version
+
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
+
       - name: Move project to Ansible-required location
         run: |
           mkdir -p ~/.ansible/collections/ansible_collections/davedittrich/utils
           cp -r ./ ~/.ansible/collections/ansible_collections/davedittrich/utils
+
       - name: Molecule test
         run: |
           molecule test
+
   release:
     runs-on: ubuntu-latest
     needs: molecule
