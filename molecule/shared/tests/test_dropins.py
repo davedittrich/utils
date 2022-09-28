@@ -69,7 +69,7 @@ def test_dropin_directories(host, fixture_users, fixture_dropin_files):
     user = fixture_users
     homedir = Path(get_homedir(host=host, user=user))
     dropin_dir = str(homedir / f'{fixture_dropin_files}.d')
-    d = host.file(dropin_dir.path)
+    d = host.file(str(dropin_dir))
     assert d.exists
     assert d.is_directory
     assert len(d.listdir()) > 0

@@ -91,14 +91,14 @@ def test_user_wallpaper_setting(host, user):
     monitors = int(ansible_vars.get('monitors', 0))
     if monitors == 0:
         pytest.xfail('no monitors')
-    homedir = get_homedir(host=host, user=user)
-    lxde_config_dir = Path(homedir) / '.config' / 'pcmanfm' / 'LXDE'
+    homedir = Path(get_homedir(host=host, user=user))
+    lxde_config_dir = homedir.joinpath('.config', 'pcmanfm', 'LXDE')
     d = host.file(str(lxde_config_dir))
     assert d.exists
     assert d.is_directory
     assert d.user == user
     for monitor in range(monitors+1):
-        f = host.file(lxde_config_dir / f'desktop-items-{monitor}.conf')
+        f = host.file(str(lxde_config_dir / f'desktop-items-{monitor}.conf'))
         assert f.exists
         assert f.user == user
         assert r'custom-splash.jpg' in f.content_string
@@ -108,7 +108,7 @@ def test_user_wallpaper_setting(host, user):
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_LXDE_autostart_xset(host, user):
     homedir = get_homedir(host=host, user=user)
-    lxde_config_dir = Path(homedir) / '.config' / 'pcmanfm' / 'LXDE'
+    lxde_config_dir = Path(homedir) / '.config' / 'lxsession' / 'LXDE'
     f = host.file(str(lxde_config_dir / 'autostart'))
     assert f.exists
     assert f.user == user
@@ -146,9 +146,9 @@ def fixture_config_files(request):
 @skip_unless_role('davedittrich.utils.branding')
 def test_config_files(host, fixture_users, fixture_config_files):
     user = fixture_users
-    config_file = fixture_config_files
+    config_file = Path(fixture_config_files)
     homedir = Path(get_homedir(host=host, user=user))
-    f = host.file(str(homedir.joinpath('.config', config_file)))
+    f = host.file(str(homedir.joinpath('.config/', *config_file.parts)))
     assert f.exists
     assert f.user == user
 
