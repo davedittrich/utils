@@ -4,7 +4,7 @@
 
 - name: Set fact with user's `.vnc` directory.
   ansible.builtin.set_fact:
-    user_vnc_directory: '{{ homedir[user] ~ "/.vnc" }}'
+    user_vnc_directory: "{{ homedir[user] + '/.vnc' }}"
 
 - name: Ensure user's `~/.vnc` directory exists.
   ansible.builtin.file:
