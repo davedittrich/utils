@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os
 import pytest
+
+from pathlib import Path
+
 
 from helpers import (
     get_homedir,
@@ -44,8 +46,8 @@ def test_etc_profile_d_dotlocal(host):
 @skip_unless_role('davedittrich.utils.dropins')
 def test_bashrc_sources_aliases(host, fixture_users):
     user = fixture_users
-    homedir = get_homedir(host=host, user=user)
-    f = host.file(os.path.join(homedir, '.bashrc'))
+    homedir = Path(get_homedir(host=host, user=user))
+    f = host.file(str(homedir / '.bashrc'))
     assert f.exists
     assert f.is_file
     assert f.user == user
@@ -55,9 +57,8 @@ def test_bashrc_sources_aliases(host, fixture_users):
 @skip_unless_role('davedittrich.utils.dropins')
 def test_dropin_files(host, fixture_users, fixture_dropin_files):
     user = fixture_users
-    homedir = get_homedir(host=host, user=user)
-    dropin_file = os.path.join(homedir, fixture_dropin_files)
-    f = host.file(dropin_file)
+    homedir = Path(get_homedir(host=host, user=user))
+    f = host.file(str(homedir / fixture_dropin_files))
     assert f.exists
     assert f.is_file
     assert f.user == user
@@ -66,9 +67,9 @@ def test_dropin_files(host, fixture_users, fixture_dropin_files):
 @skip_unless_role('davedittrich.utils.dropins')
 def test_dropin_directories(host, fixture_users, fixture_dropin_files):
     user = fixture_users
-    homedir = get_homedir(host=host, user=user)
-    dropin_file = os.path.join(homedir, fixture_dropin_files)
-    d = host.file(f'{dropin_file}.d')
+    homedir = Path(get_homedir(host=host, user=user))
+    dropin_dir = str(homedir / f'{fixture_dropin_files}.d')
+    d = host.file(dropin_dir.path)
     assert d.exists
     assert d.is_directory
     assert len(d.listdir()) > 0
@@ -78,12 +79,8 @@ def test_dropin_directories(host, fixture_users, fixture_dropin_files):
 @skip_unless_role('davedittrich.utils.dropins')
 def test_pipx(host, fixture_users, fixture_programs):
     user = fixture_users
-    f = host.file(
-       os.path.join(
-           get_homedir(host=host, user=user),
-           ".local", "bin", fixture_programs
-       )
-    )
+    homedir = Path(get_homedir(host=host, user=user))
+    f = host.file(str(homedir.joinpath(".local", "bin", fixture_programs)))
     assert f.exists
 
 

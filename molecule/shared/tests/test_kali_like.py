@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import os
 import pytest
 import stat
+
+from pathlib import Path
+
 
 from helpers import (
     get_homedir,
@@ -65,8 +67,8 @@ def test_kali_apt_list(host):
 def test_script_files(host, fixture_users, fixture_helper_script_files):
     user = fixture_users
     script_file = fixture_helper_script_files
-    homedir = get_homedir(host=host, user=user)
-    f = host.file(os.path.join(homedir, '.local', 'bin', script_file))
+    homedir = Path(get_homedir(host=host, user=user))
+    f = host.file(str(homedir.joinpath('.local', 'bin', script_file)))
     assert f.exists
     assert f.user == user
     assert (f.mode | stat.S_IRWXU) == 0o755

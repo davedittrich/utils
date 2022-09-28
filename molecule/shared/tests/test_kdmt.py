@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os
 import pytest
+
+from pathlib import Path
+
 
 from helpers import (
     get_homedir,
@@ -11,6 +13,7 @@ from helpers import (
 
 
 ansible_vars = load_ansible_vars()
+hid_apple_parameters = '/sys/module/hid_apple/paramaters'
 
 
 # System tests.
@@ -61,16 +64,20 @@ def test_hid_apple_conf(host):
     assert f.user == 'root'
     fnmode = ansible_vars.get('keyboard_hid_apple_fnmode')
     iso_layout = ansible_vars.get('keyboard_hid_apple_iso_layout')
-    assert f'hid_apple fnmode={fnmode} iso_layout={iso_layout}' in f.content_string  # noqa
+    assert (
+        f'hid_apple fnmode={fnmode}' in f.content_string
+        and f'iso_layout={iso_layout}' in f.content_string
+    )
 
 
 @skip_unless_role('davedittrich.utils.kdmt')
 def test_hid_apple_fnmode(host):
-    f = host.file('/sys/module/hid_apple/parameters/fnmode')
+    f = host.file(hid_apple_parameters)
     try:
         assert f.exists
     except AssertionError:
-        pytest.xfail('no /sys/hid_apple/parameters directory')
+        pytest.xfail(f'no {hid_apple_parameters} directory')
+    f = host.file(str(Path(hid_apple_parameters) / 'fnmode'))
     assert f.user == 'root'
     fnmode = ansible_vars.get('keyboard_hid_apple_fnmode')
     assert f.content_string == f'{fnmode}\n'
@@ -78,11 +85,13 @@ def test_hid_apple_fnmode(host):
 
 @skip_unless_role('davedittrich.utils.kdmt')
 def test_hid_apple_iso_layout(host):
-    f = host.file('/sys/module/hid_apple/parameters/iso_layout')
+    f = host.file(hid_apple_parameters)
     try:
         assert f.exists
     except AssertionError:
-        pytest.xfail('no /sys/hid_apple/parameters directory')
+        pytest.xfail(f'no {hid_apple_parameters} directory')
+    f = host.file(str(Path(hid_apple_parameters) / 'iso_layout'))
+    assert f.exists
     assert f.user == 'root'
     iso_layout = ansible_vars.get('keyboard_hid_apple_iso_layout')
     assert f'{iso_layout}\n' == f.content_string
@@ -94,12 +103,8 @@ def test_hid_apple_iso_layout(host):
 @skip_unless_role('davedittrich.utils.kdmt')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_inputrc(host, user):
-    f = host.file(
-        os.path.join(
-            get_homedir(host=host, user=user),
-            '.inputrc'
-        )
-    )
+    homedir = get_homedir(host=host, user=user)
+    f = host.file(str(Path(homedir) / '.inputrc'))
     assert f.exists
     assert f.content_string.find(r'set prefer-visible-bell') > -1
 
@@ -107,12 +112,8 @@ def test_user_inputrc(host, user):
 # @skip_unless_role('davedittrich.utils.kdmt')
 # @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 # def test_user_bashrc(host, user):
-#     f = host.file(
-#         os.path.join(
-#             get_homedir(host=host, user=user),
-#             '.bashrc'
-#         )
-#     )
+#     homedir = get_homedir(host=host, user=user)
+#     f = host.file(str(Path(homedir) / '.bashrc'))
 #     assert f.exists
 #     assert f.user == user
 #     assert f.content_string.find(r'set bellstyle visible') > -1
@@ -121,12 +122,8 @@ def test_user_inputrc(host, user):
 @skip_unless_role('davedittrich.utils.kdmt')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_cshrc(host, user):
-    f = host.file(
-        os.path.join(
-            get_homedir(host=host, user=user),
-            '.cshrc'
-        )
-    )
+    homedir = get_homedir(host=host, user=user)
+    f = host.file(str(Path(homedir) / '.cshrc'))
     assert f.exists
     assert f.user == user
     assert f.content_string.find(r'set visiblebell') > -1
@@ -135,12 +132,8 @@ def test_user_cshrc(host, user):
 @skip_unless_role('davedittrich.utils.kdmt')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_exrc(host, user):
-    f = host.file(
-        os.path.join(
-            get_homedir(host=host, user=user),
-            '.exrc'
-        )
-    )
+    homedir = get_homedir(host=host, user=user)
+    f = host.file(str(Path(homedir) / '.exrc'))
     assert f.exists
     assert f.user == user
     assert r'set flash' in f.content_string
@@ -149,12 +142,8 @@ def test_user_exrc(host, user):
 @skip_unless_role('davedittrich.utils.kdmt')
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_vimrc(host, user):
-    f = host.file(
-        os.path.join(
-            get_homedir(host=host, user=user),
-            '.vimrc'
-        )
-    )
+    homedir = get_homedir(host=host, user=user)
+    f = host.file(str(Path(homedir) / '.vimrc'))
     assert f.exists
     assert f.user == user
     assert r'set vb t_vb=' in f.content_string
@@ -164,7 +153,7 @@ def test_user_vimrc(host, user):
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_xmodmap(host, user):
     homedir = get_homedir(host=host, user=user)
-    f = host.file(os.path.join(homedir, '.Xmodmap'))
+    f = host.file(str(Path(homedir) / '.Xmodmap'))
     assert f.exists
     assert f.user == user
     assert r'! Swap Caps_Lock and Control_L' in f.content_string

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os
 import pytest
+
+from pathlib import Path
+
 
 from helpers import (
     get_homedir,
@@ -46,8 +48,8 @@ def test_splashscreen_service(host):
 @skip_unless_role('davedittrich.utils.branding')
 def test_wallpaper_image(host):
     assert 'lxde_wallpapers_directory' in ansible_vars
-    wallpapers_dir = ansible_vars['lxde_wallpapers_directory']
-    f = host.file(os.path.join(wallpapers_dir, 'custom-splash.jpg'))
+    wallpapers_dir = Path(ansible_vars['lxde_wallpapers_directory'])
+    f = host.file(str(wallpapers_dir / 'custom-splash.jpg'))
     assert f.exists
     assert f.user == 'root'
 
@@ -63,8 +65,8 @@ def test_x11_session_manager_is_lxde(host):
 @skip_unless_role('davedittrich.utils.branding')
 def test_lightdm_login_background(host):
     assert 'lxde_wallpapers_directory' in ansible_vars
-    wallpapers_dir = ansible_vars['lxde_wallpapers_directory']
-    login_background = os.path.join(wallpapers_dir, 'custom-splash.jpg')
+    wallpapers_dir = Path(ansible_vars['lxde_wallpapers_directory'])
+    login_background = str(wallpapers_dir / 'custom-splash.jpg')
     f = host.file('/etc/lightdm/lightdm-gtk-greeter.conf')
     assert f.exists
     assert f.user == 'root'
@@ -90,17 +92,13 @@ def test_user_wallpaper_setting(host, user):
     if monitors == 0:
         pytest.xfail('no monitors')
     homedir = get_homedir(host=host, user=user)
-    d = host.file(os.path.join(homedir, '.config', 'pcmanfm', 'LXDE'))
+    lxde_config_dir = Path(homedir) / '.config' / 'pcmanfm' / 'LXDE'
+    d = host.file(str(lxde_config_dir))
     assert d.exists
     assert d.is_directory
     assert d.user == user
     for monitor in range(monitors+1):
-        f = host.file(
-            os.path.join(
-                homedir,
-                '.config', 'pcmanfm', 'LXDE', f'desktop-items-{monitor}.conf'
-            )
-        )
+        f = host.file(lxde_config_dir / f'desktop-items-{monitor}.conf')
         assert f.exists
         assert f.user == user
         assert r'custom-splash.jpg' in f.content_string
@@ -110,11 +108,8 @@ def test_user_wallpaper_setting(host, user):
 @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 def test_user_LXDE_autostart_xset(host, user):
     homedir = get_homedir(host=host, user=user)
-    f = host.file(
-        os.path.join(
-            homedir, '.config', 'lxsession', 'LXDE', 'autostart'
-        )
-    )
+    lxde_config_dir = Path(homedir) / '.config' / 'pcmanfm' / 'LXDE'
+    f = host.file(str(lxde_config_dir / 'autostart'))
     assert f.exists
     assert f.user == user
     assert r'lxpanel --profile LXDE' in f.content_string
@@ -123,9 +118,9 @@ def test_user_LXDE_autostart_xset(host, user):
 # @skip_unless_role('davedittrich.utils.branding')
 # @pytest.mark.parametrize('user', ansible_vars.get('accounts', []))
 # def test_user_LXDE_desktop_conf(host, user):
-#     homedir = get_homedir(host=host, user=user)
+#     homedir = Path(get_homedir(host=host, user=user))
 #     f = host.file(
-#         os.path.join(homedir, '.config/lxsession/LXDE/desktop.conf')
+#         str(homedir.joinpath('.config', 'lxsession', 'LXDE', 'desktop.conf'))
 #     )
 #     assert f.exists
 #     assert f.user == user
@@ -152,9 +147,8 @@ def fixture_config_files(request):
 def test_config_files(host, fixture_users, fixture_config_files):
     user = fixture_users
     config_file = fixture_config_files
-    homedir = get_homedir(host=host, user=user)
-    config_path = os.path.join(homedir, '.config', config_file)
-    f = host.file(config_path)
+    homedir = Path(get_homedir(host=host, user=user))
+    f = host.file(str(homedir.joinpath('.config', config_file)))
     assert f.exists
     assert f.user == user
 
