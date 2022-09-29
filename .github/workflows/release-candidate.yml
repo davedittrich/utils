@@ -45,12 +45,12 @@ jobs:
 
   release-candidate:
     needs: molecule
-      - uses: davedittrich/utils/.github/workflows/publish.yml@develop
-        with:
-          runs-on: ubuntu-latest
-          python-version: ${{PYTHON_VERSION}}
-          ansible_galaxy_server: https://galaxy-dev.ansible.com/
-        secrets:
-          ansible_galaxy_api_key: ${{secrets.GALAXYDEV_API_KEY}}
+    - uses: davedittrich/utils/.github/workflows/publish.yml@develop
+      with:
+        runs-on: ubuntu-latest
+        python-version: ${{PYTHON_VERSION}}
+        ansible_galaxy_server: https://galaxy-dev.ansible.com/
+      secrets:
+        ansible_galaxy_api_key: ${{secrets.GALAXYDEV_API_KEY}}
 
 # EOF
