@@ -16,15 +16,14 @@ jobs:
     env:
       PY_COLORS: 1
       TOX_PARALLEL_NO_SPINNER: 1
-      PYTHON_VERSION: 3.9
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up Python ${{PYTHON_VERSION}}
+      - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: ${{PYTHON_VERSION}}
+          python-version: 3.9
           check-latest: true
 
       - run: python --version
@@ -49,7 +48,7 @@ jobs:
     uses: davedittrich/utils/.github/workflows/publish.yml@develop
     with:
       runs-on: ubuntu-latest
-      python-version: ${{PYTHON_VERSION}}
+      python-version: 3.9
       ansible_galaxy_server: https://galaxy-dev.ansible.com/
     secrets:
       ansible_galaxy_api_key: ${{secrets.GALAXYDEV_API_KEY}}
