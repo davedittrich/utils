@@ -15,7 +15,6 @@ on:
         default: '3.9'
     secrets:
       ansible_galaxy_api_key:
-        type: string
         required: true
 
 jobs:
