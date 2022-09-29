@@ -26,13 +26,6 @@
         publish: false
       when: publish is not defined
 
-    - assert:
-        that:
-          - "{{ lookup('env', 'ANSIBLE_GALAXY_SERVER') != '' }}"
-          - "{{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') != '' }}"
-      no_log: '{{ _no_log }}'
-      when: publish | bool
-
     - name: Debug build settings.
       ansible.builtin.debug:
         msg: '{{ item }}'
@@ -40,6 +33,36 @@
         - "artifact_name={{ artifact_name }}"
         - "publish={{ publish | bool }}"
         - "version={{ version }}"
+
+    - name: Ensure API access credentials for publication.
+      when: publish | bool
+      block:
+
+        - name: Set fact `ansible_galaxy_server` from environment.
+          ansible.builtin.set_fact:
+            ansible_galaxy_server: "{{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}"
+
+        - name: Set fact `ansible_galaxy_api_key` from environment.
+          ansible.builtin.set_fact:
+            ansible_galaxy_api_key: "{{ lookup('env', 'ANSIBLE_GALAXY_API_KEY')  }}"
+          no_log: '{{ _no_log }}'
+
+        - name: Assert ANSIBLE_GALAXY_SERVER is not null.
+          ansible.builtin.assert:
+            that:
+              - ansible_galaxy_server | length > 0
+
+        - name: Assert ANSIBLE_GALAXY_API_KEY is not null.
+          ansible.builtin.assert:
+            that:
+              - ansible_galaxy_api_key | length > 0
+
+      rescue:
+        - name: Explain failure.
+          ansible.builtin.fail:
+            msg:
+              - "Both ANSIBLE_GALAXY_SERVER and ANSIBLE_GALAXY_API_KEY must"
+              - "be set in the process environment to publish artifacts."
 
   tasks:
     - name: Block to build collection.
@@ -61,10 +84,9 @@
             - collection_build is defined
             - collection_build is failed
 
-      always:
         - name: Get directory contents.
           ansible.builtin.shell: >
-            tree -nhup -L 2
+            tree -alFhup -L 2
           args:
             chdir: '{{ cwd }}'
           register: tree
@@ -79,10 +101,10 @@
 
         - name: Publish the collection.
           ansible.builtin.shell: >
-            ansible-galaxy collection publish -vvv
-              {{ artifact_name }}
-              --server {{ lookup('env', 'ANSIBLE_GALAXY_SERVER')  }}
-              --api-key {{ lookup('env', 'ANSIBLE_GALAXY_API_KEY') }}
+            ansible-galaxy collection publish -vvv \
+              --server '{{ ansible_galaxy_server }}' \
+              --api-key '{{ ansible_galaxy_api_key }}' \
+              '{{ artifact_name }}'
           args:
             chdir: '{{ cwd }}'
           no_log: '{{ _no_log }}'
