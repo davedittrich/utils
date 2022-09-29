@@ -103,7 +103,7 @@ the following syntax to install version `0.1.0`:
 ansible-galaxy collection install davedittrich.utils:==0.1.0
 ```
 
-See [Ansible Using collections](https://docs.ansible.com/ansible/devel/user_guide/collections_using.html)
+See [Using Ansible collections](https://docs.ansible.com/ansible/devel/collections_guide/index.html#using-ansible-collections)
 for more details.
 
 ### Tasks performed by role
