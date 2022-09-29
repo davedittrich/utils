@@ -1,5 +1,8 @@
 name: "release candidate"
 on:
+  push:
+    branches:
+      - develop
   create:
     tags:
       - v*
