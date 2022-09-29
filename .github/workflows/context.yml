@@ -1,0 +1,22 @@
+name: Reusable context dump
+on:
+  workflow_call:
+
+jobs:
+  context:
+    steps:
+    - name: Dump select GitHub event context
+      env:
+        GITHUB_EVENT: ${{ toJson(github.event) || 'None' }}
+        RUNNER: ${{ toJson(runner) }}
+      run: |
+        echo "env=${{ toJson(env) }}"
+        echo "github.event=$GITHUB_EVENT"
+        echo "github.ref=${{ github.ref }}"
+        echo "github.ref_name=${{ github.ref_name }}"
+        echo "github.ref_protected=${{ github.ref_protected }}"
+        echo "github.ref_type=${{ github.ref_type }}"
+        echo "runner=$RUNNER"
+        echo "See: https://docs.github.com/en/actions/learn-github-actions/contexts#example-usage-of-the-github-context"
+
+# EOF

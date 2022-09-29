@@ -1,4 +1,4 @@
-name: "release candidate"
+name: "release"
 on:
   push:
     branches:
@@ -17,6 +17,9 @@ jobs:
       PY_COLORS: 1
       TOX_PARALLEL_NO_SPINNER: 1
     steps:
+      - name: Dump context
+        uses: davedittrich/utils/.github/workflows/context.yml@develop
+
       - name: Checkout repo
         uses: actions/checkout@v3
 
@@ -43,7 +46,7 @@ jobs:
           molecule test
 
   release_candidate:
-    name: Call publish
+    if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref_name, '-')
     needs: molecule
     uses: davedittrich/utils/.github/workflows/publish.yml@develop
     with:
@@ -52,5 +55,16 @@ jobs:
       ansible_galaxy_server: https://galaxy-dev.ansible.com/
     secrets:
       ansible_galaxy_api_key: ${{secrets.GALAXYDEV_API_KEY}}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v') && ! contains(github.ref_name, '-')
+    needs: molecule
+    uses: davedittrich/utils/.github/workflows/publish.yml@develop
+    with:
+      runs-on: ubuntu-latest
+      python-version: 3.9
+      ansible_galaxy_server: https://galaxy.ansible.com/
+    secrets:
+      ansible_galaxy_api_key: ${{secrets.GALAXY_API_KEY}}
 
 # EOF
