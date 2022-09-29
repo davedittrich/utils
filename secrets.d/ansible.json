@@ -4,6 +4,7 @@
     "Type": "string",
     "Prompt": "Ansible Galaxy server URL",
     "Options": "https://galaxy-dev.ansible.com,https://galaxy.ansible.com,*",
+    "Help": "https://docs.ansible.com/ansible/devel/collections_guide/index.html#using-ansible-collections",
     "Export": "ANSIBLE_GALAXY_SERVER"
   },
   {
@@ -11,6 +12,7 @@
     "Type": "string",
     "Prompt": "Ansible Galaxy API key",
     "Options": "*",
+    "Help": "https://docs.ansible.com/ansible/devel/collections_guide/index.html#using-ansible-collections",
     "Export": "ANSIBLE_GALAXY_API_KEY"
   }
 ]
