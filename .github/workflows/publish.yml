@@ -7,6 +7,11 @@ on:
     secrets:
       ANSIBLE_GALAXY_API_KEY:
         required: true
+
+jobs:
+  publish_job:
+    name: Publish collection artifact.
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -29,3 +34,4 @@ on:
           ANSIBLE_GALAXY_API_KEY: ${{ secrets.ANSIBLE_GALAXY_API_KEY }}
           ANSIBLE_FORCE_COLOR: 1
 
+# EOF
