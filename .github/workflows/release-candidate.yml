@@ -8,6 +8,9 @@ on:
     tags:
       - v*
 jobs:
+  context:
+    uses: davedittrich/utils/.github/workflows/context.yml@develop
+
   #
   # Note: NOT DRY. This job matches one in release.yml.
   #
@@ -17,9 +20,6 @@ jobs:
       PY_COLORS: 1
       TOX_PARALLEL_NO_SPINNER: 1
     steps:
-      - name: Dump context
-        uses: davedittrich/utils/.github/workflows/context.yml@develop
-
       - name: Checkout repo
         uses: actions/checkout@v3
 
