@@ -1,25 +1,37 @@
 on:
   workflow_call:
     inputs:
-      ANSIBLE_GALAXY_SERVER:
+      ansible_galaxy_server:
         required: true
         type: string
+        default: 'https://ansible-dev.galaxy.com'
+      runs-on:
+        description: Platform to execute on.
+        type: string
+        default: ubuntu-latest
+      python-version:
+        description: Python version to use.
+        type: string
+        default: '3.9'
     secrets:
-      ANSIBLE_GALAXY_API_KEY:
+      ansible_galaxy_api_key:
+        type: string
         required: true
 
 jobs:
-  publish_job:
+  publish:
     name: Publish collection artifact.
-    runs-on: ubuntu-latest
+
+    runs-on: ${{inputs.runs-on}}
+
     steps:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
+      - name: Set up Python ${{inputs.python-version}}
         uses: actions/setup-python@v1
         with:
-          python-version: 3.9
+          python-version: ${{inputs.python-version}}
 
       - name: Install dependencies
         run: |
@@ -27,11 +39,10 @@ jobs:
           python3 -m pip install -r requirements.txt
 
       - name: Run the Ansible Galaxy release playbook
-        run: |
-          make publish
         env:
-          ANSIBLE_GALAXY_SERVER: ${{ inputs.ANSIBLE_GALAXY_SERVER }}
-          ANSIBLE_GALAXY_API_KEY: ${{ secrets.ANSIBLE_GALAXY_API_KEY }}
+          ANSIBLE_GALAXY_SERVER: ${{inputs.ansible_galaxy_server}}
+          ANSIBLE_GALAXY_API_KEY: ${{secrets.ansible_galaxy_api_key}}
           ANSIBLE_FORCE_COLOR: 1
+        run: make publish
 
 # EOF
