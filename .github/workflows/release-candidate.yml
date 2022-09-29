@@ -4,9 +4,9 @@ on:
     branches:
       - develop
 #     - main
-# create:
-#   tags:
-#     - v*
+  create:
+    tags:
+      - v*
 jobs:
   #
   # Note: NOT DRY. This job matches one in release.yml.
