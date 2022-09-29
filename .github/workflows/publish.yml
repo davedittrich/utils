@@ -1,0 +1,31 @@
+on:
+  workflow_call:
+    inputs:
+      ANSIBLE_GALAXY_SERVER:
+        required: true
+        type: string
+    secrets:
+      ANSIBLE_GALAXY_API_KEY:
+        required: true
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
+
+      - name: Run the Ansible Galaxy release playbook
+        run: |
+          make publish
+        env:
+          ANSIBLE_GALAXY_SERVER: ${{ inputs.ANSIBLE_GALAXY_SERVER }}
+          ANSIBLE_GALAXY_API_KEY: ${{ secrets.ANSIBLE_GALAXY_API_KEY }}
+          ANSIBLE_FORCE_COLOR: 1
+

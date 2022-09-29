@@ -1,8 +1,5 @@
 name: "release candidate"
 on:
-  push:
-    branches:
-      - develop
   create:
     tags:
       - v*
@@ -45,27 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v') && ! endsWith(github.ref, '.0')
     needs: molecule
-    #
-    # Note: NOT DRY. The remainder of this workflow matches release.yml.
-    #
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.9
-
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
-
-      - name: Run the Ansible Galaxy release playbook
-        run: |
-          make publish
-        env:
-          ANSIBLE_GALAXY_SERVER: https://galaxy-dev.ansible.com/
-          ANSIBLE_GALAXY_API_KEY: ${{ secrets.GALAXYDEV_API_KEY }}
-          ANSIBLE_FORCE_COLOR: 1
+    call-workflow-publish:
+      uses: ./.github/workflows/publish.yml
+      with:
+        ANSIBLE_GALAXY_SERVER: https://galaxy-dev.ansible.com/
+      secrets:
+        ANSIBLE_GALAXY_API_KEY: ${{ secrets.GALAXYDEV_API_KEY }}
