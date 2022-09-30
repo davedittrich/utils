@@ -3,14 +3,11 @@ on:
   push:
     branches:
       - develop
-#     - main
+      - main
   create:
     tags:
       - v*
 jobs:
-  #
-  # Note: NOT DRY. This job matches one in release.yml.
-  #
   molecule:
     runs-on: ubuntu-latest
     env:
