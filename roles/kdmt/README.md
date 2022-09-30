@@ -1,7 +1,7 @@
 davedittrich.utils.kdmt
 =======================
 
-Version: 0.7.0-rc.102
+Version: 0.7.0-rc.103
 
 This role can be used to configure the system's *keyboard*, *displays*,
 *mouse*, and *trackpad* (hence the acronym *kdmt*).
