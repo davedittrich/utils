@@ -1,7 +1,7 @@
 davedittrich.utils.ip_in_issue
 ==============================
 
-Version: 0.7.0-rc.101
+Version: 0.7.0-rc.102
 
 This role ensures that the system's ``/etc/issue`` file contains the host's
 name, SSH public keys and IP addresses of active interfaces.
