@@ -36,6 +36,13 @@ artifact="davedittrich-utils-${VERSION}.tar.gz"
 artifact_link="davedittrich-utils-latest.tar.gz"
 
 if [[ "${DAVEDITTRICH_UTILS_PUBLISH}" = "true" ]]; then
+    if ! env | grep -q '^ANSIBLE_GALAXY_SERVER='; then
+        echo "[-] environment variable not found: ANSIBLE_GALAXY_SERVER"
+        exit 1
+    elif ! env | grep -q '^ANSIBLE_GALAXY_API_KEY='; then
+        echo "[-] environment variable not found: ANSIBLE_GALAXY_API_KEY"
+        exit 1
+    fi
     echo "[+] preparing to publish collection to $ANSIBLE_GALAXY_SERVER: ${artifact}"
     ansible-playbook -i 'localhost,' -e '{"_no_log": true, "publish": true}' build/galaxy_deploy.yml
     if [[ $? -ne 0 ]]; then

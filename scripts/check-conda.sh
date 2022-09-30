@@ -7,7 +7,7 @@
 # for storing project configuration, secrets, temporary files, etc.
 
 if [[ "$GITHUB_ACTIONS" == "true" ]]; then
-    echo '[-] running in a GitHub Actions workflow'
+    echo '[-] check-conda: running in a GitHub Actions workflow'
 	exit 0
 fi
 

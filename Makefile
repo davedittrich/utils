@@ -116,7 +116,7 @@ login: scenario-exists
 .PHONY: publish
 publish: check-conda
 	@if [[ "$(GITHUB_ACTIONS)" == "true" ]]; then \
-		echo '[+] running in a GitHub Actions workflow uses Secrets'; \
+		echo '[+] GitHub Actions workflows use GitHub Secrets'; \
 		bash scripts/publish_artifact.sh; \
 	else \
 		psec -E run -- bash scripts/publish_artifact.sh; \
