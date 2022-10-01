@@ -132,7 +132,7 @@ setup: hypriot-img
 	psec secrets generate --from-options
 
 .PHONY: clean
-clean:
+clean: remove-key
 	[ ! -f "$(CLOUD_CONFIG)" ] || rm "$(CLOUD_CONFIG)"
 	[ ! -f "$(HYPRIOT_IMG)" ] || rm "$(HYPRIOT_IMG)"
 

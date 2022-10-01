@@ -90,7 +90,7 @@ clean-artifacts:
 clean-molecule:
 	for scenario in default $(shell grep '[-] davedittrich.utils.' molecule/default/converge.yml | cut -d. -f 3); \
 	do \
-		molecule reset -s $$scenario > /dev/null; \
+		molecule destroy -s $$scenario > /dev/null; \
 	done
 
 .PHONY: converge
@@ -135,7 +135,7 @@ scenario-exists:
 	fi
 
 .PHONY: spotless
-spotless: clean clean-images
+spotless: clean clean-molecule
 	-rm -f davedittrich-utils-latest.tar.gz davedittrich-utils-[0-9]*[0-9].tar.gz
 
 .PHONY: test
