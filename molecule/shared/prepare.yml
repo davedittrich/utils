@@ -36,7 +36,7 @@
         mode: 0o640
       when: boot_cmdline.stat.exists is false
 
-    - name: Ensure `accounts` is defined.
+    - name: Include account enumeration tasks.
       ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_accounts.yml'
 
     - name: Ensure SSH directory exists for `davedittrich.utils.dropin` role.

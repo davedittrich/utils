@@ -2,7 +2,7 @@
 
 # Quiet keyboard bell sounds for lab systems.
 
-- name: Ensure user init files are configured for visible bell.
+- name: Include user visible bell init file configuration.
   ansible.builtin.include_tasks: user_visible_bell.yml
   vars:
     user: '{{ item }}'

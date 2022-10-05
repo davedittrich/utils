@@ -94,13 +94,13 @@
     state: present
   become: true
 
-- name: Ensure user home directories are mapped.
+- name: Include user home directory mapping tasks.
   ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_homedir.yml'
   loop: "{{ accounts }}"
   loop_control:
     loop_var: user
 
-- name: Ensure TigerVNC is enabled for users.
+- name: Include TigerVNC user configuration tasks.
   ansible.builtin.include_tasks: 'setup-vnc.yml'
   loop: "{{ accounts }}"
   loop_control:

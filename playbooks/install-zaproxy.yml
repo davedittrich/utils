@@ -17,7 +17,7 @@
     zaproxy_installed: false
 
   tasks:
-    - name: Include check_reachable.yml task.
+    - name: Include check_reachable.yml tasks.
       ansible.builtin.include_tasks: '{{ collection_root }}/tasks/check_reachable.yml'
 
     - name: Set fact with package source directory.
@@ -32,7 +32,7 @@
       ansible.builtin.set_fact:
         zaproxy_status: '{{ updates_dir }}/zaproxy'
 
-    - name: Include ensure_update_dir.yml task.
+    - name: Include ensure_update_dir.yml tasks.
       ansible.builtin.include_tasks: '{{ collection_root }}/tasks/ensure_update_dir.yml'
 
     - name: Block for zaproxy installation status check.

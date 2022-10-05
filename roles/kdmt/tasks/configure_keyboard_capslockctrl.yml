@@ -98,7 +98,7 @@
       when: "udevd.stdout == 'active' and udev_hwdb.changed"
       become: true
 
-- name: Ensure user .Xmodmap files customize CapsLock / CTRL keys.
+- name: Include user .Xmodmap file customization tasks.
   ansible.builtin.include_tasks: user_xmodmap_capslockctrl.yml
   vars:
     user: '{{ item }}'

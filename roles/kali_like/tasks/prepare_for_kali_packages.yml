@@ -141,7 +141,7 @@
     var: apt_policy
     verbosity: 0
 
-- name: Perform `dist-upgrade`.
+- name: Include `dist-upgrade` tasks.
   include_tasks: '{{ collection_root }}/tasks/dist-upgrade.yml'
 
 # vim: ft=ansible :

@@ -15,25 +15,22 @@
     var: dropin_files
     verbosity: 0
 
-- name: Ensure `pipx` present in user account.
-  ansible.builtin.include_tasks:
-    file: '{{ collection_root }}/tasks/check_repair_user_pipx.yml'
+- name: Include `pipx` user account repair tasks.
+  ansible.builtin.include_tasks: '{{ collection_root }}/tasks/check_repair_user_pipx.yml'
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
 
-- name: Ensure `update-dotdee` present in user account via `pipx`.
-  ansible.builtin.include_tasks:
-    file: setup_update_dotdee.yml
+- name: Include `update-dotdee` user installation tasks.
+  ansible.builtin.include_tasks: setup_update_dotdee.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
 
 # https://stackoverflow.com/questions/58110659/issue-passing-variable-to-include-task-file-having-add-host-in-ansible
 
-- name: Ensure dropin directories are set up.
-  ansible.builtin.include_tasks:
-    file: setup_dropin.yml
+- name: Include dropin directory setup tasks.
+  ansible.builtin.include_tasks: setup_dropin.yml
   vars:
     user: '{{ item.0 }}'
     dropin_file: '{{ item.1 }}'

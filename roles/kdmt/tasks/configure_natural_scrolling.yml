@@ -2,7 +2,7 @@
 
 # Configure natural scrolling for mouse and trackpad.
 
-- name: Ensure user .Xmodmap files customize natural scrolling.
+- name: Include user .Xmodmap natural scrolling tasks.
   ansible.builtin.include_tasks: user_xmodmap_natural_scrolling.yml
   vars:
     user: '{{ item }}'

@@ -2,14 +2,14 @@
 
 # Tasks file for davedittrich.utils.kali_like role.
 
-- name: Ensure `accounts` is defined.
+- name: Include account enumeration tasks.
   ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_accounts.yml'
 
 - name: Set fact with relative local path.
   ansible.builtin.set_fact:
     kali_like_script_templates_dir: '{{ role_path }}/templates/scripts/'
 
-- name: Ensure base OS is prepared for Kali tool installs.
+- name: Include Kali base OS preparation tasks.
   ansible.builtin.include_tasks: prepare_for_kali_packages.yml
 
 - name: Ensure required Kali packages are present.
@@ -51,7 +51,7 @@
     verbosity: 1
   changed_when: false
 
-- name: Ensure helper scripts are installed for users.
+- name: Include helper script user installation tasks.
   ansible.builtin.include_tasks: install_helper_scripts.yml
   loop: '{{ accounts }}'
   loop_control:
@@ -78,13 +78,13 @@
     mode: 0o644
   become: true
 
-- name: Ensure hostname reflects serial number.
+- name: Include hostname configuration tasks.
   ansible.builtin.include_tasks: serial_hostname.yml
 
   # - name: Ensure kali icons are present
   # TODO(dittrich): Complete this.
 
-- name: Ensure Guacamole installed for remote access.
+- name: Include Guacamole installation tasks.
   ansible.builtin.include_tasks: '{{ collection_root }}/tasks/install_guacamole.yml'
 
 # vim: ft=ansible :

@@ -45,7 +45,7 @@
     var: monitors
     verbosity: 0
 
-- name: Ensure `accounts` is defined.
+- name: Include account enumeration tasks.
   ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_accounts.yml'
 
 # See https://shallowsky.com/linux/x-screen-blanking.html
@@ -103,6 +103,9 @@
   become: true
   when: not framebuffer.stat.exists
 
+- name: Include `custom-splash.jpg` tasks.
+  ansible.builtin.include_tasks: check_custom_splash.yml
+
 - name: 'Ensure directory exists: {{ lxde_wallpapers_directory }}'
   ansible.builtin.file:
     path: '{{ lxde_wallpapers_directory }}'
@@ -155,24 +158,20 @@
         creates: '{{ lxde_wallpapers_directory }}/custom-splash.jpg'
       become: true
 
-- name: Ensure boot splash is customized.
-  ansible.builtin.include_tasks:
-    file: boot_splash.yml
+- name: Include boot splash customization tasks.
+  ansible.builtin.include_tasks: boot_splash.yml
 
-- name: Ensure customized LXDE + lightdm.
-  ansible.builtin.include_tasks:
-    file: lxde-desktop.yml
+- name: Include customized LXDE + lightdm tasks.
+  ansible.builtin.include_tasks: lxde-desktop.yml
 
-- name: Ensure LXDE desktop is customized for users.
-  ansible.builtin.include_tasks:
-    file: lxde-desktop-configure.yml
+- name: Include LXDE desktop user customization tasks.
+  ansible.builtin.include_tasks: lxde-desktop-configure.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
 
-- name: Ensure clipit history is disabled.
-  ansible.builtin.include_tasks:
-    file: clipit-nohistory.yml
+- name: Include clipit history tasks.
+  ansible.builtin.include_tasks: clipit-nohistory.yml
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user

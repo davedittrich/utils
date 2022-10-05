@@ -5,12 +5,10 @@
   hosts: all
 
   tasks:
-    - name: Ensure ../shared/prepare.yml tasks are applied.
-      include_tasks:
-        file:  ../shared/prepare.yml
+    - name: Include shared `prepare` tasks.
+      include_tasks: '../shared/prepare.yml'
 
-    - name: Prepare system for installing packages from Kali repos.
-      include_tasks:
-        file:  '{{ collection_root }}/tasks/enable_kali_packages.yml'
+    - name: Include Kali repo configuration tasks.
+      include_tasks: '{{ collection_root }}/tasks/enable_kali_packages.yml'
 
 # EOF
