@@ -1,7 +1,6 @@
 # The following are inter-related components that form a fragile whole that can
 # easily break when one of the components is updated. This can randomly cause a
 # frustratingly difficult situation to fix to pop up when you least expect it.
-ANSIBLE_VERBOSITY=0
 ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule molecule-testinfra molecule-docker pytest-ansible pytest-testinfra pytest testinfra
 export COLLECTION_NAMESPACE=davedittrich
 DELEGATED_HOST:=none
@@ -192,7 +191,7 @@ version:
 # Use ANSIBLE_VERBOSITY to control whether to run `pipdeptree`.
 .PHONY: dependencies
 dependencies:
-	@[ $(ANSIBLE_VERBOSITY) -gt 0 ] && pipdeptree -p $(shell sed 's/ /,/g' <<< "$(ANSIBLE_COMPONENTS)") || true
+	@pipdeptree -p $(shell sed 's/ /,/g' <<< "$(ANSIBLE_COMPONENTS)") || true
 
 .PHONY: setup
 setup: collection-community-docker
