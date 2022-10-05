@@ -42,6 +42,7 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
+          cat requirements.txt
           python3 -m pip install -r requirements.txt
 
       - name: Move project to Ansible-required location
