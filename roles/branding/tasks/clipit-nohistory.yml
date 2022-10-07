@@ -35,3 +35,5 @@
     regexp: '^save_history='
     line: 'save_history=false'
   become: true
+
+# vim: ft=ansible:

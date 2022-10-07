@@ -96,3 +96,5 @@
   when: not dir_result.stat.exists
   become: true
   become_user: '{{ user }}'
+
+# vim: ft=ansible:

@@ -5,3 +5,5 @@ _dropin_files:
   - '.bash_aliases'
   - '.gitconfig'
   - '.ssh/config'
+
+# vim: ft=ansible:

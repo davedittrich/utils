@@ -87,3 +87,5 @@
   become: true
   become_user: '{{ user }}'
   loop: '{{ config_templates }}'
+
+# vim: ft=ansible:

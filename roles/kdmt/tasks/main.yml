@@ -39,4 +39,4 @@
 - name: Include natural scrolling configuration tasks.
   ansible.builtin.include_tasks: configure_natural_scrolling.yml
 
-# EOF
+# vim: ft=ansible:

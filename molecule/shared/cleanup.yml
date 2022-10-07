@@ -11,3 +11,5 @@
         state: absent
       changed_when: false
       delegate_to: localhost
+
+# vim: ft=ansible:

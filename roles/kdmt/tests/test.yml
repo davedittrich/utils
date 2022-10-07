@@ -6,3 +6,5 @@
     - role: davedittrich.utils.swapcapslockctrl
       vars:
         - ansible_become: true
+
+# vim: ft=ansible:

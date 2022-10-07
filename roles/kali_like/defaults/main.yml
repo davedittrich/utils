@@ -10,3 +10,5 @@ kali_like_packages:
   - webshells
   - wordlists
   - zaproxy
+
+# vim: ft=ansible:

@@ -3,3 +3,5 @@
 lxde_wallpapers_directory: '/usr/share/lxde/wallpapers'
 lxterminal_geometry_columns: 120
 lxterminal_geometry_rows: 34
+
+# vim: ft=ansible:

@@ -101,3 +101,5 @@
 
   when: install_lxde
   become: true
+
+# vim: ft=ansible:

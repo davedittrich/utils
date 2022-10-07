@@ -40,3 +40,5 @@
         mode: 0o600
       changed_when: false
       delegate_to: localhost
+
+# vim: ft=ansible:

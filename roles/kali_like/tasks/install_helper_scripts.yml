@@ -37,3 +37,5 @@
     mode: 0o755
   become: true
   loop: '{{ kali_like_script_templates }}'
+
+# vim: ft=ansible:

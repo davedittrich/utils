@@ -5,3 +5,5 @@ _exclude_interface_prefix:
   - 'tun'
   - 'ip6tnl'
   - 'docker'
+
+# vim: ft=ansible:

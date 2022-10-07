@@ -13,3 +13,5 @@
         that:
           - "' up ' in uptime.stdout"
         fail_msg: '[-] cannot connect to delegated-host'
+
+# vim: ft=ansible:

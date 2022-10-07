@@ -81,3 +81,5 @@
     mode: 0o644
   become: true
   notify: Enable splashscreen
+
+# vim: ft=ansible:

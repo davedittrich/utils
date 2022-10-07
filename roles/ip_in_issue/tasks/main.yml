@@ -149,3 +149,5 @@
     mode: 0o644
   with_items: '{{ issue_templates }}'
   become: true
+
+# vim: ft=ansible:

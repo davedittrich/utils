@@ -11,4 +11,4 @@
     - name: Include Kali repo configuration tasks.
       include_tasks: '{{ collection_root }}/tasks/enable_kali_packages.yml'
 
-# EOF
+# vim: ft=ansible:

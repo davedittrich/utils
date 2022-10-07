@@ -51,4 +51,4 @@
         loop_var: user
       become: true
 
-# EOF
+# vim: ft=ansible:

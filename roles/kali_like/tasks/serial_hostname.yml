@@ -72,4 +72,4 @@
   changed_when: hostname is success and hostname.stdout != host_serial
   become: true
 
-#
+# vim: ft=ansible:

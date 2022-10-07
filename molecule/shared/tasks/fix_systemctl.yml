@@ -54,4 +54,4 @@
   become: true
   failed_when: false
 
-#
+# vim: ft=ansible:

@@ -4,5 +4,6 @@ keyboard_hid_apple_iso_layout: '0'
 keyboard_hid_apple_fnmode: '2'
 keyboard_swapcapslockctrl: true
 keyboard_visible_bell: true
-# display_???
 natural_scrolling: true
+
+# vim: ft=ansible:

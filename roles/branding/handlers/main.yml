@@ -7,3 +7,5 @@
     state: started
   failed_when: false
   become: true
+
+# vim: ft=ansible:

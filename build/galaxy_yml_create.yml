@@ -34,4 +34,4 @@
         src: templates/galaxy.yml.j2
         dest: ../galaxy.yml
 
-# EOF
+# vim: ft=ansible
