@@ -62,30 +62,15 @@
 - name: Debug `x_settings` variable.
   ansible.builtin.debug:
     var: x_settings
-    verbosity: 2
+    verbosity: 1
 
-- name: Set fact with LXDE wallpapers directory path.
-  ansible.builtin.set_fact:
-    lxde_wallpapers_directory: "{{ lxde_wallpapers_directory | default('/usr/share/lxde/wallpapers') }}"
-
-- name: Ensure package cache is up to date.
-  ansible.builtin.package:
+- name: Ensure `imagemagick` package is present.
+  ansible.builtin.apt:
+    name: imagemagick
     update_cache: true
     cache_valid_time: 3600
+    state: present
   become: true
-
-- name: Stat `/boot/custom-splash.jpg`.
-  ansible.builtin.stat:
-    path: '/boot/custom-splash.jpg'
-  become: true
-  register: local_custom_splash
-
-- name: Ensure `boot_splash` is set.
-  ansible.builtin.set_fact:
-    custom_splash: '/boot/custom-splash.jpg'
-  when:
-    - local_custom_splash.stat.exists
-    - custom_splash is not defined
 
 # https://linuxmeerkat.wordpress.com/2014/10/17/running-a-gui-application-in-a-docker-container/
 
@@ -117,46 +102,16 @@
 
 - name: Ensure `custom-splash.jpg` is an optional desktop background.
   ansible.builtin.copy:
-    src: '{{ custom_splash }}'
+    src: '/root/custom-splash.jpg'
     dest: '{{ lxde_wallpapers_directory }}/custom-splash.jpg'
-    remote_src: '{{ local_custom_splash.stat.exists | bool }}'
+    remote_src: true
+    owner: root
+    group: root
     mode: 0o644
   become: true
-  when: custom_splash is defined
-
-- name: Ensure `/boot/custom-splash.jpg` is absent (i.e., mv).
-  ansible.builtin.file:
-    path: '/boot/custom-splash.jpg'
-    state: absent
-  become: true
-  when: local_custom_splash.stat.exists
 
 # https://martin.hoppenheit.info/blog/2016/where-to-put-application-icons-on-linux/
 # https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
-
-- name: Block for defaulting custom splash from `Hello_World.png`.
-  when: custom_splash is not defined
-  block:
-    - name: Ensure `imagemagick` package is present.
-      ansible.builtin.apt:
-        name: imagemagick
-        state: present
-      become: true
-
-    - name: Ensure `Hello_World.png` is available in `lxde_wallpapers_directory`.
-      ansible.builtin.copy:
-        src: 'Hello_World.png'
-        dest: '{{ lxde_wallpapers_directory }}/custom-splash.png'
-        mode: 0o644
-      become: true
-
-    - name: Ensure `custom-splash.jpg` is created.
-      ansible.builtin.shell: convert custom-splash.png custom-splash.jpg
-      args:
-        executable: /bin/bash
-        chdir: '{{ lxde_wallpapers_directory }}'
-        creates: '{{ lxde_wallpapers_directory }}/custom-splash.jpg'
-      become: true
 
 - name: Include boot splash customization tasks.
   ansible.builtin.include_tasks: boot_splash.yml
@@ -175,3 +130,5 @@
   loop: '{{ accounts }}'
   loop_control:
     loop_var: user
+
+# vim: ft=ansible:
