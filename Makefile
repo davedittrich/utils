@@ -16,10 +16,14 @@ GROUP_ID=$(shell id -g)
 help:
 	@echo "make [VARIABLE=value] target [target ...]"
 	@echo "...where 'target' is one or more of:"
+	@echo ""
 	@echo "  build - build ansible-galaxy collection artifact"
 	@echo "  clean - remove temporary and intermediate files"
+	@echo "  check-conda - check 'conda' and 'psec' environment settings"
 	@echo "  converge - molecule converge on scenario '$(SCENARIO)'"
 	@echo "  destroy - destroy and clean up scenario '$(SCENARIO)'"
+	@echo "  flash - flash SD card including latest build artifact"
+	@echo "  flash-none - flash SD card without a build artifact"
 	@echo "  lint - run 'molecule lint'"
 	@echo "  login - connect to '$(SCENARIO)' molecule instance for debugging"
 	@echo "  publish - publish the artifact to Ansible galaxy (default $(ANSIBLE_GALAXY_SERVER))"
@@ -32,7 +36,6 @@ help:
 	@echo "  test-delegated - run molecule against delegated host ($(DELEGATED_HOST))"
 	@echo "  verify - run tests on scenario '$(SCENARIO)'"
 	@echo "  version - show the current version number from 'VERSION' file"
-	@echo "  check-conda - check 'conda' and 'psec' environment settings"
 	@echo "  update-requirements - update pip packages defined in requirements.txt"
 	@echo ""
 	@echo "Variables:"
@@ -72,7 +75,13 @@ build: check-conda
 
 .PHONY: flash
 flash:
-	(cd hypriot && make ANSIBLE_COLLECTION=$(bash scripts/get_latest_artifact.sh) flash)
+	artifact=$(shell scripts/get_last_artifact.sh `pwd`) && \
+	cd hypriot && \
+	$(MAKE) COLLECTION_ARTIFACT=$$artifact flash
+
+.PHONY: flash-none
+flash-none:
+	cd hypriot && $(MAKE) COLLECTION_ARTIFACT=None flash
 
 .PHONY: clean
 clean: clean-artifacts

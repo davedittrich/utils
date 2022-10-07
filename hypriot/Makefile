@@ -26,7 +26,7 @@ HYPRIOT_HOSTNAME:=$(shell psec secrets get hypriot_hostname 2>/dev/null || echo 
 CLOUD_CONFIG_SRC:=cloud-config.j2
 CLOUD_CONFIG:=$(TMPDIR)/cloud-config
 IMAGE=$(HYPRIOT_IMG)
-ANSIBLE_COLLECTION:=$(shell bash ../scripts/get_last_artifact.sh ..)
+COLLECTION_ARTIFACT=$(shell bash ../scripts/get_last_artifact.sh ..)
 # # Export `DEFAULT_ENV` or run `make DEFAULT_ENV=myenv ...` to override this default.
 # DEFAULT_ENV:=flash
 export FLASH=$(shell command -v flash)
@@ -123,8 +123,7 @@ autoconfigure:
 flash: remove-key
 	$(MAKE) --always-make cloud-config
 	@[ -f $(HYPRIOT_IMG) ] || (echo "[-] set HYPRIOT_IMG with path to OS image or 'make hypriot-img'" && exit 1)
-	bash ../scripts/flash-hypriot.sh $(IMAGE) $(CLOUD_CONFIG) $(shell bash ../scripts/get_last_artifact.sh ..) bootstrap.sh
-	@echo "[+] Reminder: log in to host $(HYPRIOT_HOSTNAME) with user name '$(shell psec secrets get hypriot_user)' with password '$(shell psec secrets get hypriot_password)'"
+	bash ../scripts/flash-hypriot.sh $(IMAGE) $(CLOUD_CONFIG) $(COLLECTION_ARTIFACT)
 
 .PHONY: setup
 setup: hypriot-img
@@ -155,7 +154,7 @@ variables: Makefile
 	@echo HYPRIOT_VERSION="$(HYPRIOT_VERSION)"
 	@echo HYPRIOT_ZIP="$(HYPRIOT_ZIP)"
 	@echo TMPDIR="$(TMPDIR)"
-	@echo ANSIBLE_COLLECTION="$(ANSIBLE_COLLECTION)"
+	@echo COLLECTION_ARTIFACT="$(COLLECTION_ARTIFACT)"
 
 .PHONY: debug-server
 debug-server:

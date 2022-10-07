@@ -17,11 +17,19 @@ else
     dir="."
 fi
 
+# Using 'ls -l' on a symbolic link to a file in the same directory
+# results in the directory path component being lost in the 'awk'
+# output. It needs to be put back when output.
 latest_artifact=$(ls -l ${dir}/davedittrich-utils-latest.tar.gz 2>/dev/null | awk '{ print $NF; }')
 highest_version_artifact=$(ls ${dir}/davedittrich-utils-[0-9]*[0-9].tar.gz 2>/dev/null | sort -r | head -n 1)
 
 if [[ ! -z "${latest_artifact}" ]]; then
-    echo "${latest_artifact}"
+    # Add back the directory component?
+    if [[ "${dir}" = "." ]]; then
+        echo "${latest_artifact}"
+    else
+        echo "${dir}/${latest_artifact}"
+    fi
 elif [[ ! -z "${highest_version_artifact}" ]]; then
     echo "${highest_version_artifact}"
 else
