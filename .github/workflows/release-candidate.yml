@@ -30,12 +30,12 @@ jobs:
           GITHUB_EVENT: ${{ toJson(github.event) || 'None' }}
           RUNNER: ${{ toJson(runner) }}
         run: |
-          echo "github.event=$GITHUB_EVENT"
+          printf 'github.event=%s\n' "$GITHUB_EVENT"
           echo "github.ref=${{ github.ref }}"
           echo "github.ref_name=${{ github.ref_name }}"
           echo "github.ref_protected=${{ github.ref_protected }}"
           echo "github.ref_type=${{ github.ref_type }}"
-          echo "runner=$RUNNER"
+          printf 'runner=%s\n' "$RUNNER"
           echo 'See: https://docs.github.com/en/actions/learn-github-actions/contexts#example-usage-of-the-github-context'
 
       - name: Install dependencies
