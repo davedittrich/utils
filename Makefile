@@ -67,6 +67,7 @@ check-conda:
 	@bash scripts/check-conda.sh
 
 galaxy.yml:
+	@echo "[+] generating new 'galaxy.yml' file"
 	ansible-playbook -i 'localhost,' build/galaxy_yml_create.yml
 
 .PHONY: build
