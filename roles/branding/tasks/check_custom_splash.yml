@@ -1,5 +1,10 @@
 ---
 
+# The default demonstration background image and boot splash file is a
+# photo of graffiti found on a roadway underpass not far outside of
+# Geneva, Switzerland. This task file ensures that if the user has not
+# supplied a file to use instead, this image is used.
+#
 # Check to see if a pre-installed `/boot/custom-splash.jpg` file exists
 # on the target. This is the method for customizing the boot splash
 # and desktop background from an image pre-loaded when flashing an SD

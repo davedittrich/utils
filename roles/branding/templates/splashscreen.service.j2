@@ -6,7 +6,7 @@ DefaultDependencies=no
 After=local-fs.target
 
 [Service]
-# Place your project's logo, your favorite meme, or any other PNG file
+# Place your project's logo, your favorite meme, or any other JPG file
 # you want to use for the splash image in /root/custom-splash.jpg.
 ExecStart=/usr/bin/fbi -d /dev/fb0 --noverbose -a {{ lxde_wallpapers_directory }}/custom-splash.jpg
 StandardInput=tty
