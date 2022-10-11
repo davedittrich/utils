@@ -19,6 +19,7 @@
     owner: root
     group: root
     mode: 0o644
+  become: true
   when: xsessiond.stat.exists
 
 # vim: ft=ansible:

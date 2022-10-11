@@ -140,6 +140,11 @@
     mode: 0o755
   become: true
 
+  # NetworkManager randomizes the MAC address on the `wlan0`
+  # interface on reboot, which breaks idempotence checks. Rather
+  # than turn it off, just disable `changed_when` for now.
+  # See: https://forums.raspberrypi.com/viewtopic.php?t=237623
+
 - name: Ensure `/etc/issue.d/*.issue` files exists.
   ansible.builtin.template:
     src: '{{ item }}'
@@ -148,6 +153,7 @@
     group: root
     mode: 0o644
   with_items: '{{ issue_templates }}'
+  changed_when: false
   become: true
 
 # vim: ft=ansible:
