@@ -13,6 +13,47 @@ ENV LC_ALL C
 RUN mkdir /root/tmp
 ENV TMPDIR /root/tmp
 
+# After a few weeks away from the keyboard in October, a `make test` run
+# failed on a `dist-upgrade` step that was passing cleanly on all test systems.
+# It had the following error message:
+#   . . .
+#   Unpacking usrmerge (33) ...
+#   Setting up usrmerge (33) ...
+#   Warning: overlayfs detected, /usr/lib/usrmerge/convert-usrmerge will not
+#   be run automatically. See #1008202 for details.
+#
+#   If this is a container then it can be converted by unpacking the image,
+#   entering it with chroot(8), installling usrmerge and then repacking the
+#   image again. at /usr/lib/usrmerge/convert-usrmerge line 399.
+#   E: usrmerge failed.
+#   dpkg: error processing package usrmerge (--configure):
+#   installed usrmerge package post-installation script subprocess returned error exit status 1
+#   E rrors were encountered while processing:
+#   usrmerge
+#
+# OK. That's not very helpful. What exactly is `usrmerge`, and where am I
+# supposed to find `#1008202` to see it? And how exactly is one supposed to
+# convert a container built by `molecule` before it runs Ansible playbooks?
+# (And no, deleting the container and rebuilding it DID NOT fix the problem.)
+#
+# After a bit of searching, it turns out that a debate about making a major change
+# to "correct" a design decision made decades ago for reasons that no longer apply
+# had finally resulted in action being taken to push out a package on September 17,
+# 2022 (while I was away working on my house) that horribly breaks Docker containers.
+# Despite the "trivial" fix described above, it looks like the official Debian
+# Docker images don't even have the fix!
+#
+# https://wiki.debian.org/UsrMerge
+# https://lists.debian.org/debian-devel-announce/2022/09/msg00001.html
+#
+# For now, get back to something that works again by using this workaround that
+# we *all* knew about because we read *every* README file accompanying Debian
+# distributions to the end. Not.
+#
+# https://salsa.debian.org/md/usrmerge/raw/master/debian/README.Debian
+
+RUN echo "this system will not be supported in the future" > /etc/unsupported-skip-usrmerge-conversion
+
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get -y \
