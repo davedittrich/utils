@@ -101,6 +101,11 @@ clean-molecule:
 	do \
 		molecule destroy -s $$scenario > /dev/null; \
 	done
+	for image in $(shell docker images | grep molecule | awk '{ print $$3; }'); \
+	do \
+		echo docker rmi $$image; \
+	done
+
 
 .PHONY: converge
 converge: check-conda scenario-exists galaxy.yml
