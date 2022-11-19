@@ -21,7 +21,7 @@
       ansible.builtin.include_tasks: fix_broken_libcrypt.yml
 
 - name: Include broken user `pipx` repair tasks.
-  include_tasks: '{{ collection_root }}/tasks/check_repair_user_pipx.yml'
+  ansible.builtin.include_tasks: '{{ collection_root }}/tasks/check_repair_user_pipx.yml'
   loop: '{{ homedir.keys() }}'
   loop_control:
     loop_var: user
