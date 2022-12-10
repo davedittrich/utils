@@ -65,7 +65,7 @@ help:
 
 .PHONY: check-conda
 check-conda:
-	@bash scripts/check-conda.sh
+	@./scripts/check-conda.sh
 
 galaxy.yml:
 	@echo "[+] generating new 'galaxy.yml' file"
@@ -73,7 +73,7 @@ galaxy.yml:
 
 .PHONY: build
 build: check-conda
-	bash scripts/build_artifact.sh
+	./scripts/build_artifact.sh
 
 .PHONY: flash
 flash:
@@ -94,7 +94,7 @@ clean: clean-artifacts
 
 .PHONY: clean-artifacts
 clean-artifacts:
-	bash scripts/clean_artifacts.sh || true
+	./scripts/clean_artifacts.sh || true
 
 .PHONY: clean-molecule
 clean-molecule:
@@ -136,9 +136,9 @@ login: scenario-exists
 publish: check-conda
 	@if [[ "$(GITHUB_ACTIONS)" == "true" ]]; then \
 		echo '[+] GitHub Actions workflows use GitHub Secrets'; \
-		bash scripts/publish_artifact.sh; \
+		./scripts/publish_artifact.sh; \
 	else \
-		psec -E run -- bash scripts/publish_artifact.sh; \
+		psec -E run -- ./scripts/publish_artifact.sh; \
 	fi
 
 .PHONY: reset
