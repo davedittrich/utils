@@ -4,6 +4,9 @@
 # installation requires repair due to Python being upgraded. This task
 # is designed to be run in a loop with `user` as the account to process
 # and `homedir` being a map of home directories.
+#
+# NOTE: As of early 2023, this task broke. See the following:
+# https://github.com/python/cpython/issues/102134#issuecomment-1445428402
 
 - name: Assert required variables are defined.
   ansible.builtin.assert:
@@ -11,11 +14,11 @@
       - user is defined
       - homedir is defined
 
-- name: Set fact with `pipx` binary path.
+- name: Set fact with user `pipx` binary path.
   ansible.builtin.set_fact:
     pipx_bin_path: '{{ homedir[user] }}/.local/bin/pipx'
 
-- name: Set fact with `pipx` shared library path.
+- name: Set fact with user `pipx` shared library path.
   ansible.builtin.set_fact:
     pipx_shared_path: '{{ homedir[user] }}/.local/pipx/shared'
 
@@ -105,5 +108,14 @@
       changed_when: false
       become: true
       become_user: '{{ user }}'
+
+  rescue:
+    # Deal with: https://github.com/python/cpython/issues/102134#issuecomment-1445428402
+    - name: Ensure `pipx` package is installed.
+      ansible.builtin.package:
+        name: pipx
+        state: present
+      become: true
+
 
 # vim: ft=ansible :

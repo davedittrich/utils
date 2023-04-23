@@ -78,10 +78,16 @@ def test_dropin_directories(host, fixture_users, fixture_dropin_files):
 
 @skip_unless_role('davedittrich.utils.dropins')
 def test_pipx(host, fixture_users, fixture_programs):
-    user = fixture_users
-    homedir = Path(get_homedir(host=host, user=user))
-    f = host.file(str(homedir.joinpath(".local", "bin", fixture_programs)))
-    assert f.exists
+    pipx_system = host.file('/usr/bin/pipx')
+    if pipx_system.exists:
+        assert True
+    else:
+        user = fixture_users
+        homedir = Path(get_homedir(host=host, user=user))
+        pipx_local = host.file(
+            str(homedir.joinpath(".local", "bin", fixture_programs))
+        )
+        assert pipx_local.exists
 
 
 @skip_unless_role('davedittrich.utils.dropins')
