@@ -1,13 +1,14 @@
 {
+  "ansible.python.interpreterPath": "/usr/local/Caskroom/miniconda/base/envs/utils/bin/python3",
   "python.linting.enabled": true,
   "python.linting.lintOnSave": true,
-  "python.defaultInterpreterPath": "${env:CONDA_PREFIX}/bin/python3",
+  "python.pythonPath": "/usr/local/Caskroom/miniconda/base/envs/utils/bin/python3",
   "python.terminal.activateEnvironment": true,
   "python.testing.autoTestDiscoverOnSaveEnabled": true,
   "python.testing.cwd": "${workspaceFolder}/molecule/shared",
   "python.testing.pytestArgs": ["-ra"],
   "python.testing.pytestEnabled": true,
-  "python.testing.pytestPath": "${env:CONDA_PREFIX}/bin/pytest",
+  "python.testing.pytestPath": "${env:CONDA_PREFIX}/utils/bin/pytest",
   "python.testing.unittestEnabled": false,
-  "python.venvPath": "${env:CONDA_PREFIX}/.."
+  "python.venvPath": "${env:CONDA_PREFIX}/utils"
 }
