@@ -22,6 +22,7 @@ yamllint==1.26.1
 pipx>=0.16.4
 pipdeptree
 python-secrets>=22.5.0
+pypandoc<1.8
 #
 # Use patched pytest-testinfra for deconflicted argparse options.
 #testinfra==5.3.1
