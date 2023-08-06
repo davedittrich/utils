@@ -17,7 +17,7 @@ scenario:
   verify_sequence:
     - verify
 platforms:
-  - name: debian_bullseye
+  - name: debianbullseye
     image: debian:bullseye
     dockerfile: ../shared/Dockerfile-debian_bullseye.j2
     privileged: true
