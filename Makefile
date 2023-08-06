@@ -207,7 +207,7 @@ version:
 	@for component in $(ANSIBLE_COMPONENTS); \
 	 do \
 	 $$component --version 2>/dev/null || \
-	 python3 -m pip freeze | grep "^$$component==" || \
+	 python -m pip freeze | grep "^$$component==" || \
 	 true; \
 	 done
 
@@ -228,12 +228,11 @@ collection-community-docker:
 
 .PHONY: update-requirements
 update-requirements:
-	python3 -m pip install -U -r requirements.txt
+	python -m pip install -U -r requirements.txt
 
 .PHONY: fix-broken-ansible
 fix-broken-ansible:
-	# .tox/lint/bin/python3 -m pip uninstall -y $(ANSIBLE_COMPONENTS)
-	python3 -m pip uninstall -y $(ANSIBLE_COMPONENTS)
+	python -m pip uninstall -y $(ANSIBLE_COMPONENTS)
 	$(MAKE) update-requirements
 
 # EOF
