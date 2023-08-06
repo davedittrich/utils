@@ -9,7 +9,6 @@ scenario:
     - destroy
   test_sequence:
     - dependency
-    - lint
     - create
     - prepare
     - converge
@@ -17,13 +16,6 @@ scenario:
     - verify
   verify_sequence:
     - verify
-lint: |
-  set -e
-  make version
-  make dependencies
-  yamllint molecule/ playbooks/ plugins/ roles/ tasks/
-  flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
-  ansible-lint -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 platforms:
   - name: debian_bullseye
     image: debian:bullseye

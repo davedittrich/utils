@@ -24,10 +24,11 @@ help:
 	@echo "  destroy - destroy and clean up scenario '$(SCENARIO)'"
 	@echo "  flash - flash SD card including latest build artifact"
 	@echo "  flash-none - flash SD card without a build artifact"
-	@echo "  lint - run 'molecule lint'"
+	@echo "  lint - run linting tasks"
 	@echo "  login - connect to '$(SCENARIO)' molecule instance for debugging"
 	@echo "  publish - publish the artifact to Ansible galaxy (default $(ANSIBLE_GALAXY_SERVER))"
 	@echo "  reset - clean up molecule scenario data"
+	@echo "  retest - re-run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO)) without destroying"
 	@echo "  scenario-exists - checks to ensure the scenario (variable 'SCENARIO') exists."
 	@echo "  spotless - clean, then get rid of as much else as possible"
 	@echo "  test - run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO))"
@@ -121,7 +122,11 @@ verify: check-conda scenario-exists galaxy.yml
 
 .PHONY: lint
 lint: galaxy.yml
-	molecule lint -s $(SCENARIO)
+	make version
+	make dependencies
+	yamllint molecule/ playbooks/ plugins/ roles/ tasks/
+	flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
+	ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 
 .PHONY: login
 login: scenario-exists
@@ -153,7 +158,10 @@ spotless: clean clean-molecule
 	-rm -f davedittrich-utils-latest.tar.gz davedittrich-utils-[0-9]*[0-9].tar.gz
 
 .PHONY: test
-test: check-conda scenario-exists galaxy.yml
+test: lint reset retest
+
+.PHONY: retest
+retest: check-conda scenario-exists galaxy.yml
 	@docker info 2>/dev/null | grep -q ID || (echo "[-] docker does not appear to be running" && exit 1)
 	molecule test --destroy=$(MOLECULE_DESTROY) -s $(SCENARIO)
 	@echo '[+] all tests succeeded'
@@ -162,7 +170,7 @@ test: check-conda scenario-exists galaxy.yml
 	fi
 
 .PHONY: test-all-distros
-test-all-distros: scenario-exists galaxy.yml
+test-all-distros: scenario-exists galaxy.yml lint
 	set -e; for distro in debian9 debian10 ubuntu1804 ubuntu2004; do MOLECULE_DISTRO=$$distro molecule test -s $(SCENARIO); done
 
 .PHONY: help-delegated-host

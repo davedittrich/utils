@@ -13,12 +13,6 @@ driver:
 # ![delegated-molecule.yml-driver]
 platforms:
   - name: delegated-host
-lint: |
-  make version
-  make dependencies
-  yamllint molecule/ playbooks/ plugins/ roles/ tasks/
-  flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
-  ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 provisioner:
   name: ansible
   env:
