@@ -17,6 +17,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Determine Python versions available.
+        run: |
+          echo "Available Python versions"
+          echo "----"
+          cd /opt/hostedtoolcache/Python && ls
+          echo "----"
+
       - name: Set up Python 3.10.12
         uses: actions/setup-python@v4
         with:
