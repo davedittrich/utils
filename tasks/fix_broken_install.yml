@@ -1,0 +1,15 @@
+---
+
+# Attempt to fix a broken `dist-upgrade`.
+- name: Block for fixing broken install.
+  block:
+
+    - name: Ensure broken packages are installed.
+      ansible.builtin.shell: |
+        apt-get -y --fix-broken install
+      args:
+        executable: /bin/bash
+      changed_when: false
+      become: true
+
+# vim: ft=ansible :

@@ -17,8 +17,8 @@
       become: true
 
   rescue:
-    - name: Include broken `libcrypt` repair tasks.
-      ansible.builtin.include_tasks: fix_broken_libcrypt.yml
+    - name: Include broken dist-upgrade repair tasks.
+      ansible.builtin.include_tasks: '{{ collection_root }}/tasks/fix_broken_install.yml'
 
 - name: Include broken user `pipx` repair tasks.
   ansible.builtin.include_tasks: '{{ collection_root }}/tasks/check_repair_user_pipx.yml'
