@@ -28,31 +28,37 @@
       # - "vncserver"
   when: guacamole_services is not defined
 
-- name: Ensure Git is installed.
-  ansible.builtin.apt:
-    name: git
-    state: present
-  become: true
+- name: Stat Gucamole binary.
+  ansible.builtin.stat:
+    path: '/usr/local/sbin/guacd'
+  register: guacd_path
 
-- name: "Ensure directory exists: {{ tmpdir }}"
-  ansible.builtin.file:
-    dest: '{{ tmpdir }}'
-    state: directory
-    owner: 'root'
-    group: 'root'
-    mode: 0o770
-  become: true
-
-- name: Clone Guacamole repo.  # noqa: latest[git]
-  ansible.builtin.git:
-    clone: true
-    repo: https://github.com/MysticRyuujin/guac-install.git
-    dest: '{{ tmpdir }}/guac-install'
-  changed_when: false
-  become: true
-
-- name: Block for installing Guacamole.
+- name: Block for installing Guacamole from source.
+  when: not guacd_path.stat.exists
   block:
+
+    - name: Ensure Git is installed.
+      ansible.builtin.apt:
+        name: git
+        state: present
+      become: true
+
+    - name: "Ensure directory exists: {{ tmpdir }}"
+      ansible.builtin.file:
+        dest: '{{ tmpdir }}'
+        state: directory
+        owner: 'root'
+        group: 'root'
+        mode: 0o770
+      become: true
+
+    - name: Clone Guacamole repo.  # noqa: latest[git]
+      ansible.builtin.git:
+        clone: true
+        repo: https://github.com/MysticRyuujin/guac-install.git
+        dest: '{{ tmpdir }}/guac-install'
+      become: true
+
     - name: Install Guacamole from source.
       ansible.builtin.shell: >-
         /bin/bash guac-install.sh
@@ -84,7 +90,7 @@
   always:
     - name: Clean up Guacamole install files.
       ansible.builtin.file:
-        path: guac-install
+        path: "{{ tmpdir }}"
         state: absent
       become: true
 
