@@ -31,7 +31,7 @@ help:
 	@echo "  retest - re-run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO)) without destroying"
 	@echo "  scenario-exists - checks to ensure the scenario (variable 'SCENARIO') exists."
 	@echo "  spotless - clean, then get rid of as much else as possible"
-	@echo "  test - run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO))"
+	@echo "  test - run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO)) after destroying"
 	@echo "  test-all-distros - run molecule tests on all scenarios (fake 'matrix' like GitHub Actions)"
 	@echo "  help-delegated-host - provide help on using the 'delegated' scenario"
 	@echo "  test-delegated - run molecule against delegated host ($(DELEGATED_HOST))"
@@ -159,6 +159,9 @@ spotless: clean clean-molecule
 
 .PHONY: test
 test: lint reset retest
+
+.PHONY: test-no-lint
+test-no-lint: reset retest
 
 .PHONY: retest
 retest: check-conda scenario-exists galaxy.yml
