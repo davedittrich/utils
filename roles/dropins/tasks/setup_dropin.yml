@@ -16,85 +16,85 @@
 # 4. File exists, directory exists.
 #    Already set up.
 
-- name: 'Set fact w/fully qualified path to: {{ dropin_file }}'
+- name: 'Set fact w/fully qualified path to: {{ dropins__dropin_file }}'
   ansible.builtin.set_fact:
-    dropin_path: '{{ homedir[user] }}/{{ dropin_file }}'
+    dropins__dropin_path: '{{ homedir[dropins__user] }}/{{ dropins__dropin_file }}'
 
 - name: Debug dropin file path.
   ansible.builtin.debug:
-    var: dropin_path
+    var: dropins__dropin_path
     verbosity: 1
 
-- name: 'Stat directory: {{ dropin_path }}'
+- name: 'Stat directory: {{ dropins__dropin_path }}'
   ansible.builtin.stat:
-    path: '{{ dropin_path }}'
+    path: '{{ dropins__dropin_path }}'
   become: true
-  register: file_result
+  register: dropins__file_result
 
 - name: Debug `file_result` variable.
   ansible.builtin.debug:
-    var: file_result
+    var: dropins__file_result
     verbosity: 1
 
-- name: 'Stat directory: {{ dropin_path }}.d'  # noqa: name[template]
+- name: 'Stat directory: {{ dropins__dropin_path }}.d'  # noqa: name[template]
   ansible.builtin.stat:
-    path: '{{ dropin_path }}.d'
+    path: '{{ dropins__dropin_path }}.d'
   become: true
-  register: dir_result
+  register: dropins__dir_result
 
 - name: Debug `dir_result` variable.
   ansible.builtin.debug:
-    var: dir_result
+    var: dropins__dir_result
     verbosity: 1
 
 - name: DEBUG
   ansible.builtin.debug:
-    msg: 'CREATING {{ dropin_file }} AT {{ dropin_path }} FOR USER {{ user }}'
+    msg: 'CREATING {{ dropins__dropin_file }} AT {{ dropins__dropin_path }} FOR USER {{ dropins__user }}'
     verbosity: 0
 
 - name: Block
+  when: not dropins__dir_result.stat.exists
+  become: true
+  become_user: '{{ dropins__user }}'
   block:
     - name: Ensure a dropin source file exists.
       ansible.builtin.template:
-        dest: '{{ dropin_path }}'
+        dest: '{{ dropins__dropin_path }}'
         src: 'dropin_header.j2'
         mode: 0o640
-      register: copy_result
-      when: not file_result.stat.exists
+      register: dropins__copy_result
+      when: not dropins__file_result.stat.exists
 
     - name: Run `update-dotdee` to create dropin directory.
       ansible.builtin.shell: |
-        update-dotdee '{{ dropin_path }}' 2>&1
+        update-dotdee '{{ dropins__dropin_path }}' 2>&1
       args:
-        creates: '{{ dropin_path }}.d'
+        creates: '{{ dropins__dropin_path }}.d'
         executable: /bin/bash
       environment:
-        PATH: '{{ homedir[user] }}/.local/bin:{{ ansible_env.PATH }}'
-      register: update_dotdee_result
+        PATH: '{{ homedir[dropins__user] }}/.local/bin:{{ ansible_env.PATH }}'
+      register: dropins__update_dotdee_result
 
     - name: Debug `update_dotdee` result.
       ansible.builtin.debug:
-        msg: '{{ update_dotdee_result.stdout }}'
+        msg: '{{ dropins__update_dotdee_result.stdout }}'
         verbosity: 0
 
     - name: Hack to ensure original file is first in line.
       ansible.builtin.shell: |
         if [[ -f ${D}/local ]]; then mv ${D}/local ${D}/00-local; fi
       args:
-        creates: '{{ dropin_path }}.d/00-local'
+        creates: '{{ dropins__dropin_path }}.d/00-local'
         executable: /bin/bash
       environment:
-        D: '{{ dropin_path }}.d'
-      when: update_dotdee_result.rc == 0
+        D: '{{ dropins__dropin_path }}.d'
+      when: dropins__update_dotdee_result.rc == 0
 
   rescue:
     - name: Debug `copy_result` result.
       ansible.builtin.debug:
-        msg: 'IGNORING => {{ copy_result }}'
+        msg: 'IGNORING => {{ dropins__copy_result }}'
         verbosity: 0
 
-  when: not dir_result.stat.exists
-  become: true
-  become_user: '{{ user }}'
 
 # vim: ft=ansible:
