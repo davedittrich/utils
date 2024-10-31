@@ -40,6 +40,7 @@
 
         - name: Check the install status of the zaproxy package.
           ansible.builtin.shell:
+            set -o pipefail
             dpkg -l zaproxy | grep 'ii  zaproxy' | grep '{{ zaproxy_version }}'
           register: dpkg_l
           changed_when: false
