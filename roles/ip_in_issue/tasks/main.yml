@@ -8,18 +8,18 @@
     verbosity: 1
   when: ansible_interfaces is defined
 
-- name: Set fact `issue_interfaces`.
+- name: Set fact ` ip_in_issue__issue_interfaces`.
   ansible.builtin.set_fact:
-    issue_interfaces: []
+    ip_in_issue__issue_interfaces: []
 
 - name: Set fact `exclude_interface_prefix`.
   ansible.builtin.set_fact:
-    exclude_interface_prefix: '{{ _exclude_interface_prefix }}'
-  when: exclude_interface_prefix is not defined
+    ip_in_issue__exclude_interface_prefix: '{{ ip_in_issue__default_exclude_interface_prefix }}'
+  when: ip_in_issue__exclude_interface_prefix is not defined
 
 - name: Debug `exclude_interface_prefix`.
   ansible.builtin.debug:
-    msg: '{{ exclude_interface_prefix }}'
+    msg: '{{ ip_in_issue__exclude_interface_prefix }}'
     verbosity: 1
 
 - name: Block for defining excluded interfaces.
@@ -28,34 +28,35 @@
 
     - name: Set fact `exclude_interface`.
       ansible.builtin.set_fact:
-        exclude_interface: '{{ exclude_interface | default({}) | combine({item.0: true}) }}'
+        ip_in_issue__exclude_interface: '{{ ip_in_issue__exclude_interface | default({}) | combine({item.0: true}) }}'
       with_nested:
         - '{{ ansible_interfaces }}'
-        - '{{ exclude_interface_prefix }}'
+        - '{{ ip_in_issue__exclude_interface_prefix }}'
       when: 'item.0.startswith(item.1) or item.0 == "lo"'
 
     - name: Debug `exclude_interface`.
       ansible.builtin.debug:
-        msg: '{{ exclude_interface }}'
+        msg: '{{ ip_in_issue__exclude_interface }}'
         verbosity: 2
 
-    - name: Set fact `issue_interfaces`.
+    - name: Set fact `ip_in_issue__issue_interface`.
       ansible.builtin.set_fact:
-        issue_interfaces: '{{ issue_interfaces | default([]) + [item] }}'
+        ip_in_issue__issue_interfaces: '{{ ip_in_issue__issue_interfaces | default([]) + [item] }}'
       with_items: '{{ ansible_interfaces }}'
-      when: 'item not in exclude_interface'
+      when: 'item not in ip_in_issue__exclude_interface'
 
 - name: Debug issue interfaces.
   ansible.builtin.debug:
-    msg: '{{ issue_interfaces }}'
+    msg: '{{ ip_in_issue__issue_interfaces }}'
     verbosity: 1
 
 - name: Stat `/etc/ssh` directory.
   ansible.builtin.stat:
     path: /etc/ssh
-  register: st
+  register: ip_in_issue__stat
 
 - name: Record SSH host key fingerprints.
+  when: ip_in_issue__stat.stat.exists
   block:
     - name: Find SSH host key fingerprint files.
       ansible.builtin.find:
@@ -63,40 +64,38 @@
         recurse: false
         use_regex: false
         patterns: 'ssh_host_*_key.pub'
-      register: find_results
+      register: ip_in_issue__find_results
 
     - name: Get SSH host key fingerprints.
       ansible.builtin.shell: >
         /usr/bin/ssh-keygen -l -f {{ item.path | quote }}
       args:
         executable: /bin/bash
-      with_items: '{{ find_results.files }}'
-      register: keygen_results
+      with_items: '{{ ip_in_issue__find_results.files }}'
+      register: ip_in_issue__keygen_results
       changed_when: false
 
-    - name: Debug `keygen_results.results`.
+    - name: Debug `ip_in_issue__keygen_results.results`.
       ansible.builtin.debug:
-        msg: "{{ keygen_results.results }}"
+        msg: "{{ ip_in_issue__keygen_results.results }}"
         verbosity: 2
 
     - name: Set fact with dictionary of SSH key fingerprints.
       ansible.builtin.set_fact:
-        ssh_fingerprints: "{{ ssh_fingerprints | default({}) | combine({item.0.path: item.1.stdout}) }}"
+        ip_in_issue__ssh_fingerprints: "{{ ip_in_issue__ssh_fingerprints | default({}) | combine({item.0.path: item.1.stdout}) }}"
       with_together:
-        - "{{ find_results.files }}"
-        - "{{ keygen_results.results }}"
+        - "{{ ip_in_issue__find_results.files }}"
+        - "{{ ip_in_issue__keygen_results.results }}"
 
     - name: Debug SSH host fingerprints.
       ansible.builtin.debug:
-        msg: '{{ ssh_fingerprints }}'
+        msg: '{{ ip_in_issue__ssh_fingerprints }}'
         verbosity: 2
-
-  when: st.stat.exists
 
 - name: Set fact there are no SSH host fingerprints.
   ansible.builtin.set_fact:
-    ssh_fingerprints: {}
-  when: not st.stat.exists
+    ip_in_issue__ssh_fingerprints: {}
+  when: not ip_in_issue__stat.stat.exists
 
 - name: Ensure /etc/issue file is customized.
   ansible.builtin.template:
@@ -105,9 +104,9 @@
     owner: root
     group: root
     mode: 0o644
-  register: etc_issue
+  register: ip_in_issue__etc_issue
   changed_when:
-    - etc_issue.changed
+    - ip_in_issue__etc_issue.changed
     - "'davedittrich.utils.kali_like' not in ansible_role_names"
   become: true
 
@@ -119,16 +118,16 @@
     patterns: '*.issue.j2'
   delegate_to: localhost
   become: false
-  register: templates_matched
+  register: ip_in_issue__templates_matched
 
 - name: Set fact with template names.
   ansible.builtin.set_fact:
-    issue_templates: '{{ issue_templates | default([]) + [item.path] }}'
-  with_items: '{{ templates_matched.files }}'
+    ip_in_issue__issue_templates: '{{ ip_in_issue__issue_templates | default([]) + [item.path] }}'
+  with_items: '{{ ip_in_issue__templates_matched.files }}'
 
 - name: Debug template files.
   ansible.builtin.debug:
-    msg: '{{ issue_templates }}'
+    msg: '{{ ip_in_issue__issue_templates }}'
     verbosity: 2
 
 - name: Ensure `/etc/issue.d` directory exists.
@@ -152,7 +151,7 @@
     owner: root
     group: root
     mode: 0o644
-  with_items: '{{ issue_templates }}'
+  with_items: '{{ ip_in_issue__issue_templates }}'
   changed_when: false
   become: true
 

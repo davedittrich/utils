@@ -16,12 +16,12 @@
         owner: root
         group: root
         mode: 0o644
-      register: hid_apple_conf
+      register: kdmt__hid_apple_conf
 
     - name: Ensure initrd images are updated.
       ansible.builtin.shell: |
         update-initramfs -u -k all
-      when: hid_apple_conf.changed
+      when: kdmt__hid_apple_conf.changed
       changed_when: false
 
       # Normally, the above requires a reboot to take effect.
@@ -30,16 +30,18 @@
     - name: Ensure `/sys/module/hid_apple/parameters/fnmode` updated.
       ansible.builtin.shell: |
         echo '{{ keyboard_hid_apple_fnmode }}' > /sys/module/hid_apple/parameters/fnmode
-      register: result
-      when: hid_apple_conf.changed
-      failed_when: result is failure and 'Directory nonexistent' not in result.stderr
+      register: kdmt__result
+      when: kdmt__hid_apple_conf.changed
+      changed_when: kdmt__result is success
+      failed_when: kdmt__result is failure and 'Directory nonexistent' not in kdmt__result.stderr
 
     - name: Ensure `/sys/module/hid_apple/parameters/iso_layout` updated.
       ansible.builtin.shell: |
         echo '{{ keyboard_hid_apple_iso_layout }}' > /sys/module/hid_apple/parameters/iso_layout
-      register: result
-      when: hid_apple_conf.changed
-      failed_when: result is failure and 'Directory nonexistent' not in result.stderr
+      register: kdmt__result
+      when: kdmt__hid_apple_conf.changed
+      changed_when: kdmt__result is success
+      failed_when: kdmt__result is failure and 'Directory nonexistent' not in kdmt__result.stderr
 
 - name: Block for unconfiguring Apple hid keyboard.
   when:  not keyboard_hid_apple | bool
@@ -50,12 +52,12 @@
       ansible.builtin.file:
         path: '/etc/modprobe.d/hid_apple.conf'
         state: absent
-      register: hid_apple_conf
+      register: kdmt__hid_apple_conf
 
     - name: Ensure initrd images are updated.
       ansible.builtin.shell: |
         update-initramfs -u -k all
-      when: hid_apple_conf.changed
+      when: kdmt__hid_apple_conf.changed
       changed_when: false
 
       # Normally, the above requires a reboot to take effect.
@@ -64,15 +66,17 @@
     - name: Ensure `/sys/module/hid_apple/parameters/fnmode` updated.
       ansible.builtin.shell: |
         echo '0' > /sys/module/hid_apple/parameters/fnmode
-      register: result
-      when: hid_apple_conf.changed
-      failed_when: result is failure and 'Directory nonexistent' not in result.stderr
+      register: kdmt__result
+      when: kdmt__hid_apple_conf.changed
+      changed_when: kdmt__result is success
+      failed_when: kdmt__result is failure and 'Directory nonexistent' not in kdmt__result.stderr
 
     - name: Ensure `/sys/module/hid_apple/parameters/iso_layout` updated.
       ansible.builtin.shell: |
         echo '-1' > /sys/module/hid_apple/parameters/iso_layout
-      register: result
-      when: hid_apple_conf.changed
-      failed_when: result is failure and 'Directory nonexistent' not in result.stderr
+      register: kdmt__result
+      when: kdmt__hid_apple_conf.changed
+      changed_when: kdmt__result is success
+      failed_when: kdmt__result is failure and 'Directory nonexistent' not in kdmt__result.stderr
 
 # vim: ft=ansible:

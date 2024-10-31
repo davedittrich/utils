@@ -4,16 +4,18 @@
 
 - name: Set fact with LXDE package.
   ansible.builtin.set_fact:
-    lxde_package: '{{ "task-lxde-desktop" if ansible_distribution == "Debian" else "lxde" }}'
+    branding__lxde_package: '{{ "task-lxde-desktop" if ansible_distribution == "Debian" else "lxde" }}'
 
 # Speed up molecule testing.
 - name: Set fact with LXDE package install flag.
   ansible.builtin.set_fact:
-    install_lxde: '{{ install_lxde | default(true) }}'
+    branding__install_lxde: '{{ branding__install_lxde | default(true) }}'
 
 # NOTE: This entire block is performed with `become: true`
 
 - name: Block
+  when: branding__install_lxde
+  become: true
   block:
   # HypriotOS switches the default Python from 2.x to 3.x. This breaks the old
   # and not well-maintained 'wicd' service:
@@ -45,7 +47,7 @@
         name:
           - 'arandr'
           - 'hwinfo'
-          - '{{ lxde_package }}'
+          - '{{ branding__lxde_package }}'
         state: present
         install_recommends: false
 
@@ -55,7 +57,7 @@
         update-alternatives --query x-session-manager 2>/dev/null | grep Value | cut -d' ' -f2
       args:
         executable: /bin/bash
-      register: alternatives_out
+      register: branding__alternatives_out
       changed_when: false
 
     - name: Ensure LXDE is default X11 session manager.
@@ -63,15 +65,16 @@
         update-alternatives --set x-session-manager /usr/bin/startlxde
       args:
         executable: /bin/bash
-      register: update_alternatives_shell
+      register: branding__update_alternatives_shell
       failed_when: "update_alternatives_shell.rc != 0"
-      when: "'startlxde' not in alternatives_out.stdout"
+      changed_when: "update_alternatives_shell.rc == 0"
+      when: "'startlxde' not in branding__alternatives_out.stdout"
 
     - name: Set fact with background setting information.
       ansible.builtin.set_fact:
-        background_settings_dict_list:
+        branding__background_settings_dict_list:
           - regexp: '^#+background='
-            line: 'background=#stretched:{{ lxde_wallpapers_directory }}/custom-splash.jpg'
+            line: 'background=#stretched:{{ branding__lxde_wallpapers_directory }}/custom-splash.jpg'
           - regexp: '^#+user-background='
             line: 'user-background=true'
 
@@ -81,15 +84,15 @@
         regexp: '{{ item.regexp }}'
         line: '{{ item.line }}'
         state: present
-      loop: '{{ background_settings_dict_list }}'
+      loop: '{{ branding__background_settings_dict_list }}'
 
     - name: Set fact with wallpaper setting information.
       ansible.builtin.set_fact:
-        background_settings_dict_list:
+        branding__background_settings_dict_list:
           - regexp: '^#+wallpaper_mode='
             line: 'wallpaper_mode=stretch'
           - regexp: '^#+wallpaper='
-            line: 'wallpaper={{ lxde_wallpapers_directory }}/custom-splash.jpg'
+            line: 'wallpaper={{ branding__lxde_wallpapers_directory }}/custom-splash.jpg'
 
     - name: Ensure pcmanfm global wallpaper configuration is customized.
       ansible.builtin.lineinfile:
@@ -97,9 +100,6 @@
         regexp: '{{ item.regexp }}'
         line: '{{ item.line }}'
         state: present
-      loop: '{{ background_settings_dict_list }}'
-
-  when: install_lxde
-  become: true
+      loop: '{{ branding__background_settings_dict_list }}'
 
 # vim: ft=ansible:
