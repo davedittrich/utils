@@ -4,15 +4,15 @@
 
 - name: Set fact `custom_udev_hwdb`.
   ansible.builtin.set_fact:
-    custom_udev_hwdb: '/etc/udev/hwdb.d/99-swapcapslockctrl.hwdb'
-  when: custom_udev_hwdb is not defined
+    kdmt__custom_udev_hwdb: '/etc/udev/hwdb.d/99-swapcapslockctrl.hwdb'
+  when: kdmt__custom_udev_hwdb is not defined
 
 - name: Determine state of `systemd-udevd`.
   ansible.builtin.shell: >
     systemctl is-active systemd-udevd
   args:
     executable: /bin/bash
-  register: udevd
+  register: kdmt__udevd
   changed_when: false
   become: true
 
@@ -21,9 +21,9 @@
   become: true
   block:
 
-    - name: 'Ensure file exists: {{ custom_udev_hwdb }}'
+    - name: 'Ensure file exists: {{ kdmt__custom_udev_hwdb }}'
       ansible.builtin.copy:
-        dest: '{{ custom_udev_hwdb }}'
+        dest: '{{ kdmt__custom_udev_hwdb }}'
         content: |
           # Match all usb keyboards
           evdev:input:b0003v*p*
@@ -33,12 +33,12 @@
         owner: root
         group: root
         mode: 0o644
-      register: udev_hwdb
+      register: kdmt__udev_hwdb
       become: true
 
     - name: Debug ``udev_hwdb``.
       ansible.builtin.debug:
-        msg: '{{ udev_hwdb }}'
+        msg: '{{ kdmt__udev_hwdb }}'
         verbosity: 2
 
     - name: Update udevadm hwdb and trigger update.
@@ -46,11 +46,12 @@
         udevadm hwdb --update && udevadm trigger
       args:
         executable: /bin/bash
-      register: trigger
-      until: trigger is success
+      register: kdmt__trigger
+      until: kdmt__trigger is success
       retries: 1
       delay: 30
-      when: "udevd.stdout == 'active' and udev_hwdb.changed"
+      when: "udevd.stdout == 'active' and kdmt__udev_hwdb.changed"
+      changed_when: kdmt__trigger is success
       become: true
 
     - name: Ensure `ctrl:swapcaps` in `/etc/default/keyboard`.
@@ -68,11 +69,11 @@
         executable: /bin/bash
       environment:
         DEBIAN_FRONTEND: "noninteractive"
-      register: result
+      register: kdmt__result
       changed_when: false
       failed_when:
-        - result.rc != 0
-        - "'ctrl:swapcaps' not in result.stdout"
+        - kdmt__result.rc != 0
+        - "'ctrl:swapcaps' not in kdmt__result.stdout"
       become: true
 
 - name: Block for restoring normal CapsLock and CTRL keys.
@@ -80,28 +81,29 @@
   become: true
   block:
 
-    - name: 'Ensure file is absent: {{ custom_udev_hwdb }}'
+    - name: 'Ensure file is absent: {{ kdmt__custom_udev_hwdb }}'
       ansible.builtin.file:
-        path: '{{ custom_xmodmap }}'
+        path: '{{ kdmt__custom_xmodmap }}'
         state: absent
-      register: udev_hwdb
+      register: kdmt__udev_hwdb
 
     - name: Update udevadm hwdb and trigger update.
       ansible.builtin.shell: >
         udevadm hwdb --update && udevadm trigger
       args:
         executable: /bin/bash
-      register: trigger
-      until: trigger is success
+      register: kdmt__trigger
+      until: kdmt__trigger is success
       retries: 1
       delay: 30
-      when: "udevd.stdout == 'active' and udev_hwdb.changed"
+      when: "udevd.stdout == 'active' and kdmt__udev_hwdb.changed"
+      changed_when: kdmt__trigger is success
       become: true
 
 - name: Include user .Xmodmap file customization tasks.
   ansible.builtin.include_tasks: user_xmodmap_capslockctrl.yml
   vars:
-    user: '{{ item }}'
+    kdmt__user: '{{ item }}'
   loop: '{{ accounts }}'
 
 # vim: ft=ansible:
