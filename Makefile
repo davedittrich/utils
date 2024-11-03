@@ -1,10 +1,11 @@
+# Makefile for davedittrich.utils Ansible collection.
 # The following are inter-related components that form a fragile whole that can
 # easily break when one of the components is updated. This can randomly cause a
 # frustratingly difficult situation to fix to pop up when you least expect it.
 ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule molecule-testinfra molecule-docker pytest-ansible pytest-testinfra pytest testinfra
 export COLLECTION_NAMESPACE=davedittrich
 DELEGATED_HOST:=none
-export MOLECULE_DISTRO=debian11
+export MOLECULE_DISTRO=debian12
 MOLECULE_DESTROY=never
 PLAYBOOK=playbooks/workstation_setup.yml
 SCENARIO=default
@@ -174,7 +175,7 @@ retest: check-conda scenario-exists galaxy.yml
 
 .PHONY: test-all-distros
 test-all-distros: scenario-exists galaxy.yml lint
-	set -e; for distro in debian9 debian10 ubuntu1804 ubuntu2004; do MOLECULE_DISTRO=$$distro molecule test -s $(SCENARIO); done
+	set -e; for distro in debian11 debian12 ubuntu2004 ubuntu2204; do MOLECULE_DISTRO=$$distro molecule test -s $(SCENARIO); done
 
 .PHONY: help-delegated-host
 help-delegated-host:
