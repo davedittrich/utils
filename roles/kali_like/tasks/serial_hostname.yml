@@ -16,60 +16,69 @@
         dmidecode -s system-serial-number
       args:
         executable: /bin/bash
-      register: dmidecode
+      register: kali_like__dmidecode
       changed_when: false
-      failed_when: dmidecode is failed or dmidecode.stdout == "None"
+      failed_when: kali_like__dmidecode is failed or kali_like__dmidecode.stdout == "None"
 
     - name: Set fact with serial number.
       ansible.builtin.set_fact:
-        system_serial_number: '{{ dmidecode.stdout }}'
+        kali_like__system_serial_number: '{{ kali_like__dmidecode.stdout }}'
 
   rescue:
     - name: Stat `/sys/class/dmi/id/board_serial` file.
       ansible.builtin.stat:
         path: '/sys/class/dmi/id/board_serial'
-      register: result
+      register: kali_like__result
 
     - name: Get serial number for host.
       ansible.builtin.shell: |
         echo -n $(cut -d/ -f 2 /sys/class/dmi/id/board_serial)
       changed_when: false
-      register: board_serial
+      register: kali_like__board_serial
 
     - name: Set fact with serial number.
       ansible.builtin.set_fact:
-        system_serial_number: '{{ board_serial.stdout }}'
+        kali_like__system_serial_number: '{{ kali_like__board_serial.stdout }}'
       when:
-        - result is success
-        - result.stdout is defined
-        - result.stdout != ""
+        - kali_like__result is success
+        - kali_like__result.stdout is defined
+        - kali_like__result.stdout != ""
 
-- name: Set fact with host name based on serial number.
-  ansible.builtin.set_fact:
-    host_serial: 'kali-{{ system_serial_number }}'
+  # This does not work when run in a Docker container when Docker is
+  # managing the `/etc/hosts` file. The result is a 'resource busy' error.
+
+- name: Block for setting hostname.
   when:
-    - system_serial_number is defined
-    - system_serial_number != ""
+    - kali_like__system_serial_number is defined
+    - kali_like__system_serial_number != ""
+  block:
+    - name: Set fact with host name based on serial number.
+      ansible.builtin.set_fact:
+        kali_like__host_serial: 'kali-{{ kali_like__system_serial_number }}'
 
-- name: Set fact with generic host name.
-  ansible.builtin.set_fact:
-    host_serial: 'kali-generic'
-  when: host_serial is not defined
+    - name: Debug `host_serial`
+      ansible.builtin.debug:
+        var: kali_like__host_serial
+        verbosity: 1
 
-- name: Debug `host_serial`
-  ansible.builtin.debug:
-    var: host_serial
-    verbosity: 1
+    - name: Ensure hostname resolves.
+      ansible.builtin.lineinfile:
+        path: '/etc/hosts'
+        line: '127.0.1.1  {{ kali_like__host_serial }}'
+        insertafter: '127.0.0.1 localhost'
+        owner: root
+        group: root
+        mode: 0o644
+      become: true
 
-# TODO(dittrich): Add name to `/etc/hosts` file.
-
-- name: Ensure hostname has serialized Kali host name.
-  ansible.builtin.shell:
-    hostname && hostname '{{ host_serial }}'
-  args:
-    executable: /bin/bash
-  register: hostname
-  changed_when: hostname is success and hostname.stdout != host_serial
-  become: true
+    - name: Ensure hostname has serialized Kali host name.
+      ansible.builtin.shell:
+        hostname -b '{{ kali_like__host_serial }}' && hostname
+      args:
+        executable: /bin/bash
+      register: kali_like__hostname
+      changed_when: kali_like__hostname is success and kali_like__hostname.stdout != kali_like__host_serial
+      become: true
 
 # vim: ft=ansible:
+# code: language=ansible
