@@ -4,7 +4,7 @@ dependency:
 # [delegated-molecule.yml-driver]
 # See: https://github.com/ansible-community/molecule/issues/1518
 driver:
-  name: delegated
+  name: default
   options:
     managed: false
     login_cmd_template: 'ssh {instance} -F delegated-ssh-config'
