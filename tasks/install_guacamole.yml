@@ -2,16 +2,18 @@
 # Install Apache Guacamole by building locally.
 # https://www.kali.org/docs/general-use/guacamole-kali-in-browser/
 
+# wget https://raw.githubusercontent.com/itiligent/Guacamole-Install/main/1-setup.sh && chmod +x 1-setup.sh && ./1-setup.sh
+
 - name: Assert `guacamole_password` is set.
   ansible.builtin.assert:
     that:
-      - '{{ guacamole_password is defined and guacamole_password != "" }}'
+      - guacamole_password is defined and guacamole_password != ""
     fail_msg: "'guacamole_password' must be defined in including playbook"
 
 - name: Assert `mysql_password` is set.
   ansible.builtin.assert:
     that:
-      - '{{ mysql_password is defined and mysql_password != "" }}'
+      - mysql_password is defined and mysql_password != ""
     fail_msg: "'mysql_password' must be defined in including playbook"
 
 - name: Set fact `tmpdir`.
@@ -19,12 +21,22 @@
     tmpdir: '/root/tmp'
   when: tmpdir is not defined
 
-- name: Set fact with Guacamole related service names.
+- name: Ensure timezone is defined.
+  ansible.builtin.set_fact:
+    timezone: 'America/Los_Angeles'
+  when: timezone is not defined
+
+- name: Ensure timezone set properly.
+  community.general.timezone:
+    name: '{{ timezone }}'
+  become: true
+
+- name: Set fact `guacamole_services`.
   ansible.builtin.set_fact:
     guacamole_services:
       - "guacd"
       - "mariadb"
-      - "tomcat9"
+      - "tomcat10"
       # - "vncserver"
   when: guacamole_services is not defined
 
@@ -33,66 +45,136 @@
     path: '/usr/local/sbin/guacd'
   register: guacd_path
 
+# https://idroot.us/install-apache-guacamole-debian-11/
 - name: Block for installing Guacamole from source.
   when: not guacd_path.stat.exists
   block:
 
-    - name: Ensure Git is installed.
-      ansible.builtin.apt:
-        name: git
-        state: present
-      become: true
+  - name: Ensure required packages are installed.
+    ansible.builtin.apt:
+      name:
+        - freerdp2-dev
+        - git
+        - libavcodec-dev
+        - libavformat-dev
+        - libavutil-dev
+        - libcairo2-dev
+        - libjpeg-dev
+        - libjpeg62-turbo-dev
+        - libpng-dev
+        - libossp-uuid-dev
+        - libpango1.0-dev
+        - libpango1.0-0
+        - libpulse-dev
+        - libssh2-1t64
+        - libssh2-1-dev
+        - libssl-dev
+        - libswscale-dev
+        - libtool-bin
+        - libvncserver-dev
+        - libvorbis-dev
+        - libwebp-dev
+        - libwebsocketpp-dev
+        - libwebsockets17
+        - libwebsockets-dev
+        - mariadb-server
+        - openssl
+        - tigervnc-standalone-server
+        - tomcat10
+        - tomcat10-admin
+        - tomcat10-common
+        - tomcat10-user
+      state: present
+    become: true
 
-    - name: "Ensure directory exists: {{ tmpdir }}"
-      ansible.builtin.file:
-        dest: '{{ tmpdir }}'
-        state: directory
-        owner: 'root'
-        group: 'root'
-        mode: 0o770
-      become: true
+  - name: "Ensure directory exists: {{ tmpdir }}"
+    ansible.builtin.file:
+      dest: '{{ tmpdir }}'
+      state: directory
+      owner: 'root'
+      group: 'root'
+      mode: 0o770
+    become: true
 
-    - name: Clone Guacamole repo.  # noqa: latest[git]
-      ansible.builtin.git:
-        clone: true
-        repo: https://github.com/MysticRyuujin/guac-install.git
-        dest: '{{ tmpdir }}/guac-install'
-      become: true
+  - name: Ensure `/etc/guacamole` directory exists.
+    ansible.builtin.file:
+      path: '/etc/guacamole'
+      state: directory
+      owner: 'root'
+      group: 'root'
+      mode: 0o755
+    become: true
 
-    - name: Install Guacamole from source.
-      ansible.builtin.shell: >-
-        /bin/bash guac-install.sh
-          --nomfa
-          --installmysql
-          --mysqlpwd {{ mysql_password }}
-          --guacpwd {{ guacamole_password }} || echo guacamole_*_build.log
-      args:
-        executable: /bin/bash
-        chdir: '{{ tmpdir }}/guac-install'
-        creates: '/usr/local/sbin/guacd'
-      environment:
-        - DEBIAN_FRONTEND: 'noninteractive'
-      register: guacamole_install
-      become: true
+  - name: Ensure `guacd` configuration file exists`.
+    ansible.builtin.copy:
+      dest: '/etc/guacamole/guacd.conf'
+      content: |
+        [server]
+        bind_host = 127.0.0.1
+        bind_port = 4822
+      owner: 'root'
+      group: 'root'
+      mode: 0o644
+    become: true
+
+  - name: Ensure timezone tables exist.
+    ansible.builtin.shell: |
+      set -o pipefail
+      mysql_tzinfo_to_sql /usr/share/zoneinfo 2>/dev/null |
+      sudo mysql -u root -p {{ mysql_password }} -D mysql -h 127.0.0.1 -P 3306
+    environment:
+      MYSQL_DRIVER: mysql
+      MYSQL_SSL_MODE: disabled
+    args:
+      executable: /bin/bash
+    changed_when: false
+    failed_when: false
+
+  - name: Clone Guacamole repo.  # noqa: latest[git]
+    ansible.builtin.git:
+      clone: true
+      repo: https://github.com/MysticRyuujin/guac-install.git
+      dest: '{{ tmpdir }}/guac-install'
+    become: true
+
+  - name: Install Guacamole from source.
+    ansible.builtin.shell: >-
+      /bin/bash guac-install.sh
+        --nomfa
+        --installmysql
+        --mysqlpwd {{ mysql_password }}
+        --guacpwd {{ guacamole_password }} || echo guacamole_*_build.log
+    args:
+      executable: /bin/bash
+      chdir: '{{ tmpdir }}/guac-install'
+      creates: '/usr/local/sbin/guacd'
+    environment:
+      DEBIAN_FRONTEND: 'noninteractive'
+    register: guacamole_install
+    become: true
 
   rescue:
     - name: Set fact with log file name.
       ansible.builtin.set_fact:
         guacamole_build_log: '{{ guacamole_install.stdout_lines[-1] }}'
+      when: guacamole_install is defined
 
     - name: Expose Guacamole build log file contents.
       ansible.builtin.shell: cat {{ guacamole_build_log }}
       args:
         executable: /bin/bash
       changed_when: false
+      when: guacamole_install is defined
       become: true
 
-  always:
-    - name: Clean up Guacamole install files.
-      ansible.builtin.file:
-        path: "{{ tmpdir }}"
-        state: absent
-      become: true
+    - name: Handle low verbosity situation.
+      ansible.builtin.debug:
+        msg: "{{ guacamole_build_log.stdout }}"
+      when: guacamole_install is defined and ansible_verbosity <= 1
+
+    - name: Bail out on install failure.
+      ansible.builtin.fail:
+        msg: "Bailing out on guacamole install failure"
 
 - name: Ensure TigerVNC is installed.
   ansible.builtin.apt:
@@ -112,12 +194,6 @@
   loop_control:
     loop_var: user
 
-- name: Ensure timezone set properly.
-  community.general.timezone:
-    name: 'America/Los_Angeles'
-  become: true
-
-# FIXME: vncserver :1
 - name: Ensure Guacamole-related services are enabled, started.
   ansible.builtin.service:
     name: "{{ item }}"
@@ -126,6 +202,20 @@
   become: true
   changed_when: false
   failed_when: false
-  loop: "{{ guacamole_services }}"
+  loop: '{{ guacamole_services }}'
 
+# https://github.com/MysticRyuujin/guac-install
+#
+# location /guacamole/ {
+#   proxy_pass http://HOSTNAME:8080/guacamole/;
+#   proxy_buffering off;
+#   proxy_http_version 1.1;
+#   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#   proxy_set_header Upgrade $http_upgrade;
+#   proxy_set_header Connection $http_connection;
+#   access_log off;
+# }
+
+# FIXME: vncserver :1
 # vim: ft=ansible:
+# code: language=ansible
