@@ -1,17 +1,28 @@
 # Makefile for davedittrich.utils Ansible collection.
+SHELL=/bin/bash
 # The following are inter-related components that form a fragile whole that can
 # easily break when one of the components is updated. This can randomly cause a
 # frustratingly difficult situation to fix to pop up when you least expect it.
-ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule molecule-testinfra molecule-docker pytest-ansible pytest-testinfra pytest testinfra
+ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule-plugins pytest-ansible pytest-testinfra pytest
+ANSIBLE_COMMANDS=ansible ansible-lint molecule pytest python python3 pip pip3
 export COLLECTION_NAMESPACE=davedittrich
 DELEGATED_HOST:=none
 export MOLECULE_DISTRO=debian12
 MOLECULE_DESTROY=never
 PLAYBOOK=playbooks/workstation_setup.yml
 SCENARIO=default
-SHELL=/bin/bash
 USER_ID=$(shell id -u)
 GROUP_ID=$(shell id -g)
+
+# This project uses poetry for managing Python packages.
+# Install poetry into conda environment.
+export POETRY_HOME:=$(CONDA_PREFIX)
+POETRY_INSTALL_URL=https://raw.githubusercontent.com/python-poetry/install.python-poetry.org/refs/heads/main/install-poetry.py
+POETRY_VERSION=1.8.4
+
+# The first rule in Makefile is implicitly the default rule, so make it explicit.
+.PHONY: default
+default: help
 
 .PHONY: help
 help:
@@ -38,7 +49,7 @@ help:
 	@echo "  test-delegated - run molecule against delegated host ($(DELEGATED_HOST))"
 	@echo "  verify - run tests on scenario '$(SCENARIO)'"
 	@echo "  version - show the current version number from 'VERSION' file"
-	@echo "  update-requirements - update pip packages defined in requirements.txt"
+	@echo "  update-packages - update Python packages using poetry"
 	@echo ""
 	@echo "Variables:"
 	@echo "  ANSIBLE_GALAXY_SERVER ('$(ANSIBLE_GALAXY_SERVER)' from psec)"
@@ -63,6 +74,24 @@ help:
 	@echo ""
 	@echo "Examples:"
 	@echo " $$ make SCENARIO=branding test"
+
+.PHONY: install-poetry
+install-poetry:
+	@if [[ "$(shell poetry --version 2>/dev/null)" =~ "$(POETRY_VERSION)" ]]; then \
+		echo "[+] poetry version $(POETRY_VERSION) is already installed"; \
+	else \
+		(curl -sSL $(POETRY_INSTALL_URL) | python - --version $(POETRY_VERSION)); \
+		poetry self add "poetry-dynamic-versioning[plugin]"; \
+	fi
+
+.PHONY: uninstall-poetry
+uninstall-poetry:
+	curl -sSL $(POETRY_INSTALL_URL) | python - --version $(POETRY_VERSION) --uninstall
+
+#HELP update-packages - update dependencies with Poetry
+.PHONY: update-packages
+update-packages: install-poetry
+	poetry update
 
 .PHONY: check-conda
 check-conda:
@@ -97,6 +126,13 @@ clean: clean-artifacts
 clean-artifacts:
 	./scripts/clean_artifacts.sh || true
 
+.PHONY: reset-molecule
+reset-molecule:
+	for scenario in default $(shell grep '[-] davedittrich.utils.' molecule/default/converge.yml | cut -d. -f 3); \
+	do \
+		molecule reset -s $$scenario > /dev/null; \
+	done
+
 .PHONY: clean-molecule
 clean-molecule:
 	for scenario in default $(shell grep '[-] davedittrich.utils.' molecule/default/converge.yml | cut -d. -f 3); \
@@ -126,8 +162,8 @@ lint: galaxy.yml
 	make version
 	make dependencies
 	yamllint molecule/ playbooks/ plugins/ roles/ tasks/
-	flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
-	ansible-lint -vvv -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
+	ruff check -v molecule/shared/tests playbooks/ plugins/ roles/ tasks/
+	ansible-lint --project-dir . -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 
 .PHONY: login
 login: scenario-exists
@@ -157,6 +193,10 @@ scenario-exists:
 .PHONY: spotless
 spotless: clean clean-molecule
 	-rm -f davedittrich-utils-latest.tar.gz davedittrich-utils-[0-9]*[0-9].tar.gz
+
+.PHONY: test-debug
+test-debug: lint reset
+	$(MAKE) SETVARIABLES=FORDEBUGGING retest
 
 .PHONY: test
 test: lint reset retest
@@ -208,17 +248,19 @@ test-delegated: galaxy.yml
 .PHONY: version
 version:
 	@echo davedittrich.utils version $(shell cat VERSION)
-	@for component in $(ANSIBLE_COMPONENTS); \
-	 do \
-	 $$component --version 2>/dev/null || \
-	 python -m pip freeze | grep "^$$component==" || \
-	 true; \
-	 done
+#	@for component in $(ANSIBLE_COMPONENTS); \
+#	 do \
+#	 $$component --version 2>/dev/null || \
+#	 python -m pip freeze | grep "^$$component==" || \
+#	 true; \
+#	 done
 
 # Use ANSIBLE_VERBOSITY to control whether to run `pipdeptree`.
 .PHONY: dependencies
 dependencies:
-	@pipdeptree -p $(shell sed 's/ /,/g' <<< "$(ANSIBLE_COMPONENTS)") || true
+	pipdeptree -p $(shell sed 's/ /,/g' <<< "$(ANSIBLE_COMPONENTS)") || true
+	for COMMAND in $(ANSIBLE_COMMANDS); do type $$COMMAND; $$COMMAND --version; done
+	@#for PACKAGE in $(ANSIBLE_COMPONENTS); do pipdeptree -p $$PACKAGE; done
 
 .PHONY: setup
 setup: collection-community-docker
@@ -229,10 +271,6 @@ collection-community-docker:
 	then \
 		ansible-galaxy collection install community.docker; \
 	fi
-
-.PHONY: update-requirements
-update-requirements:
-	python -m pip install -U -r requirements.txt
 
 .PHONY: fix-broken-ansible
 fix-broken-ansible:
