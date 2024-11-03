@@ -30,6 +30,8 @@ platforms:
       - SYS_ADMIN
     security_opts:
       - seccomp=unconfined
+    env:
+      container: docker
 provisioner:
   name: ansible
   env:

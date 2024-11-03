@@ -32,6 +32,8 @@ platforms:
       - NET_ADMIN
     security_opts:
       - seccomp=unconfined
+    env:
+      container: docker
 # [molecule.yml-provisioner]
 provisioner:
   name: ansible
