@@ -1,5 +1,4 @@
 ---
-
 # Perform a `dist-upgrade`. Doing this may result in a major update
 # to Python, which can break `pipx` and programs installed with it.
 # After the upgrade, check all accounts on the system that have
@@ -17,13 +16,20 @@
       become: true
 
   rescue:
+    - name: Fail on connection errors.
+      ansible.builtin.fail:
+        msg: "Check internet connection"
+      when:
+        - msg in dist_upgrade
+        - "'Could not connect' in dist_upgrade.msg"
+
     - name: Include broken dist-upgrade repair tasks.
       ansible.builtin.include_tasks: '{{ collection_root }}/tasks/fix_broken_install.yml'
 
 - name: Include broken user `pipx` repair tasks.
-  ansible.builtin.include_tasks: '{{ collection_root }}/tasks/check_repair_user_pipx.yml'
-  loop: '{{ homedir.keys() }}'
+  ansible.builtin.include_tasks: "{{ collection_root }}/tasks/check_repair_user_pipx.yml"
+  loop: "{{ homedir.keys() }}"
   loop_control:
     loop_var: user
-
 # vim: ft=ansible :
+# code: language=ansible
