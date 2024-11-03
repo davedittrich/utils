@@ -1,14 +1,7 @@
 ---
+# .ansible-lint
+# See https://ansible.readthedocs.io/projects/lint/configuring/
 
-parseable: true
-quiet: false
-skip_list:
-  - ANSIBLE0010
-  - command-instead-of-module
-  - no-handler
-  - experimental  # all rules tagged as experimental
-  - template-instead-of-copy
-use_default_rules: true
 exclude_paths:
   - __pycache__
   - .github
@@ -20,5 +13,16 @@ exclude_paths:
 # - molecule/*/prepare.yml
   - molecule/shared/prepare.yml  # No idea why this is failing.
   - roles/*/meta/main.yml
-# - playbooks/*.yml
-# - tasks/*.yml
+  - playbooks/*.yml
+  - tasks/*.yml
+parseable: true
+profile: null # min,basic,moderate,safety,shared,production
+quiet: false
+skip_list:
+  - ANSIBLE0010
+  - command-instead-of-module
+  - no-handler
+  - experimental  # all rules tagged as experimental
+  - template-instead-of-copy
+use_default_rules: true
+verbosity: 4
