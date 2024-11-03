@@ -5,14 +5,14 @@
 - name: Ensure `accounts` and home directory map are defined.
   ansible.builtin.include_tasks: '{{ collection_root }}/tasks/get_accounts.yml'
 
-- name: Set fact `dropin_files` with dropin directories to create.
+- name: Ensure `dropins__dropin_files` has dropin directories to create.
   ansible.builtin.set_fact:
-    dropin_files: '{{ _dropin_files }}'
-  when: dropin_files is not defined
+    dropins__dropin_files: '{{ dropins__default_dropin_files }}'
+  when: dropins__dropin_files is not defined
 
-- name: Debug `dropin_files` variable.
+- name: Debug `dropins__dropin_files` variable.
   ansible.builtin.debug:
-    var: dropin_files
+    var: dropins__dropin_files
     verbosity: 0
 
 - name: Include `pipx` user account repair tasks.
@@ -32,11 +32,11 @@
 - name: Include dropin directory setup tasks.
   ansible.builtin.include_tasks: setup_dropin.yml
   vars:
-    user: '{{ item.0 }}'
-    dropin_file: '{{ item.1 }}'
+    dropins__user: '{{ item.0 }}'
+    dropins__dropin_file: '{{ item.1 }}'
   with_nested:
     - '{{ accounts }}'
-    - '{{ dropin_files }}'
+    - '{{ dropins__dropin_files }}'
 
 - name: Ensure `PATH` contains users' `.local/bin` directories.
   ansible.builtin.copy:

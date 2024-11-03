@@ -4,7 +4,7 @@
   ansible.builtin.stat:
     path: '/boot/config.txt'
   become: true
-  register: boot_config
+  register: branding__boot_config
 
 - name: Ensure splash is disabled in `/boot/config.txt`.
   ansible.builtin.lineinfile:
@@ -16,13 +16,13 @@
     group: 'root'
     mode: 0o640
   become: true
-  when: boot_config.stat.exists
+  when: branding__boot_config.stat.exists
 
 - name: Stat `/boot/cmdline.txt` file.
   ansible.builtin.stat:
     path: '/boot/cmdline.txt'
   become: true
-  register: boot_cmdline
+  register: branding__boot_cmdline
 
 - name: Check for `logo.nologo` presense in `/boot/cmdline.txt`.
   ansible.builtin.lineinfile:
@@ -36,8 +36,8 @@
   become: true
   check_mode: true
   changed_when: false
-  register: nologo_exists
-  when: boot_cmdline.stat.exists
+  register: branding__nologo_exists
+  when: branding__boot_cmdline.stat.exists
 
 - name: Ensure `logo.nologo` present in `/boot/cmdline.txt`.
   ansible.builtin.lineinfile:
@@ -51,7 +51,7 @@
     group: 'root'
     mode: 0o640
   become: true
-  when: boot_cmdline.stat.exists and not nologo_exists.found
+  when: branding__boot_cmdline.stat.exists and not branding__nologo_exists.found
 
   # This task assumes you have already placed the file to use for
   # the boot splash in `/root`. This was designed for Raspberry Pi

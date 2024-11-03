@@ -25,6 +25,9 @@ Role Variables
 
 `accounts` - the list of user accounts to be set up.
 
+Note: The role gets the `accounts` variable using included task
+'{{ collection_root }}/tasks/get_accounts.yml'
+
 Dependencies
 ------------
 

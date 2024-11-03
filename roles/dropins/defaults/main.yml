@@ -1,6 +1,6 @@
 ---
 
-_dropin_files:
+dropins__default_dropin_files:
   - '.bash_profile'
   - '.bash_aliases'
   - '.gitconfig'

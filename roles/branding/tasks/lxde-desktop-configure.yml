@@ -14,11 +14,11 @@
 
 - name: Set fact with user's `~/.config/` directory path.
   ansible.builtin.set_fact:
-    dot_config_dir: '{{ homedir[user] }}/.config/'
+    branding__dot_config_dir: '{{ homedir[branding__user] }}/.config/'
 
 - name: Set fact with relative local path.
   ansible.builtin.set_fact:
-    dot_config_template_dir: '{{ role_path }}/templates/home.config'
+    branding__dot_config_template_dir: '{{ role_path }}/templates/home.config'
 
     # Place all files (whether actual templates or not) into this
     # directory tree as if they were templates to handle them all
@@ -28,22 +28,22 @@
 
 - name: Find `.config/` templates on control host.
   ansible.builtin.find:
-    paths: '{{ dot_config_template_dir }}'
+    paths: '{{ branding__dot_config_template_dir }}'
     recurse: true
     use_regex: false
     patterns: '*.j2'
   delegate_to: localhost
   become: false
-  register: config_templates_matched
+  register: branding__config_templates_matched
 
 - name: Set fact with relative template paths.
   ansible.builtin.set_fact:
-    config_templates: "{{ config_templates | default([]) + [item.path | replace(dot_config_template_dir + '/', '')] }}"
-  loop: '{{ config_templates_matched.files }}'
+    branding__config_templates: "{{ branding__config_templates | default([]) + [item.path | replace(branding__dot_config_template_dir + '/', '')] }}"
+  loop: '{{ branding__config_templates_matched.files }}'
 
 - name: Debug template files.
   ansible.builtin.debug:
-    var: config_templates
+    var: branding__config_templates
     verbosity: 0
   changed_when: false
 
@@ -63,14 +63,14 @@
 
 - name: Ensure user's configuration directories exist.
   ansible.builtin.file:
-    path: '{{ dot_config_dir + item | dirname }}'
+    path: '{{ branding__dot_config_dir + item | dirname }}'
     state: directory
-    owner: '{{ user }}'
-    group: '{{ user }}'
+    owner: '{{ branding__user }}'
+    group: '{{ branding__user }}'
     mode: 0o750
   become: true
-  become_user: '{{ user }}'
-  loop: '{{ config_templates }}'
+  become_user: '{{ branding__user }}'
+  loop: '{{ branding__config_templates }}'
 
   # Could also put the rc.xml file for openbox into the system
   # directory `/etc/xdg/openbox/rc.xml`. When done on a live
@@ -79,13 +79,13 @@
 
 - name: Ensure user's configuration files exist.
   ansible.builtin.template:
-    src: '{{ dot_config_template_dir }}/{{ item }}'
-    dest: "{{ dot_config_dir + item | replace('.j2', '') }}"
-    owner: '{{ user }}'
-    group: '{{ user }}'
+    src: '{{ branding__dot_config_template_dir }}/{{ item }}'
+    dest: "{{ branding__dot_config_dir + item | replace('.j2', '') }}"
+    owner: '{{ branding__user }}'
+    group: '{{ branding__user }}'
     mode: 0o750
   become: true
-  become_user: '{{ user }}'
-  loop: '{{ config_templates }}'
+  become_user: '{{ branding__user }}'
+  loop: '{{ branding__config_templates }}'
 
 # vim: ft=ansible:

@@ -7,14 +7,14 @@
 
 - name: Set fact with relative local path.
   ansible.builtin.set_fact:
-    kali_like_script_templates_dir: '{{ role_path }}/templates/scripts/'
+    kali_like__script_templates_dir: '{{ role_path }}/templates/scripts/'
 
 - name: Include Kali base OS preparation tasks.
   ansible.builtin.include_tasks: prepare_for_kali_packages.yml
 
 - name: Ensure required Kali packages are present.
   ansible.builtin.apt:
-    name: "{{ kali_like_packages }}"
+    name: "{{ kali_like__packages }}"
     state: present
     update_cache: true
     cache_valid_time: 3600
@@ -25,29 +25,29 @@
   ansible.builtin.command: 'touch ~/.hushlogin'
   loop: '{{ accounts }}'
   loop_control:
-    loop_var: user
+    loop_var: kali_like__user
   become: true
-  become_user: '{{ user }}'
+  become_user: '{{ kali_like__user }}'
   changed_when: false
 
 - name: Find script templates on control host.
   ansible.builtin.find:
-    paths: '{{ kali_like_script_templates_dir }}'
+    paths: '{{ kali_like__script_templates_dir }}'
     recurse: false
     use_regex: false
     patterns: '*.sh.j2'
   delegate_to: localhost
   become: false
-  register: kali_like_script_templates_matched
+  register: kali_like__script_templates_matched
 
 - name: Set fact with relative template paths.
   ansible.builtin.set_fact:
-    kali_like_script_templates: '{{ kali_like_script_templates | default([]) + [item.path | basename] }}'
-  loop: '{{ kali_like_script_templates_matched.files }}'
+    kali_like__script_templates: '{{ kali_like__script_templates | default([]) + [item.path | basename] }}'
+  loop: '{{ kali_like__script_templates_matched.files }}'
 
-- name: Debug `kali_like_script_templates`.
+- name: Debug `kali_like__script_templates`.
   ansible.builtin.debug:
-    var: kali_like_script_templates
+    var: kali_like__script_templates
     verbosity: 1
   changed_when: false
 
@@ -86,5 +86,6 @@
 
 - name: Include Guacamole installation tasks.
   ansible.builtin.include_tasks: '{{ collection_root }}/tasks/install_guacamole.yml'
+  when: false
 
 # vim: ft=ansible :

@@ -3,14 +3,14 @@
 # Customize user .Xmodmap file for natural scrolling.
 # This task file must be looped on 'user'.
 
-- name: 'Block for customizing file: {{ user_xmodmap[user] }}'
+- name: 'Block for customizing file: {{ kdmt__user_xmodmap[kdmt__user] }}'
   become: true
-  become_user: '{{ user }}'
+  become_user: '{{ kdmt__user }}'
   block:
 
-    - name: 'Ensure file enables natural scrolling: {{ user_xmodmap[user] }}'
+    - name: 'Ensure file enables natural scrolling: {{ kdmt__user_xmodmap[kdmt__user] }}'
       ansible.builtin.blockinfile:
-        path: '{{ user_xmodmap[user] }}'
+        path: '{{ kdmt__user_xmodmap[kdmt__user] }}'
         marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:natural_scrolling]'
         block: |
           !
@@ -18,20 +18,20 @@
           !
           pointer = 1 2 3 5 4 7 6 8 9 10 11 12
         create: true
-        owner: '{{ user }}'
-        group: '{{ user }}'
+        owner: '{{ kdmt__user }}'
+        group: '{{ kdmt__user }}'
         mode: 0o640
-      when: natural_scrolling | bool
+      when: kdmt__natural_scrolling | bool
 
-    - name: 'Ensure file does not enable natural scrolling: {{ user_xmodmap }}'
+    - name: 'Ensure file does not enable natural scrolling: {{ kdmt__user_xmodmap }}'
       ansible.builtin.blockinfile:
-        path: '{{ user_xmodmap[user] }}'
+        path: '{{ kdmt__user_xmodmap[kdmt__user] }}'
         marker: '# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:natural_scrolling]'
         block: ''
         create: true
-        owner: '{{ user }}'
-        group: '{{ user }}'
+        owner: '{{ kdmt__user }}'
+        group: '{{ kdmt__user }}'
         mode: 0o640
-      when: not natural_scrolling | bool
+      when: not kdmt__natural_scrolling | bool
 
 # vim: ft=ansible:

@@ -2,7 +2,7 @@
 
 # Configure left CapsLock and CTRL keys.
 
-- name: Set fact `custom_udev_hwdb`.
+- name: Set fact `kdmt__custom_udev_hwdb`.
   ansible.builtin.set_fact:
     kdmt__custom_udev_hwdb: '/etc/udev/hwdb.d/99-swapcapslockctrl.hwdb'
   when: kdmt__custom_udev_hwdb is not defined
@@ -17,7 +17,7 @@
   become: true
 
 - name: Block for swapping left CapsLock and CTRL keys.
-  when: keyboard_swapcapslockctrl | bool
+  when: kdmt__keyboard_swapcapslockctrl | bool
   become: true
   block:
 
@@ -36,7 +36,7 @@
       register: kdmt__udev_hwdb
       become: true
 
-    - name: Debug ``udev_hwdb``.
+    - name: Debug ``kdmt__udev_hwdb``.
       ansible.builtin.debug:
         msg: '{{ kdmt__udev_hwdb }}'
         verbosity: 2
@@ -50,7 +50,7 @@
       until: kdmt__trigger is success
       retries: 1
       delay: 30
-      when: "udevd.stdout == 'active' and kdmt__udev_hwdb.changed"
+      when: "kdmt__udevd.stdout == 'active' and kdmt__udev_hwdb.changed"
       changed_when: kdmt__trigger is success
       become: true
 
@@ -77,7 +77,7 @@
       become: true
 
 - name: Block for restoring normal CapsLock and CTRL keys.
-  when: not keyboard_swapcapslockctrl | bool
+  when: not kdmt__keyboard_swapcapslockctrl | bool
   become: true
   block:
 
@@ -96,7 +96,7 @@
       until: kdmt__trigger is success
       retries: 1
       delay: 30
-      when: "udevd.stdout == 'active' and kdmt__udev_hwdb.changed"
+      when: "kdmt__udevd.stdout == 'active' and kdmt__udev_hwdb.changed"
       changed_when: kdmt__trigger is success
       become: true
 

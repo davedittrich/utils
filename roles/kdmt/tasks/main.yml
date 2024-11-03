@@ -9,7 +9,7 @@
 
 - name: Ensure user .Xmodmap file paths are defined.
   ansible.builtin.set_fact:
-    user_xmodmap: "{{ user_xmodmap | default({}) | combine({item: homedir[item] + '/.Xmodmap'}) }}"
+    kdmt__user_xmodmap: "{{ kdmt__user_xmodmap | default({}) | combine({item: homedir[item] + '/.Xmodmap'}) }}"
   loop: '{{ accounts }}'
 
 - name: Ensure required packages are present.
@@ -28,7 +28,7 @@
 
 - name: Include Apple keyboard function keys configuration tasks.
   ansible.builtin.include_tasks: configure_keyboard_hid_apple.yml
-  when: keyboard_hid_apple | bool
+  when: kdmt__keyboard_hid_apple | bool
 
 - name: Include capslockctrl configuration tasks.
   ansible.builtin.include_tasks: configure_keyboard_capslockctrl.yml

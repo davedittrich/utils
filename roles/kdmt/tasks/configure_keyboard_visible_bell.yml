@@ -5,7 +5,7 @@
 - name: Include user visible bell init file configuration.
   ansible.builtin.include_tasks: user_visible_bell.yml
   vars:
-    user: '{{ item }}'
+    kdmt__user: '{{ item }}'
   loop: '{{ accounts }}'
 
 # vim: ft=ansible:

@@ -33,16 +33,16 @@
   args:
     executable: /bin/bash
   become: true
-  register: dmesg_out
+  register: branding__dmesg_out
   changed_when: false
 
 - name: Set fact with number of displays.
   ansible.builtin.set_fact:
-    monitors: "{{ 0 if dmesg_out.stdout == '' else dmesg_out.stdout | int }}"
+    branding__monitors: "{{ 0 if branding__dmesg_out.stdout == '' else branding__dmesg_out.stdout | int }}"
 
 - name: Debug `monitors`.
   ansible.builtin.debug:
-    var: monitors
+    var: branding__monitors
     verbosity: 0
 
 - name: Include account enumeration tasks.
@@ -51,17 +51,17 @@
 # See https://shallowsky.com/linux/x-screen-blanking.html
 - name: Set fact with X11 settings to use.
   ansible.builtin.set_fact:
-    x_settings:
+    branding__x_settings:
       - 'xset s off'
       - 'xset s noblank'
       - 'xset s noexpose'
       - 'xset -dpms'
       - 'setterm -blength 0'
-  when: x_settings is not defined
+  when: branding__x_settings is not defined
 
 - name: Debug `x_settings` variable.
   ansible.builtin.debug:
-    var: x_settings
+    var: branding__x_settings
     verbosity: 1
 
 - name: Ensure `imagemagick` package is present.
@@ -77,7 +77,7 @@
 - name: Stat `/dev/fb0` device file.
   ansible.builtin.stat:
     path: '/dev/fb0'
-  register: framebuffer
+  register: branding__framebuffer
 
 - name: Ensure virtual framebuffer exists if no `/dev/fb0` device.
   ansible.builtin.package:
@@ -86,14 +86,14 @@
     update_cache: true
     cache_valid_time: 3600
   become: true
-  when: not framebuffer.stat.exists
+  when: not branding__framebuffer.stat.exists
 
 - name: Include `custom-splash.jpg` tasks.
   ansible.builtin.include_tasks: check_custom_splash.yml
 
-- name: 'Ensure directory exists: {{ lxde_wallpapers_directory }}'
+- name: 'Ensure directory exists: {{ branding__lxde_wallpapers_directory }}'
   ansible.builtin.file:
-    path: '{{ lxde_wallpapers_directory }}'
+    path: '{{ branding__lxde_wallpapers_directory }}'
     state: directory
     owner: root
     group: root
@@ -103,7 +103,7 @@
 - name: Ensure `custom-splash.jpg` is an optional desktop background.
   ansible.builtin.copy:
     src: '/root/custom-splash.jpg'
-    dest: '{{ lxde_wallpapers_directory }}/custom-splash.jpg'
+    dest: '{{ branding__lxde_wallpapers_directory }}/custom-splash.jpg'
     remote_src: true
     owner: root
     group: root
@@ -123,12 +123,12 @@
   ansible.builtin.include_tasks: lxde-desktop-configure.yml
   loop: '{{ accounts }}'
   loop_control:
-    loop_var: user
+    loop_var: branding__user
 
 - name: Include clipit history tasks.
   ansible.builtin.include_tasks: clipit-nohistory.yml
   loop: '{{ accounts }}'
   loop_control:
-    loop_var: user
+    loop_var: branding__user
 
 # vim: ft=ansible:

@@ -45,7 +45,10 @@ Role Variables
 --------------
 
 `accounts` - the list of user accounts to be set up.
-`dropin_files` - the list of files to be set up for managemnt with `update-dotdee`.
+`dropins__dropin_files` - the list of files to be set up for managemnt with `update-dotdee`.
+
+Note: The role gets the `accounts` variable using included task
+'{{ collection_root }}/tasks/get_accounts.yml'
 
 Dependencies
 ------------
@@ -62,7 +65,7 @@ This role is applied as follows:
   roles:
     - role: davedittrich.utils.dropins
       vars:
-        dropin_files:
+        dropins__dropin_files:
           - '.bash_profile'
           - '.bash_aliases'
           - '.gitconfig'

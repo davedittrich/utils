@@ -10,6 +10,7 @@
 
 - name: Block
   become: true
+  become_user: '{{ user }}'
   block:
 
     - name: Ensure `updated-dotdee` installed with `pipx`.
@@ -21,9 +22,8 @@
         executable: /bin/bash
       environment:
         PATH: '{{ homedir[user] }}/.local/bin:{{ ansible_env.PATH }}'
-      become_user: '{{ user }}'
-      register: result
-      # failed_when: "result.rc != 0 'already seems to be installed' not in result.stdout"
-      changed_when: "'update-dotdee is' not in result.stdout"
+      register: dropins__result
+      # failed_when: "result.rc != 0 'already seems to be installed' not in dropins__result.stdout"
+      changed_when: "'update-dotdee is' not in dropins__result.stdout"
 
 # vim: ft=ansible :
