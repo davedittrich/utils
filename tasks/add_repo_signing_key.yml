@@ -1,0 +1,107 @@
+---
+# Add an APT repository signing key to a Debian system. Based
+# on: https://www.linuxuprising.com/2021/01/apt-key-is-deprecated-how-to-add.html
+#
+# Pass the key file name as `signing_key` and the repository name
+# as `repository_name`. If the latter is not specified, it defaults to
+# the basename of `signing_key`.`
+#
+# If the file is local, just copy it to the shared keyrings directory.
+# This is the most secure way to handle keys, as you can manually validate
+# them yourself instead of blindly copying from a remote server.
+#
+# If copying fails, try to download the key file instead.
+#
+# Once the file is in the shared keyrings directory, ensure it is not
+# ASCII armored.
+
+- name: Set fact with shared keyrings directory.
+  ansible.builtin.set_fact:
+    # shared_keyrings: "/etc/shared/keyrings"
+    shared_keyrings: "/etc/apt/trusted.gpg.d"
+
+- name: Verify that `signing_key` is set.
+  ansible.builtin.assert:
+    that:
+      - kali_like__signing_key is defined
+
+- name: Ensure `repository_name` is set.
+  ansible.builtin.set_fact:
+    kali_like__repository_name: "{{ kali_like__signing_key | basename | splitext | first }}"
+  when:
+    - not kali_like__repository_name
+
+- name: Set fact with original key extension.
+  ansible.builtin.set_fact:
+    key_ext: "{{ kali_like__signing_key | basename | splitext | last }}"
+
+- name: Set fact with path to shared key.
+  ansible.builtin.set_fact:
+    tmp_key_path: "{{ shared_keyrings }}/{{ kali_like__repository_name }}.tmp"
+
+- name: Ensure shared key directory exists.
+  ansible.builtin.file:
+    path: "{{ shared_keyrings }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0o755
+  become: true
+
+- name: Stat signing key file.
+  ansible.builtin.stat:
+    path: "{{ shared_keyrings }}/{{ kali_like__repository_name }}.gpg"
+  register: kali_like__signing_key_stat
+
+- name: Block for creating key file in shared directory.
+  when: not kali_like__signing_key_stat.stat.exists
+  become: true
+  block:
+    - name: Ensure key file is present from local file.
+      ansible.builtin.copy:
+        src: "{{ kali_like__signing_key }}"
+        dest: "{{ tmp_key_path }}"
+        owner: root
+        group: root
+        mode: 0o644
+      changed_when: false
+
+  rescue:
+    - name: Ensure key file is present from remote file.
+      ansible.builtin.get_url:
+        url: "{{ kali_like__signing_key }}"
+        dest: "{{ tmp_key_path }}"
+        owner: root
+        group: root
+        mode: 0o644
+      changed_when: false
+
+# - name: Stat the key file in shared directory.
+#   ansible.builtin.command: type {{ tmp_key_path }}
+#   register: tmp_key_file
+#   become: true
+
+# - name: Verify the key file in shared directory exists.
+#   ansible.builtin.assert:
+#     that:
+#       - tmp_key_file is success
+
+- name: Block to ensure non-ASCII armored key file exists.
+  when: not kali_like__signing_key_stat.stat.exists
+  become: true
+  block:
+    - name: Ensure key is de-armored.
+      ansible.builtin.shell: |
+        gpg --dearmor < {{ tmp_key_path }} > {{ shared_keyrings }}/{{ kali_like__repository_name }}.gpg
+      args:
+        creates: "{{ shared_keyrings }}/{{ kali_like__repository_name }}.gpg"
+      register: kali_like__dearmor
+
+    - name: Ensure temp key file is absent.
+      ansible.builtin.file:
+        path: "{{ tmp_key_path }}"
+        state: absent
+      when: kali_like__dearmor is changed
+
+# vim: ft=ansible :
+# code: language=ansible
