@@ -1,0 +1,78 @@
+FROM debian:bookworm 
+LABEL maintainer="Dave Dittrich"
+
+ENV container docker
+ENV LC_ALL C
+ENV DEBIAN_FRONTEND noninteractive
+# Work around error on apt-get installs.
+ENV PIP_BREAK_SYSTEM_PACKAGES 1
+
+# Ensure that scripts don't fail when run from '/tmp' directory, e.g.:
+#   ...
+#   Preconfiguring packages ...
+#   Can't exec "/tmp/iproute2.config.Dq1Grg": Permission denied at /usr/lib/x86_64-linux-gnu/perl-base/IPC/Open3.pm line 178.
+#   open2: exec of /tmp/iproute2.config.Dq1Grg configure 5.10.0-4 failed: Permission denied at /usr/share/perl5/Debconf/ConfModule.pm line 59.
+#   ...
+RUN mkdir /root/tmp
+ENV TMPDIR /root/tmp
+
+RUN apt-get update \
+    && apt-get -y install \
+      python3-full \
+      python-is-python3 \
+#     python3-apt \
+#     python3-dev \
+      python3-pip \
+#     python3-setuptools \
+#     python3-wheel \
+      python3-venv \
+    && apt-get -y \
+         -o APT::Install-Recommends=false \
+         -o APT::Get::AutomaticRemove=true \
+         -o APT::Acquire::Retries=3 \
+         install \
+      aptitude \
+      arandr \
+      bash \
+      build-essential \
+      ca-certificates \
+      debconf \
+      fbi \
+      hwinfo \
+      imagemagick \
+      kmod \
+      initramfs-tools \
+      iproute2 \
+      libc-bin \
+      libffi-dev \
+      libssl-dev \
+      procps \
+      rsync \
+      sudo \
+      systemd \
+      systemd-sysv \
+      task-lxde-desktop \
+      wget \
+      vim \
+      tree \
+    && python -m pip install --upgrade pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
+    /etc/systemd/system/*.wants/* \
+    /lib/systemd/system/local-fs.target.wants/* \
+    /lib/systemd/system/sockets.target.wants/*udev* \
+    /lib/systemd/system/sockets.target.wants/*initctl* \
+    /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* \
+    /lib/systemd/system/systemd-update-utmp*
+
+EXPOSE 80/tcp
+EXPOSE 443/tcp
+
+RUN systemctl enable systemd-networkd
+RUN systemctl set-default multi-user.target
+
+#VOLUME [ "/sys/fs/cgroup" ]
+
+CMD [ "/lib/systemd/systemd", "log-level=info", "unit=sysinit.target" ]
