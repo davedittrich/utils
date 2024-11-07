@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "utils"
+version = "0.1.0"
+description = "An Ansible collection for my opinionated development workstation configuration and prototyping Ansible (and non-Ansible) features for other Python packages and Ansible collections."
+authors = ["Dave Dittrich <dave.dittrich@gmail.com>"]
+license = "Apache License 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ansible-dev-tools = "^24.10.1"
+#ansible-dev-tools = "24.7.1"  # works 2024-11-01
+ansible-core = ">=2.14.0"
+#ansible-lint = ">=6.8.7"
+ansible-lint = { git = "https://github.com/davedittrich/ansible-lint", branch = "develop"}
+#ansible-compat = "3.0.1"
+#ansible-compat = {path = "../ansible-compat", develop = true}
+#ansible-compat = { git = "https://github.com/davedittrich/ansible-compat", branch = "develop"}
+pipdeptree = "^2.23.4"
+yamllint = "^1.35.1"
+ruff = "^0.7.1"
+molecule = {extras = ["docker"], version = "^24.9.0"}
+pip = "^24.3.1"
+molecule-plugins = {extras = ["docker"], version = "^23.5.3"}
+docker = "^7.1.0"
+#pytest-ansible = "^24.9.0"
+#pytest-ansible = { git = "https://github.com/davedittrich/pytest-ansible", branch = "main"}
+#pytest-testinfra = "^10.1.1"
+pytest-testinfra = { git = "https://github.com/davedittrich/pytest-testinfra", branch = "develop"}
+python-docker = "^0.2.0"
+python-secrets = "^24.10.12"
+pytest = "^8.3.3"
+poetry-plugin-export = "^1.8.0"
+ansible-compat = "^24.9.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = ["-vvv", "-n", "2", "--log-level", "WARNING", "--color", "yes"]
+filterwarnings = ['ignore:an AnsibleCollectionFinder has not been installed in this process']
+testpaths = ["tests"]
