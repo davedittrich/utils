@@ -36,22 +36,22 @@ def fixture_users(request):
     return request.param
 
 
-@pytest.fixture(params=ansible_vars.get('kali_like_script_templates', []))
+@pytest.fixture(params=ansible_vars.get('kali_like__script_templates', []))
 def fixture_helper_script_files(request):
     """Return script template file names."""
     return str(request.param).replace('.sh.j2', '')
 
 
-@pytest.fixture(params=ansible_vars.get('kali_like_packages', []))
+@pytest.fixture(params=ansible_vars.get('kali_like__packages', []))
 def fixture_kali_like_packages(request):
     """Return list of desired Kali packages."""
     return request.param
 
 
 @pytest.fixture(params=ansible_vars.get('guacamole_services', []))
-def fixture_guac_services(request):
+def fixture_guacamole_services(request):
     """Return list of Guacamole related services."""
-    return request.param
+    return request.param or list()
 
 
 @skip_unless_role('davedittrich.utils.kali_like')
@@ -107,8 +107,8 @@ def test_guacamole_guacd(host):
 
 @pytest.mark.xfail
 @skip_unless_role('davedittrich.utils.kali_like')
-def test_guacamole_services(host, fixture_guac_services):
-    service = host.service(fixture_guac_services)
+def test_guacamole_services(host, fixture_guacamole_services):
+    service = host.service(fixture_guacamole_services)
     assert service.is_running
 
 # vim: set ts=4 sw=4 tw=0 et :

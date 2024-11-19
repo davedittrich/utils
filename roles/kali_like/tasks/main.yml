@@ -25,9 +25,9 @@
   ansible.builtin.command: 'touch ~/.hushlogin'
   loop: '{{ accounts }}'
   loop_control:
-    loop_var: kali_like__user
+    loop_var: user
   become: true
-  become_user: '{{ kali_like__user }}'
+  become_user: '{{ user }}'
   changed_when: false
 
 - name: Find script templates on control host.

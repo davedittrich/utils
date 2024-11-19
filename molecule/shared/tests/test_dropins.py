@@ -30,7 +30,7 @@ def fixture_users(request):
     return request.param
 
 
-@pytest.fixture(params=ansible_vars.get('dropin_files', []))
+@pytest.fixture(params=ansible_vars.get('dropins__dropin_files', []))
 def fixture_dropin_files(request):
     return str(request.param).replace('.j2', '')
 

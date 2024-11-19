@@ -123,12 +123,12 @@
   ansible.builtin.include_tasks: lxde-desktop-configure.yml
   loop: '{{ accounts }}'
   loop_control:
-    loop_var: branding__user
+    loop_var: user
 
 - name: Include clipit history tasks.
   ansible.builtin.include_tasks: clipit-nohistory.yml
   loop: '{{ accounts }}'
   loop_control:
-    loop_var: branding__user
+    loop_var: user
 
 # vim: ft=ansible:

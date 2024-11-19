@@ -138,7 +138,7 @@ def fixture_users(request):
     return request.param
 
 
-@pytest.fixture(params=ansible_vars.get('config_templates', []))
+@pytest.fixture(params=ansible_vars.get('branding__config_templates', []))
 def fixture_config_files(request):
     return str(request.param).replace('.j2', '')
 
