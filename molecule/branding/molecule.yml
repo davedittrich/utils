@@ -54,5 +54,5 @@ verifier:
   directory: ../shared/tests
   env:
     PYTHONPATH: "${PWD}/molecule/shared/tests"
-    #PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
+    # PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
     PYTEST_ADDOPTS: "${PYTEST_ADDOPTS:--v -ra}"
