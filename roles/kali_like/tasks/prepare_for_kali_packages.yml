@@ -57,9 +57,9 @@
     dest: "/etc/apt/apt.conf.d/dpkg-options"
     content: |
       DPkg::options { "--force-confdef"; "--force-confold"; }
-    owner: "root"
-    group: "root"
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
 
 - name: Ensure Debian sources in `/etc/apt/sources.list.d/debian.list`
@@ -68,9 +68,9 @@
     content: |
       deb http://deb.debian.org/debian unstable main contrib non-free
       deb http://deb.debian.org/debian experimental main
-    owner: root
-    group: root
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
 
 - name: Ensure Kali sources in `/etc/apt/sources.list.d/kali.list`
@@ -81,9 +81,9 @@
       deb http://http.kali.org/kali kali-rolling main contrib non-free
       deb-src http://http.kali.org/kali kali-bleeding-edge main contrib non-free
       deb-src http://http.kali.org/kali kali-rolling main contrib non-free
-    owner: root
-    group: root
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
 
 - name: Block for updating APT cache after list changes.
@@ -120,9 +120,9 @@
     content: |
       # NOTE: This has the effect of setting the Pin-Priority for this repo to 990.
       APT::Default-Release "kali-rolling";
-    owner: "root"
-    group: "root"
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
 
 - name: Ensure additional custom APT package priority policy is set.
@@ -142,9 +142,9 @@
       Pin: release a=unstable
       Pin-Priority: 800
       #
-    owner: "root"
-    group: "root"
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
 
 - name: Get current APT policy.

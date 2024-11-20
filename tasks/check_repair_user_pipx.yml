@@ -41,9 +41,9 @@
 
 - name: Ensure `.bashrc` sources `.bash_aliases`.
   ansible.builtin.blockinfile:
-    path: "{{ homedir[user] }}/.bashrc"
-    owner: "{{ user }}"
-    mode: 0o640
+    path: '{{ homedir[user] }}/.bashrc'
+    owner: '{{ user }}'
+    mode: '0o640'
     block: |
       if [ -f ~/.bash_aliases ]; then
           . ~/.bash_aliases

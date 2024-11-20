@@ -16,9 +16,9 @@
   ansible.builtin.copy:
     src: 'custom_load_xmodmap'
     dest: '{{ kdmt__custom_xmodmap }}'
-    owner: root
-    group: root
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
   when: kdmt__xsessiond.stat.exists
 

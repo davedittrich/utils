@@ -9,19 +9,19 @@
 - name: Ensure user's `~/.vnc` directory exists.
   ansible.builtin.file:
     state: directory
-    path: "{{ user_vnc_directory }}"
-    owner: "{{ user }}"
-    group: "{{ user }}"
-    mode: 0o640
+    path: '{{ user_vnc_directory }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: '0o640'
   become: true
 
 - name: Ensure user's `xstartup` script exists in `~/.vnc` directory.
   ansible.builtin.copy:
-    src: "xstartup"
-    dest: "{{ user_vnc_directory }}"
-    owner: "{{ user }}"
-    group: "{{ user }}"
-    mode: 0o750
+    src: 'xstartup'
+    dest: '{{ user_vnc_directory }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
+    mode: '0o750'
   become: true
 
 # https://unix.stackexchange.com/questions/529375/configuring-tigervnc-systemd-process-on-ubuntu-18-04

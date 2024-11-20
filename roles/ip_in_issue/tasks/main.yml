@@ -101,9 +101,9 @@
   ansible.builtin.template:
     src: issue.j2
     dest: /etc/issue
-    owner: root
-    group: root
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   register: ip_in_issue__etc_issue
   changed_when:
     - ip_in_issue__etc_issue.changed
@@ -134,9 +134,9 @@
   ansible.builtin.file:
     path: /etc/issue.d
     state: directory
-    owner: root
-    group: root
-    mode: 0o755
+    owner: 'root'
+    group: 'root'
+    mode: '0o755'
   become: true
 
   # NetworkManager randomizes the MAC address on the `wlan0`
@@ -148,9 +148,9 @@
   ansible.builtin.template:
     src: '{{ item }}'
     dest: '/etc/issue.d/{{ item.replace(".j2", "") | basename }}'
-    owner: root
-    group: root
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   with_items: '{{ ip_in_issue__issue_templates }}'
   changed_when: false
   become: true

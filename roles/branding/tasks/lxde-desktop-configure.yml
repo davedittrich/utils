@@ -67,7 +67,7 @@
     state: directory
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o750
+    mode: '0o750'
   become: true
   become_user: '{{ user }}'
   loop: '{{ branding__config_templates }}'
@@ -83,7 +83,7 @@
     dest: "{{ branding__dot_config_dir + item | replace('.j2', '') }}"
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o750
+    mode: '0o750'
   become: true
   become_user: '{{ user }}'
   loop: '{{ branding__config_templates }}'

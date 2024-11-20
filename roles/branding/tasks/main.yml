@@ -95,9 +95,9 @@
   ansible.builtin.file:
     path: '{{ branding__lxde_wallpapers_directory }}'
     state: directory
-    owner: root
-    group: root
-    mode: 0o755
+    owner: 'root'
+    group: 'root'
+    mode: '0o755'
   become: true
 
 - name: Ensure `custom-splash.jpg` is an optional desktop background.
@@ -105,9 +105,9 @@
     src: '/root/custom-splash.jpg'
     dest: '{{ branding__lxde_wallpapers_directory }}/custom-splash.jpg'
     remote_src: true
-    owner: root
-    group: root
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
 
 # https://martin.hoppenheit.info/blog/2016/where-to-put-application-icons-on-linux/

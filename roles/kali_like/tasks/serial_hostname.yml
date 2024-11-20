@@ -66,9 +66,9 @@
         path: '/etc/hosts'
         line: '127.0.1.1  {{ kali_like__host_serial }}'
         insertafter: '127.0.0.1 localhost'
-        owner: root
-        group: root
-        mode: 0o644
+        owner: 'root'
+        group: 'root'
+        mode: '0o644'
       become: true
 
     - name: Ensure hostname has serialized Kali host name.

@@ -15,7 +15,7 @@
     state: directory
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o750
+    mode: '0o750'
     recurse: false
   become: true
 
@@ -25,7 +25,7 @@
     dest: '{{ homedir[user] }}/.config/clipit/clipitrc'
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o640
+    mode: '0o640'
   become: true
   when: not branding__clipitrc.stat.exists
 

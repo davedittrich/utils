@@ -20,7 +20,7 @@
         create: true
         owner: '{{ user }}'
         group: '{{ user }}'
-        mode: 0o640
+        mode: '0o640'
       when: kdmt__natural_scrolling | bool
 
     - name: 'Ensure file does not enable natural scrolling: {{ kdmt__user_xmodmap }}'
@@ -31,7 +31,7 @@
         create: true
         owner: '{{ user }}'
         group: '{{ user }}'
-        mode: 0o640
+        mode: '0o640'
       when: not kdmt__natural_scrolling | bool
 
 # vim: ft=ansible:

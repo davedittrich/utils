@@ -30,9 +30,9 @@
           # Remap CapsLock <-> Left CTRL
           KEYBOARD_KEY_70039=leftctrl
           KEYBOARD_KEY_700E0=capslock
-        owner: root
-        group: root
-        mode: 0o644
+        owner: 'root'
+        group: 'root'
+        mode: '0o644'
       register: kdmt__udev_hwdb
       become: true
 

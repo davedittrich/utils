@@ -42,9 +42,9 @@
   ansible.builtin.copy:
     src: dotlocal.sh
     dest: /etc/profile.d/dotlocal.sh
-    owner: root
-    group: root
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
 
 # vim: ft=ansible :

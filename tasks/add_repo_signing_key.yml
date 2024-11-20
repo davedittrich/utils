@@ -43,9 +43,9 @@
   ansible.builtin.file:
     path: "{{ shared_keyrings }}"
     state: directory
-    owner: root
-    group: root
-    mode: 0o755
+    owner: 'root'
+    group: 'root'
+    mode: '0o755'
   become: true
 
 - name: Stat signing key file.
@@ -61,9 +61,9 @@
       ansible.builtin.copy:
         src: "{{ kali_like__signing_key }}"
         dest: "{{ tmp_key_path }}"
-        owner: root
-        group: root
-        mode: 0o644
+        owner: 'root'
+        group: 'root'
+        mode: '0o644'
       changed_when: false
 
   rescue:
@@ -71,9 +71,9 @@
       ansible.builtin.get_url:
         url: "{{ kali_like__signing_key }}"
         dest: "{{ tmp_key_path }}"
-        owner: root
-        group: root
-        mode: 0o644
+        owner: 'root'
+        group: 'root'
+        mode: '0o644'
       changed_when: false
 
 # - name: Stat the key file in shared directory.

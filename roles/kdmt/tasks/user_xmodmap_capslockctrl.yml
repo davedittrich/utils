@@ -24,7 +24,7 @@
         create: true
         owner: '{{ user }}'
         group: '{{ user }}'
-        mode: 0o640
+        mode: '0o640'
       when: kdmt__keyboard_swapcapslockctrl | bool
 
     - name: 'Ensure file does not swap capslock/ctrl: {{ kdmt__user_xmodmap[user] }}'
@@ -35,7 +35,7 @@
         create: true
         owner: '{{ user }}'
         group: '{{ user }}'
-        mode: 0o640
+        mode: '0o640'
       when: not kdmt__keyboard_swapcapslockctrl | bool
 
 # vim: ft=ansible:

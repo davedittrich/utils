@@ -70,9 +70,9 @@
           ansible.builtin.copy:
             src: '{{ zaproxy_deb_dir }}{{ zaproxy_deb }}'
             dest: '/tmp//{{ zaproxy_deb }}'
-            owner: root
-            group: root
-            mode: 0o660
+            owner: 'root'
+            group: 'root'
+            mode: '0o660'
           become: true
 
         - name: Ensure zaproxy DEB is installed.

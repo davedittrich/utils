@@ -24,7 +24,7 @@
     state: directory
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o750
+    mode: '0o750'
   become: true
   when: not kali_like__dot_local_result.stat.exists
 
@@ -34,7 +34,7 @@
     dest: "{{ kali_like__dot_local_bin + item | replace('.sh.j2', '') }}"
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o755
+    mode: '0o755'
   become: true
   loop: '{{ kali_like__script_templates }}'
 

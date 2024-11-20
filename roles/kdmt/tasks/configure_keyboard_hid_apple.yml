@@ -13,9 +13,9 @@
       ansible.builtin.template:
         dest: '/etc/modprobe.d/hid_apple.conf'
         src: 'hid_apple.conf.j2'
-        owner: root
-        group: root
-        mode: 0o644
+        owner: 'root'
+        group: 'root'
+        mode: '0o644'
       register: kdmt__hid_apple_conf
 
     - name: Ensure initrd images are updated.

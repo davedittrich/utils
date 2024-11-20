@@ -38,9 +38,9 @@
         src: '/boot/custom-splash.jpg'
         dest: '/root/custom-splash.jpg'
         remote_src: true
-        owner: root
-        group: root
-        mode: 0o644
+        owner: 'root'
+        group: 'root'
+        mode: '0o644'
 
     - name: Ensure `/boot/custom-splash.jpg` is absent.
       ansible.builtin.file:
@@ -64,9 +64,9 @@
       ansible.builtin.copy:
         src: '{{ branding__custom_splash }}'
         dest: '/root/custom-splash{{ branding__custom_splash_ext }}'
-        owner: root
-        group: root
-        mode: 0o644
+        owner: 'root'
+        group: 'root'
+        mode: '0o644'
 
     - name: Ensure file exists in `.jpg` format.
       ansible.builtin.shell: >

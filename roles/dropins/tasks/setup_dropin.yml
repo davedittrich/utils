@@ -61,7 +61,7 @@
       ansible.builtin.template:
         dest: '{{ dropins__dropin_path }}'
         src: 'dropin_header.j2'
-        mode: 0o640
+        mode: '0o640'
       register: dropins__copy_result
       when: not dropins__file_result.stat.exists
 
