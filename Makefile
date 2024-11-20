@@ -3,7 +3,7 @@ SHELL=/bin/bash
 # The following are inter-related components that form a fragile whole that can
 # easily break when one of the components is updated. This can randomly cause a
 # frustratingly difficult situation to fix to pop up when you least expect it.
-ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule-plugins pytest-ansible pytest-testinfra pytest
+ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule-plugins pytest-testinfra pytest
 ANSIBLE_COMMANDS=ansible ansible-lint molecule pytest python python3 pip pip3
 export COLLECTION_NAMESPACE=davedittrich
 DELEGATED_HOST:=none
@@ -92,6 +92,7 @@ uninstall-poetry:
 .PHONY: update-packages
 update-packages: install-poetry
 	poetry update
+	python -m pip uninstall -y pytest-ansible
 
 .PHONY: check-conda
 check-conda:

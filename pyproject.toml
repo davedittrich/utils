@@ -23,8 +23,6 @@ molecule = {extras = ["docker"], version = "^24.9.0"}
 pip = "^24.3.1"
 molecule-plugins = {extras = ["docker"], version = "^23.5.3"}
 docker = "^7.1.0"
-#pytest-ansible = "^24.9.0"
-#pytest-ansible = { git = "https://github.com/davedittrich/pytest-ansible", branch = "main"}
 #pytest-testinfra = "^10.1.1"
 pytest-testinfra = { git = "https://github.com/davedittrich/pytest-testinfra", branch = "develop"}
 python-docker = "^0.2.0"
