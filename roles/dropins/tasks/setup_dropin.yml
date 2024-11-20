@@ -18,7 +18,7 @@
 
 - name: 'Set fact w/fully qualified path to: {{ dropins__dropin_file }}'
   ansible.builtin.set_fact:
-    dropins__dropin_path: '{{ homedir[dropins__user] }}/{{ dropins__dropin_file }}'
+    dropins__dropin_path: '{{ homedir[user] }}/{{ dropins__dropin_file }}'
 
 - name: Debug dropin file path.
   ansible.builtin.debug:
@@ -49,13 +49,13 @@
 
 - name: DEBUG
   ansible.builtin.debug:
-    msg: 'CREATING {{ dropins__dropin_file }} AT {{ dropins__dropin_path }} FOR USER {{ dropins__user }}'
+    msg: 'CREATING {{ dropins__dropin_file }} AT {{ dropins__dropin_path }} FOR USER {{ user }}'
     verbosity: 0
 
 - name: Block
   when: not dropins__dir_result.stat.exists
   become: true
-  become_user: '{{ dropins__user }}'
+  become_user: '{{ user }}'
   block:
     - name: Ensure a dropin source file exists.
       ansible.builtin.template:
@@ -72,7 +72,7 @@
         creates: '{{ dropins__dropin_path }}.d'
         executable: /bin/bash
       environment:
-        PATH: '{{ homedir[dropins__user] }}/.local/bin:{{ ansible_env.PATH }}'
+        PATH: '{{ homedir[user] }}/.local/bin:{{ ansible_env.PATH }}'
       register: dropins__update_dotdee_result
 
     - name: Debug `update_dotdee` result.

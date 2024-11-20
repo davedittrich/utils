@@ -5,24 +5,24 @@
 
 - name: Ensure applications using `readline` are quieted.
   ansible.builtin.blockinfile:
-    path: '{{ homedir[kdmt__user] }}/.inputrc'
+    path: '{{ homedir[user] }}/.inputrc'
     marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
     block: |
       set prefer-visible-bell
-    owner: '{{ kdmt__user }}'
-    group: '{{ kdmt__user }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
     create: true
   become: true
 
 # - name: Ensure `bash` shell sessions are quieted.
 #   ansible.builtin.blockinfile:
-#     path: '{{ homedir[kdmt__user] }}/.bashrc'
+#     path: '{{ homedir[user] }}/.bashrc'
 #     marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
 #     block: |
 #       set bellstyle visible
-#     owner: '{{ kdmt__user }}'
-#     group: '{{ kdmt__user }}'
+#     owner: '{{ user }}'
+#     group: '{{ user }}'
 #     mode: 0o640
 #     create: true
 #   # Hack to get idempotence test to pass for now.
@@ -31,36 +31,36 @@
 
 - name: Ensure `csh` and `tcsh` shell sessions are quieted.
   ansible.builtin.blockinfile:
-    path: '{{ homedir[kdmt__user] }}/.cshrc'
+    path: '{{ homedir[user] }}/.cshrc'
     marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
     block: |
       set visiblebell
-    owner: '{{ kdmt__user }}'
-    group: '{{ kdmt__user }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
     create: true
   become: true
 
 - name: Ensure `ex` family editors are quieted.
   ansible.builtin.blockinfile:
-    path: '{{ homedir[kdmt__user] }}/.exrc'
+    path: '{{ homedir[user] }}/.exrc'
     marker: "# {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]"
     block: |
       set flash
-    owner: '{{ kdmt__user }}'
-    group: '{{ kdmt__user }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
     create: true
   become: true
 
 - name: Ensure `vim` style editors are quieted.
   ansible.builtin.blockinfile:
-    path: '{{ homedir[kdmt__user] }}/.vimrc'
+    path: '{{ homedir[user] }}/.vimrc'
     marker: '" {mark} ANSIBLE MANAGED BLOCK [davedittrich.utils.kdmt:visible_bell]'
     block: |
       set vb t_vb=
-    owner: '{{ kdmt__user }}'
-    group: '{{ kdmt__user }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
     create: true
   become: true

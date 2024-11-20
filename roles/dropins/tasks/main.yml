@@ -32,7 +32,7 @@
 - name: Include dropin directory setup tasks.
   ansible.builtin.include_tasks: setup_dropin.yml
   vars:
-    dropins__user: '{{ item.0 }}'
+    user: '{{ item.0 }}'
     dropins__dropin_file: '{{ item.1 }}'
   with_nested:
     - '{{ accounts }}'

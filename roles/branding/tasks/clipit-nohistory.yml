@@ -5,16 +5,16 @@
 
 - name: Stat clipit configuration file.
   ansible.builtin.stat:
-    path: '{{ homedir[branding__user] }}/.config/clipit/clipitrc'
+    path: '{{ homedir[user] }}/.config/clipit/clipitrc'
   register: branding__clipitrc
   become: true
 
 - name: Ensure clipit configuration path is present.
   ansible.builtin.file:
-    dest: '{{ homedir[branding__user] }}/.config/clipit'
+    dest: '{{ homedir[user] }}/.config/clipit'
     state: directory
-    owner: '{{ branding__user }}'
-    group: '{{ branding__user }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o750
     recurse: false
   become: true
@@ -22,16 +22,16 @@
 - name: Ensure clipit configuration is present.
   ansible.builtin.copy:
     src: 'clipitrc'
-    dest: '{{ homedir[branding__user] }}/.config/clipit/clipitrc'
-    owner: '{{ branding__user }}'
-    group: '{{ branding__user }}'
+    dest: '{{ homedir[user] }}/.config/clipit/clipitrc'
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o640
   become: true
   when: not branding__clipitrc.stat.exists
 
 - name: Ensure clipit configuration is set.
   ansible.builtin.lineinfile:
-    path: '{{ homedir[branding__user] }}/.config/clipit/clipitrc'
+    path: '{{ homedir[user] }}/.config/clipit/clipitrc'
     regexp: '^save_history='
     line: 'save_history=false'
   become: true

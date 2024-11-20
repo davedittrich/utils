@@ -103,7 +103,7 @@
 - name: Include user .Xmodmap file customization tasks.
   ansible.builtin.include_tasks: user_xmodmap_capslockctrl.yml
   vars:
-    kdmt__user: '{{ item }}'
+    user: '{{ item }}'
   loop: '{{ accounts }}'
 
 # vim: ft=ansible:

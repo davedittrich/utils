@@ -5,7 +5,7 @@
 - name: Include user .Xmodmap natural scrolling tasks.
   ansible.builtin.include_tasks: user_xmodmap_natural_scrolling.yml
   vars:
-    kdmt__user: '{{ item }}'
+    user: '{{ item }}'
   loop: '{{ accounts }}'
 
 # vim: ft=ansible:

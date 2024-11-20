@@ -47,8 +47,8 @@ def test_splashscreen_service(host):
 
 @skip_unless_role('davedittrich.utils.branding')
 def test_wallpaper_image(host):
-    assert 'lxde_wallpapers_directory' in ansible_vars
-    wallpapers_dir = Path(ansible_vars['lxde_wallpapers_directory'])
+    assert 'branding__lxde_wallpapers_directory' in ansible_vars
+    wallpapers_dir = Path(ansible_vars['branding__lxde_wallpapers_directory'])
     f = host.file(str(wallpapers_dir / 'custom-splash.jpg'))
     assert f.exists
     assert f.user == 'root'
@@ -64,8 +64,8 @@ def test_x11_session_manager_is_lxde(host):
 
 @skip_unless_role('davedittrich.utils.branding')
 def test_lightdm_login_background(host):
-    assert 'lxde_wallpapers_directory' in ansible_vars
-    wallpapers_dir = Path(ansible_vars['lxde_wallpapers_directory'])
+    assert 'branding__lxde_wallpapers_directory' in ansible_vars
+    wallpapers_dir = Path(ansible_vars['branding__lxde_wallpapers_directory'])
     login_background = str(wallpapers_dir / 'custom-splash.jpg')
     f = host.file('/etc/lightdm/lightdm-gtk-greeter.conf')
     assert f.exists

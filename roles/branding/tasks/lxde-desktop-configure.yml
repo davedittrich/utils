@@ -14,7 +14,7 @@
 
 - name: Set fact with user's `~/.config/` directory path.
   ansible.builtin.set_fact:
-    branding__dot_config_dir: '{{ homedir[branding__user] }}/.config/'
+    branding__dot_config_dir: '{{ homedir[user] }}/.config/'
 
 - name: Set fact with relative local path.
   ansible.builtin.set_fact:
@@ -65,11 +65,11 @@
   ansible.builtin.file:
     path: '{{ branding__dot_config_dir + item | dirname }}'
     state: directory
-    owner: '{{ branding__user }}'
-    group: '{{ branding__user }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o750
   become: true
-  become_user: '{{ branding__user }}'
+  become_user: '{{ user }}'
   loop: '{{ branding__config_templates }}'
 
   # Could also put the rc.xml file for openbox into the system
@@ -81,11 +81,11 @@
   ansible.builtin.template:
     src: '{{ branding__dot_config_template_dir }}/{{ item }}'
     dest: "{{ branding__dot_config_dir + item | replace('.j2', '') }}"
-    owner: '{{ branding__user }}'
-    group: '{{ branding__user }}'
+    owner: '{{ user }}'
+    group: '{{ user }}'
     mode: 0o750
   become: true
-  become_user: '{{ branding__user }}'
+  become_user: '{{ user }}'
   loop: '{{ branding__config_templates }}'
 
 # vim: ft=ansible:
