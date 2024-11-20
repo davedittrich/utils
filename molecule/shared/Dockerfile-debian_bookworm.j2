@@ -13,6 +13,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES 1
 #   Can't exec "/tmp/iproute2.config.Dq1Grg": Permission denied at /usr/lib/x86_64-linux-gnu/perl-base/IPC/Open3.pm line 178.
 #   open2: exec of /tmp/iproute2.config.Dq1Grg configure 5.10.0-4 failed: Permission denied at /usr/share/perl5/Debconf/ConfModule.pm line 59.
 #   ...
+# Make sure this matches environment variable ANSIBLE_REMOTE_TMP in molecule/*/molecule.yml file.
 RUN mkdir /root/tmp
 ENV TMPDIR /root/tmp
 

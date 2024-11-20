@@ -58,6 +58,7 @@ verifier:
   name: testinfra
   directory: ../shared/tests
   env:
+    ANSIBLE_REMOTE_TMP: "/root/tmp"
     PYTHONPATH: "${PWD}/molecule/shared/tests"
     #PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
     PYTEST_ADDOPTS: "${PYTEST_ADDOPTS:--v -ra}"
