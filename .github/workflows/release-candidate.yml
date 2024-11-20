@@ -50,11 +50,7 @@ jobs:
           DEB_PYTHON_INSTALL_LAYOUT: deb_system pip install .
         run: |
           python3 -m pip install --upgrade pip
-          echo "Contents of requirements.txt"
-          echo "----"
-          cat requirements.txt
-          echo "----"
-          python3 -m pip install -Ur requirements.txt
+          make install-poetry update-packages
 
       - name: Move project to Ansible-required location
         run: |

@@ -51,8 +51,7 @@ jobs:
           sudo apt install apt-transport-https ca-certificates curl software-properties-common
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
+          make install-poetry update-packages
 
       - name: Build the collection
         run: |
