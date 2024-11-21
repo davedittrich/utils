@@ -44,11 +44,13 @@
         - kali_like__result.stdout is defined
         - kali_like__result.stdout != ""
 
-  # This does not work when run in a Docker container when Docker is
-  # managing the `/etc/hosts` file. The result is a 'resource busy' error.
+# This does not work if this task is running in a Docker container
+# when Docker is managing the `/etc/hosts` file. The result is a
+# fatal 'Device or resource busy' error.
 
 - name: Block for setting hostname.
   when:
+    - lookup('ansible.builtin.env', 'container', default='') != 'docker'
     - kali_like__system_serial_number is defined
     - kali_like__system_serial_number != ""
   block:
@@ -77,7 +79,9 @@
       args:
         executable: /bin/bash
       register: kali_like__hostname
-      changed_when: kali_like__hostname is success and kali_like__hostname.stdout != kali_like__host_serial
+      changed_when:
+        - kali_like__hostname is success
+        - kali_like__hostname.stdout != kali_like__host_serial
       become: true
 
 # vim: ft=ansible:

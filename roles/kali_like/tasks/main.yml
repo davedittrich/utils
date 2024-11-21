@@ -78,6 +78,8 @@
     mode: '0o644'
   become: true
 
+  # Note: Modifying the `/etc/hosts` file in a running Docker container will fail.
+  # https://stackoverflow.com/questions/28327458/how-to-add-my-containers-hostname-to-etc-hosts
 - name: Include hostname configuration tasks.
   ansible.builtin.include_tasks: serial_hostname.yml
 
