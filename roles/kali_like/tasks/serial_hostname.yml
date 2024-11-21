@@ -50,7 +50,6 @@
 
 - name: Block for setting hostname.
   when:
-    - lookup('ansible.builtin.env', 'container', default='') != 'docker'
     - kali_like__system_serial_number is defined
     - kali_like__system_serial_number != ""
   block:
@@ -63,7 +62,7 @@
         var: kali_like__host_serial
         verbosity: 1
 
-    - name: Ensure hostname resolves.
+    - name: Ensure serialized hostname in `/etc/hosts` file.
       ansible.builtin.lineinfile:
         path: '/etc/hosts'
         line: '127.0.1.1  {{ kali_like__host_serial }}'
@@ -73,7 +72,7 @@
         mode: '0o644'
       become: true
 
-    - name: Ensure hostname has serialized Kali host name.
+    - name: Ensure `hostname` also has serialized Kali host name.
       ansible.builtin.shell:
         hostname -b '{{ kali_like__host_serial }}' && hostname
       args:
@@ -83,6 +82,11 @@
         - kali_like__hostname is success
         - kali_like__hostname.stdout != kali_like__host_serial
       become: true
+
+  rescue:
+    - name: Print message on failure.
+      ansible.builtin.debug:
+        msg: 'Expect this to fail in Docker containers'
 
 # vim: ft=ansible:
 # code: language=ansible
