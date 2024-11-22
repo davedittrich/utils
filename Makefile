@@ -120,8 +120,8 @@ flash-none:
 clean: clean-artifacts
 	-rm -rf ~/.cache/ansible-compat ~/.cache/molecule ~/.cache/pip
 	-rm -f pytestdebug.log
-	find * -name '*.pyc' -delete || true
-	find * -name __pycache__ -exec rmdir {} ';' || true
+	find * -name '*.pyc' -delete 2>/dev/null || true
+	find * -name __pycache__ -exec rmdir {} ';' 2>/dev/null || true
 
 .PHONY: clean-artifacts
 clean-artifacts:
