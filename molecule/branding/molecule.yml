@@ -17,9 +17,9 @@ scenario:
   verify_sequence:
     - verify
 platforms:
-  - name: debianbullseye
-    image: debian:bullseye
-    dockerfile: ../shared/Dockerfile-debian_bullseye.j2
+  - name: debianbookworm
+    image: debian:bookworm
+    dockerfile: ../shared/Dockerfile-debian_bookworm.j2
     privileged: true
     override_command: false
     tmpfs:
