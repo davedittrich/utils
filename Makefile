@@ -140,6 +140,7 @@ clean-molecule:
 	do \
 		molecule destroy -s $$scenario > /dev/null; \
 	done
+	molecule list
 	for image in $(shell docker images | grep molecule | awk '{ print $$3; }'); \
 	do \
 		echo docker rmi $$image; \
