@@ -88,6 +88,5 @@
 
 - name: Include Guacamole installation tasks.
   ansible.builtin.include_tasks: '{{ collection_root }}/tasks/install_guacamole.yml'
-  when: false
 
 # vim: ft=ansible :

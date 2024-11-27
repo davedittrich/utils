@@ -23,6 +23,8 @@ platforms:
     dockerfile: ../shared/Dockerfile-debian_bookworm.j2
     privileged: true
     override_command: false
+    published_ports:
+      - '127.0.0.1:4822:4822/tcp'
     tmpfs:
       - /run
       - /run/lock

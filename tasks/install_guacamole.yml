@@ -21,6 +21,11 @@
     tmpdir: '/root/tmp'
   when: tmpdir is not defined
 
+- name: Ensure fact `guacamole_version`.
+  ansible.builtin.set_fact:
+    guacamole_version: '1.5.5'
+  when: guacamole_version is not defined
+
 - name: Ensure timezone is defined.
   ansible.builtin.set_fact:
     timezone: 'America/Los_Angeles'
@@ -53,37 +58,29 @@
   - name: Ensure required packages are installed.
     ansible.builtin.apt:
       name:
-        - freerdp2-dev
-        - git
+        - build-essential
+        - libcairo2-dev
+        - libjpeg62-turbo-dev
+        - libpng-dev
+        - libtool-bin
+        - uuid-dev
+        - libossp-uuid-dev
         - libavcodec-dev
         - libavformat-dev
         - libavutil-dev
-        - libcairo2-dev
-        - libjpeg-dev
-        - libjpeg62-turbo-dev
-        - libpng-dev
-        - libossp-uuid-dev
-        - libpango1.0-dev
-        - libpango1.0-0
-        - libpulse-dev
-        - libssh2-1t64
-        - libssh2-1-dev
-        - libssl-dev
         - libswscale-dev
-        - libtool-bin
+        - freerdp2-dev
+        - libpango1.0-dev
+        - libssh2-1-dev
         - libvncserver-dev
+        - libtelnet-dev
+        - libwebsockets-dev
+        - libssl-dev
         - libvorbis-dev
         - libwebp-dev
-        - libwebsocketpp-dev
-        - libwebsockets17
-        - libwebsockets-dev
-        - mariadb-server
-        - openssl
-        - tigervnc-standalone-server
-        - tomcat10
-        - tomcat10-admin
-        - tomcat10-common
-        - tomcat10-user
+        - libpulse-dev
+        - sudo
+        - vim
       state: present
     become: true
 
@@ -129,27 +126,34 @@
       executable: /bin/bash
     changed_when: false
     failed_when: false
+    become: true
 
-  - name: Clone Guacamole repo.  # noqa: latest[git]
-    ansible.builtin.git:
-      clone: true
-      repo: https://github.com/MysticRyuujin/guac-install.git
-      dest: '{{ tmpdir }}/guac-install'
+  - name: Ensure source tarball is present.
+    ansible.builtin.get_url:
+      url: 'https://downloads.apache.org/guacamole/{{ guacamole_version }}/source/guacamole-server-{{ guacamole_version }}.tar.gz'
+      checksum: 'sha256:https://downloads.apache.org/guacamole/{{ guacamole_version }}/source/guacamole-server-{{ guacamole_version }}.tar.gz.sha256'
+      owner: 'root'
+      group: 'root'
+      mode: '0o770'
+      force: false
+      dest: '{{ tmpdir }}/guacamole-server-{{ guacamole_version }}.tar.gz'
+    become: true
+
+  - name: Ensure tarball is unpacked.
+    ansible.builtin.unarchive:
+      src: '{{ tmpdir }}/guacamole-server-{{ guacamole_version }}.tar.gz'
+      dest: '{{ tmpdir }}'
+      creates: '{{ tmpdir }}/guacamole-server-{{ guacamole_version }}'
+      remote_src: true
     become: true
 
   - name: Install Guacamole from source.
     ansible.builtin.shell: >-
-      /bin/bash guac-install.sh
-        --nomfa
-        --installmysql
-        --mysqlpwd {{ mysql_password }}
-        --guacpwd {{ guacamole_password }} || echo guacamole_*_build.log
+      /bin/bash configure --with-systemd-dir=/etc/systemd/system/ --disable-guacenc && make && make install && ldconfig
     args:
       executable: /bin/bash
-      chdir: '{{ tmpdir }}/guac-install'
+      chdir: '{{ tmpdir }}/guacamole-server-{{ guacamole_version }}'
       creates: '/usr/local/sbin/guacd'
-    environment:
-      DEBIAN_FRONTEND: 'noninteractive'
     register: guacamole_install
     become: true
 
@@ -170,7 +174,7 @@
     - name: Handle low verbosity situation.
       ansible.builtin.debug:
         msg: "{{ guacamole_build_log.stdout }}"
-      when: guacamole_install is defined and ansible_verbosity <= 1
+      when: guacamole_install is defined and ansible_verbosity <= 2
 
     - name: Bail out on install failure.
       ansible.builtin.fail:
