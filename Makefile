@@ -192,6 +192,12 @@ scenario-exists:
 		exit 1; \
 	fi
 
+.PHONY: scenario-converged
+scenario-converged:
+	if [[ "$(shell molecule list -s $(SCENARIO) -f yaml 2>/dev/null | yq '.[0] | .Converged')" == "false" ]]; then \
+		$(MAKE) converge; \
+	fi
+
 .PHONY: spotless
 spotless: clean clean-molecule
 	-rm -f davedittrich-utils-latest.tar.gz davedittrich-utils-[0-9]*[0-9].tar.gz
