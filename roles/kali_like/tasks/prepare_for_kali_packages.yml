@@ -6,14 +6,27 @@
 #
 # See: https://www.kali.org/blog/advanced-package-management-in-kali-linux/
 
-- name: Ensure Kali package pre-requisites are present.
+- name: Get APT policy before doing anything.
+  ansible.builtin.shell: |
+    set -x
+    apt-cache policy
+  changed_when: false
+  register: kali_like__apt_policy_before
+  become: true
+
+- name: Debug `apt_policy`.
+  ansible.builtin.debug:
+    var: kali_like__apt_policy_before
+    verbosity: 0
+
+- name: Ensure pre-requisites for installing Kali packages are present.
   ansible.builtin.apt:
-    name: "{{ packages }}"
+    name: "{{ kali_like__packages }}"
     state: present
     update_cache: true
     cache_valid_time: 3600
   vars:
-    packages:
+    kali_like__packages:
       - apt-utils
       - dirmngr
       - gnupg
@@ -23,15 +36,41 @@
       - xz-utils
   become: true
 
+- name: Set variables for repo signing key.
+  ansible.builtin.set_fact:
+    kali_like__signing_key: ED444FF07D8D0BF6.asc
+    kali_like__repository_name: "kali"
+
+- name: Ensure Kali package signing key is present.
+  ansible.builtin.import_tasks:
+    file: "{{ collection_root }}/tasks/add_repo_signing_key.yml"
+
+# - name: Ensure Kali package signing key is enabled for APT.
+#   ansible.builtin.apt_key:
+#     id: ED444FF07D8D0BF6
+#     file: ED444FF07D8D0BF6.asc
+#     state: present
+#   become: true
+
+- name: Ensure dpkg options set.
+  ansible.builtin.copy:
+    dest: "/etc/apt/apt.conf.d/dpkg-options"
+    content: |
+      DPkg::options { "--force-confdef"; "--force-confold"; }
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
+  become: true
+
 - name: Ensure Debian sources in `/etc/apt/sources.list.d/debian.list`
   ansible.builtin.copy:
     dest: /etc/apt/sources.list.d/debian.list
     content: |
-      deb http://ftp.debian.org/debian unstable main contrib non-free
+      deb http://deb.debian.org/debian unstable main contrib non-free
       deb http://deb.debian.org/debian experimental main
-    owner: root
-    group: root
-    mode: 0o644
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
 
 - name: Ensure Kali sources in `/etc/apt/sources.list.d/kali.list`
@@ -42,90 +81,70 @@
       deb http://http.kali.org/kali kali-rolling main contrib non-free
       deb-src http://http.kali.org/kali kali-bleeding-edge main contrib non-free
       deb-src http://http.kali.org/kali kali-rolling main contrib non-free
-    owner: root
-    group: root
-    mode: 0o644
-  register: sources
-  become: true
-
-- name: Ensure Kali package signing key is present.
-  ansible.builtin.copy:
-    src: ED444FF07D8D0BF6.asc
-    dest: ED444FF07D8D0BF6.asc
-    owner: root
-    group: root
-    mode: 0o600
-  become: true
-
-- name: Ensure Kali package signing key is enabled for APT.
-  ansible.builtin.apt_key:
-    id: ED444FF07D8D0BF6
-    file: ED444FF07D8D0BF6.asc
-    state: present
-  become: true
-
-- name: Ensure custom APT package priority policy is set.
-  ansible.builtin.copy:
-    dest: '/etc/apt/preferences.d/99-custom-policy'
-    content: |
-      # Priority of local package files is 100.
-      # Default priority of packages is 500.
-      # View policy with `apt-cache policy`.
-
-      Package: *
-      Pin: release a=kali-rolling
-      Pin-Priority: 900
-
-      Package: *
-      Pin: release a=kali-bleeding-edge
-      Pin-Priority: 800
-
-      Package: *
-      Pin: release a=unstable
-      Pin-Priority: 600
     owner: 'root'
     group: 'root'
-    mode: 0o644
+    mode: '0o644'
   become: true
 
-- name: Block for updating APT cache after policy change.
+- name: Block for updating APT cache after list changes.
   block:
-
     - name: Ensure APT cache is updated for pre-requisites.
       ansible.builtin.apt:
         force_apt_get: true
         update-cache: true
         cache_valid_time: 0
-      register: apt_update
+      register: kali_like__apt_update
       become: true
 
   rescue:
     - name: Ensure changes to `Suite` or `Version` are handled.
-      ansible.builtin.shell:
-        apt-get --allow-releaseinfo-change update
+      ansible.builtin.shell: apt-get --allow-releaseinfo-change update
       args:
         executable: /bin/bash
       when:
-        - "'InRelease' in apt_update.stdout"
-        - "'changed its' in apt_update.stdout"
-        - "'Suite' in apt_update.stdout or 'Version' in apt_update.stdout"
+        - "'InRelease' in kali_like__apt_update.stdout"
+        - "'changed its' in kali_like__apt_update.stdout"
+        - "'Suite' in kali_like__apt_update.stdout or 'Version' in kali_like__apt_update.stdout"
+      changed_when: false
       become: true
 
     - name: Pause to debug APT result.
       ansible.builtin.pause:
         minutes: 1
       when:
-        - stdout not in apt_update
+        - stdout not in kali_like__apt_update
 
 - name: Ensure default distribution is `kali-rolling`.
   ansible.builtin.copy:
-    dest: '/etc/apt/apt.conf.d/local'
+    dest: "/etc/apt/apt.conf.d/default-distribution"
     content: |
-      DPkg::options { "--force-confdef"; "--force-confold"; }
+      # NOTE: This has the effect of setting the Pin-Priority for this repo to 990.
       APT::Default-Release "kali-rolling";
     owner: 'root'
     group: 'root'
-    mode: 0o644
+    mode: '0o644'
+  become: true
+
+- name: Ensure additional custom APT package priority policy is set.
+  ansible.builtin.copy:
+    dest: "/etc/apt/preferences.d/99-custom-policy"
+    content: |
+      # Priority of 'Default-Release' will be 990.
+      # Priority of local package files is 100.
+      # Default priority of repos if not specified is 500.
+      # View policy with `apt-cache policy` or `apt-cache policy package_name`.
+      #
+      Package: *
+      Pin: release a=kali-bleeding-edge
+      Pin-Priority: 900
+      #
+      Package: *
+      Pin: release a=unstable
+      Pin-Priority: 800
+      #
+    owner: 'root'
+    group: 'root'
+    mode: '0o644'
   become: true
 
 - name: Get current APT policy.
@@ -133,15 +152,16 @@
     set -x
     apt-cache policy
   changed_when: false
-  register: apt_policy
+  register: kali_like__apt_policy_after
   become: true
 
 - name: Debug `apt_policy`.
   ansible.builtin.debug:
-    var: apt_policy
+    var: kali_like__apt_policy_after
     verbosity: 0
 
 - name: Include `dist-upgrade` tasks.
-  include_tasks: '{{ collection_root }}/tasks/dist-upgrade.yml'
-
+  ansible.builtin.include_tasks: "{{ collection_root }}/tasks/dist-upgrade.yml"
+#
 # vim: ft=ansible :
+# code: language=ansible

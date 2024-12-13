@@ -1,9 +1,11 @@
 ---
-
 # Check to see if user's `pipx` needs to be installed or if existing
 # installation requires repair due to Python being upgraded. This task
 # is designed to be run in a loop with `user` as the account to process
 # and `homedir` being a map of home directories.
+#
+# NOTE: As of early 2023, this task broke. See the following:
+# https://github.com/python/cpython/issues/102134#issuecomment-1445428402
 
 - name: Assert required variables are defined.
   ansible.builtin.assert:
@@ -11,13 +13,22 @@
       - user is defined
       - homedir is defined
 
-- name: Set fact with `pipx` binary path.
-  ansible.builtin.set_fact:
-    pipx_bin_path: '{{ homedir[user] }}/.local/bin/pipx'
+- name: Try to install pipx as native package.
+  ansible.builtin.apt:
+    name: pipx
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  register: pipx_as_package
+  become: true
 
-- name: Set fact with `pipx` shared library path.
+- name: Set fact with user `pipx` binary path.
   ansible.builtin.set_fact:
-    pipx_shared_path: '{{ homedir[user] }}/.local/pipx/shared'
+    pipx_bin_path: "{{ homedir[user] }}/.local/bin/pipx"
+
+- name: Set fact with user `pipx` shared library path.
+  ansible.builtin.set_fact:
+    pipx_shared_path: "{{ homedir[user] }}/.local/pipx/shared"
 
 # Using no marker in case this block is already in the file.
 
@@ -32,7 +43,7 @@
   ansible.builtin.blockinfile:
     path: '{{ homedir[user] }}/.bashrc'
     owner: '{{ user }}'
-    mode: 0o640
+    mode: '0o640'
     block: |
       if [ -f ~/.bash_aliases ]; then
           . ~/.bash_aliases
@@ -43,7 +54,7 @@
 
 - name: "Stat directory path: {{ pipx_bin_path }}"
   ansible.builtin.stat:
-    path: '{{ pipx_bin_path }}'
+    path: "{{ pipx_bin_path }}"
   become: true
   register: bin_pipx
 
@@ -61,12 +72,12 @@
   rescue:
     - name: Remove `pipx` shared libraries.
       ansible.builtin.file:
-        path: '{{ pipx_shared_path }}'
+        path: "{{ pipx_shared_path }}"
         state: absent
       become: true
       changed_when: false
 
-    - name: Ensure `python3-venv` is up-to-date.  # noqa: package-latest
+    - name: Ensure `python3-venv` is up-to-date. # noqa: package-latest
       ansible.builtin.apt:
         name: python3-venv
         update_cache: true
@@ -80,15 +91,15 @@
         '{{ pipx_bin_path }}' reinstall-all
       args:
         executable: /bin/bash
+      environment:
+        PIP_BREAK_SYSTEM_PACKAGES: "1"
       become: true
-      become_user: '{{ user }}'
+      become_user: "{{ user }}"
       changed_when: false
-
 
 - name: Block for new `pipx` installation.
   when: not bin_pipx.stat.exists
   block:
-
     - name: Ensure `python3-venv` package is installed.
       ansible.builtin.package:
         name: python3-venv
@@ -104,6 +115,16 @@
         executable: /bin/bash
       changed_when: false
       become: true
-      become_user: '{{ user }}'
+      become_user: "{{ user }}"
 
+  rescue:
+    # Deal with: https://github.com/python/cpython/issues/102134#issuecomment-1445428402
+    - name: Ensure `pipx` package is installed.
+      ansible.builtin.package:
+        name: pipx
+        state: present
+      become: true
+
+#
 # vim: ft=ansible :
+# code: language=ansible

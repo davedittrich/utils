@@ -40,6 +40,7 @@
 
         - name: Check the install status of the zaproxy package.
           ansible.builtin.shell:
+            set -o pipefail
             dpkg -l zaproxy | grep 'ii  zaproxy' | grep '{{ zaproxy_version }}'
           register: dpkg_l
           changed_when: false
@@ -69,9 +70,9 @@
           ansible.builtin.copy:
             src: '{{ zaproxy_deb_dir }}{{ zaproxy_deb }}'
             dest: '/tmp//{{ zaproxy_deb }}'
-            owner: root
-            group: root
-            mode: 0o660
+            owner: 'root'
+            group: 'root'
+            mode: '0o660'
           become: true
 
         - name: Ensure zaproxy DEB is installed.

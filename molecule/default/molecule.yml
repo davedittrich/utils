@@ -10,7 +10,6 @@ scenario:
     - destroy
   test_sequence:
     - dependency
-    - lint
     - create
     - prepare
     - converge
@@ -18,19 +17,14 @@ scenario:
     - verify
   verify_sequence:
     - verify
-lint: |
-  set -e
-  make version
-  make dependencies
-  yamllint molecule/ playbooks/ plugins/ roles/ tasks/
-  flake8 molecule/shared/tests playbooks/ plugins/ roles/ tasks/
-  ansible-lint -c .ansible-lint -vv molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 platforms:
-  - name: debian_bullseye
-    image: debian:bullseye
-    dockerfile: ../shared/Dockerfile-debian_bullseye.j2
+  - name: debianbookworm
+    image: debian:bookworm
+    dockerfile: ../shared/Dockerfile-debian_bookworm.j2
     privileged: true
     override_command: false
+    published_ports:
+      - '127.0.0.1:4822:4822/tcp'
     tmpfs:
       - /run
       - /run/lock
@@ -40,6 +34,8 @@ platforms:
       - NET_ADMIN
     security_opts:
       - seccomp=unconfined
+    env:
+      container: docker
 # [molecule.yml-provisioner]
 provisioner:
   name: ansible
@@ -64,6 +60,7 @@ verifier:
   name: testinfra
   directory: ../shared/tests
   env:
+    ANSIBLE_REMOTE_TMP: "/root/tmp"
     PYTHONPATH: "${PWD}/molecule/shared/tests"
-    #PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
+    # PYTEST_ADDOPTS: "--debug -v -ra --trace-config"
     PYTEST_ADDOPTS: "${PYTEST_ADDOPTS:--v -ra}"

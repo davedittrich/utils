@@ -7,14 +7,14 @@
 
 - name: Set fact with relative local path.
   ansible.builtin.set_fact:
-    kali_like_script_templates_dir: '{{ role_path }}/templates/scripts/'
+    kali_like__script_templates_dir: '{{ role_path }}/templates/scripts/'
 
 - name: Include Kali base OS preparation tasks.
   ansible.builtin.include_tasks: prepare_for_kali_packages.yml
 
 - name: Ensure required Kali packages are present.
   ansible.builtin.apt:
-    name: "{{ kali_like_packages }}"
+    name: "{{ kali_like__packages }}"
     state: present
     update_cache: true
     cache_valid_time: 3600
@@ -32,22 +32,22 @@
 
 - name: Find script templates on control host.
   ansible.builtin.find:
-    paths: '{{ kali_like_script_templates_dir }}'
+    paths: '{{ kali_like__script_templates_dir }}'
     recurse: false
     use_regex: false
     patterns: '*.sh.j2'
   delegate_to: localhost
   become: false
-  register: kali_like_script_templates_matched
+  register: kali_like__script_templates_matched
 
 - name: Set fact with relative template paths.
   ansible.builtin.set_fact:
-    kali_like_script_templates: '{{ kali_like_script_templates | default([]) + [item.path | basename] }}'
-  loop: '{{ kali_like_script_templates_matched.files }}'
+    kali_like__script_templates: '{{ kali_like__script_templates | default([]) + [item.path | basename] }}'
+  loop: '{{ kali_like__script_templates_matched.files }}'
 
-- name: Debug `kali_like_script_templates`.
+- name: Debug `kali_like__script_templates`.
   ansible.builtin.debug:
-    var: kali_like_script_templates
+    var: kali_like__script_templates
     verbosity: 1
   changed_when: false
 
@@ -66,7 +66,7 @@
     state: directory
     owner: 'root'
     group: 'root'
-    mode: 0o755
+    mode: '0o755'
   become: true
 
 - name: Ensure kali-applications.menu exists.
@@ -75,9 +75,11 @@
     dest: '/etc/xdg/menus/applications-merged/kali-applications.menu'
     owner: 'root'
     group: 'root'
-    mode: 0o644
+    mode: '0o644'
   become: true
 
+  # Note: Modifying the `/etc/hosts` file in a running Docker container will fail.
+  # https://stackoverflow.com/questions/28327458/how-to-add-my-containers-hostname-to-etc-hosts
 - name: Include hostname configuration tasks.
   ansible.builtin.include_tasks: serial_hostname.yml
 

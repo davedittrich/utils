@@ -14,7 +14,7 @@
     checksum: 'sha256:4b8146075199cb1499c6916e004af3a5cba36d7979d5a88af4654de803f05cc0'
     owner: 'root'
     group: 'root'
-    mode: 0o750
+    mode: '0o750'
   delegate_to: localhost
   run_once: true
 # ![molecule/share/prepare.yml-wrap]
@@ -23,9 +23,9 @@
   ansible.builtin.copy:
     src: '../shared/files/systemctl.py'
     dest: '/usr/bin/systemctl'
-    owner: root
-    group: root
-    mode: 0o750
+    owner: 'root'
+    group: 'root'
+    mode: '0o750'
   become: true
 
 - name: Ensure systemctl uses discovered_interpreter_python.
@@ -33,18 +33,18 @@
     path: '/usr/bin/systemctl'
     regexp: '^#! /usr/bin/python'
     line: '#! {{ discovered_interpreter_python | default("/usr/bin/python3") }}'
-    owner: root
-    group: root
-    mode: 0o750
+    owner: 'root'
+    group: 'root'
+    mode: '0o750'
   become: true
 
 - name: Ensure systemd run directory exists.
   ansible.builtin.file:
     name: '/run/systemd/system'
     state: 'directory'
-    owner: root
-    group: root
-    mode: 0750
+    owner: 'root'
+    group: 'root'
+    mode: '0o750'
   become: true
 
 - name: Ensure dbus.service is stopped.

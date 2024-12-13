@@ -62,8 +62,8 @@ def test_hid_apple_conf(host):
     f = host.file('/etc/modprobe.d/hid_apple.conf')
     assert f.exists
     assert f.user == 'root'
-    fnmode = ansible_vars.get('keyboard_hid_apple_fnmode')
-    iso_layout = ansible_vars.get('keyboard_hid_apple_iso_layout')
+    fnmode = ansible_vars.get('kdmt__keyboard_hid_apple_fnmode')
+    iso_layout = ansible_vars.get('kdmt__keyboard_hid_apple_iso_layout')
     assert (
         f'hid_apple fnmode={fnmode}' in f.content_string
         and f'iso_layout={iso_layout}' in f.content_string
@@ -79,7 +79,7 @@ def test_hid_apple_fnmode(host):
         pytest.xfail(f'no {hid_apple_parameters} directory')
     f = host.file(str(Path(hid_apple_parameters) / 'fnmode'))
     assert f.user == 'root'
-    fnmode = ansible_vars.get('keyboard_hid_apple_fnmode')
+    fnmode = ansible_vars.get('kdmt__keyboard_hid_apple_fnmode')
     assert f.content_string == f'{fnmode}\n'
 
 
@@ -93,7 +93,7 @@ def test_hid_apple_iso_layout(host):
     f = host.file(str(Path(hid_apple_parameters) / 'iso_layout'))
     assert f.exists
     assert f.user == 'root'
-    iso_layout = ansible_vars.get('keyboard_hid_apple_iso_layout')
+    iso_layout = ansible_vars.get('kdmt__keyboard_hid_apple_iso_layout')
     assert f'{iso_layout}\n' == f.content_string
 
 

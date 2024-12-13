@@ -13,7 +13,7 @@ build-default:
 	@echo PYTHON_EXE=$(PYTHON_EXE)
 	ansible-playbook -e '{ \
 		"ansible_python_interpreter": "$(PYTHON_EXE)", \
-		"target_distros": ["debian11"], \
+		"target_distros": ["debian12"], \
 		"docker_user": $(USER_ID), \
 		"docker_group": $(GROUP_ID) \
 		}' -vvv ../playbooks/build_test_images.yml

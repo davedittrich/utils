@@ -11,7 +11,7 @@
       set prefer-visible-bell
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o640
+    mode: '0o640'
     create: true
   become: true
 
@@ -23,7 +23,7 @@
 #       set bellstyle visible
 #     owner: '{{ user }}'
 #     group: '{{ user }}'
-#     mode: 0o640
+#     mode: '0o640'
 #     create: true
 #   # Hack to get idempotence test to pass for now.
 #   changed_when: false
@@ -37,7 +37,7 @@
       set visiblebell
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o640
+    mode: '0o640'
     create: true
   become: true
 
@@ -49,7 +49,7 @@
       set flash
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o640
+    mode: '0o640'
     create: true
   become: true
 
@@ -61,7 +61,7 @@
       set vb t_vb=
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o640
+    mode: '0o640'
     create: true
   become: true
 

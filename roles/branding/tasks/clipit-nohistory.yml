@@ -6,7 +6,7 @@
 - name: Stat clipit configuration file.
   ansible.builtin.stat:
     path: '{{ homedir[user] }}/.config/clipit/clipitrc'
-  register: clipitrc
+  register: branding__clipitrc
   become: true
 
 - name: Ensure clipit configuration path is present.
@@ -15,7 +15,7 @@
     state: directory
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o750
+    mode: '0o750'
     recurse: false
   become: true
 
@@ -25,9 +25,9 @@
     dest: '{{ homedir[user] }}/.config/clipit/clipitrc'
     owner: '{{ user }}'
     group: '{{ user }}'
-    mode: 0o640
+    mode: '0o640'
   become: true
-  when: not clipitrc.stat.exists
+  when: not branding__clipitrc.stat.exists
 
 - name: Ensure clipit configuration is set.
   ansible.builtin.lineinfile:

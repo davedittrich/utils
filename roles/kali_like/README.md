@@ -1,7 +1,7 @@
 davedittrich.utils.kali-like
 ============================
 
-Version: 0.7.0-rc.105
+Version: 0.7.0-rc.109
 
 This role ensures that certain Kali Linux features and tooling
 are available.
@@ -24,6 +24,9 @@ Role Variables
 --------------
 
 `accounts` - the list of user accounts to be set up.
+
+Note: The role gets the `accounts` variable using included task
+'{{ collection_root }}/tasks/get_accounts.yml'
 
 Dependencies
 ------------

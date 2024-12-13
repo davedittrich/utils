@@ -9,7 +9,7 @@
   roles:
     - role: davedittrich.utils.dropins
       vars:
-        dropin_files:
+        dropins__dropin_files:
           - '.bash_profile'
           - '.bash_aliases'
           - '.gitconfig'

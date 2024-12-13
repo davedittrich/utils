@@ -1,5 +1,5 @@
 ---
-_exclude_interface_prefix:
+ip_in_issue__default_exclude_interface_prefix:
   - 'veth'
   - 'br'
   - 'tun'

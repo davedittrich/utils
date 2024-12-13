@@ -17,9 +17,9 @@
       ansible.builtin.copy:
         src: 'config.txt'
         dest: '/boot/config.txt'
-        owner: root
-        group: root
-        mode: 0o640
+        owner: 'root'
+        group: 'root'
+        mode: '0o640'
       when: boot_config.stat.exists is false
 
     - name: Stat `/boot/cmdline.txt` file.
@@ -31,9 +31,9 @@
       ansible.builtin.copy:
         src: 'cmdline.txt'
         dest: '/boot/cmdline.txt'
-        owner: root
-        group: root
-        mode: 0o640
+        owner: 'root'
+        group: 'root'
+        mode: '0o640'
       when: boot_cmdline.stat.exists is false
 
     - name: Include account enumeration tasks.
@@ -45,7 +45,7 @@
         state: directory
         owner: '{{ user }}'
         group: '{{ user }}'
-        mode: 0o700
+        mode: '0o700'
       loop: '{{ accounts }}'
       loop_control:
         loop_var: user

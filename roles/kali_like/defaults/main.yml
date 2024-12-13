@@ -1,5 +1,5 @@
 ---
-kali_like_packages:
+kali_like__packages:
   - burpsuite
   - dirbuster
   - exploitdb

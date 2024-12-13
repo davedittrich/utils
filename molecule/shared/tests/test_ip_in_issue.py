@@ -1,7 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import pytest
+
 from helpers import skip_unless_role
 
+
+@skip_unless_role('davedittrich.utils.ip_in_issue')
+def test_hosts_file(host):
+    host_environment = host.environment()
+    if host_environment.get('container', '') == 'docker':
+        pytest.skip('/etc/hosts file managed by Docker')
+    f = host.file('/etc/hosts')
+    assert f.exists
+    assert f.user == 'root'
+    assert r'kali-' in f.content_string
+    assert r'kali-' in host_environment.get('HOSTNAME')
 
 @skip_unless_role('davedittrich.utils.ip_in_issue')
 def test_issue_file(host):

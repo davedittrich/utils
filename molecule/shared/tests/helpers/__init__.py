@@ -23,13 +23,15 @@ if molecule_inventory_file is None:
     )
 
 
+def get_ansible_vars_file():
+    """Return path to saved Ansible variables from `converge` stage."""
+    ephemeral_directory = Path(molecule_ephemeral_directory)
+    return ephemeral_directory / 'ansible-vars.yml'
+
 def load_ansible_vars():
     """Load saved Ansible variables from `converge` stage."""
-    ephemeral_directory = Path(molecule_ephemeral_directory)
-    yaml_file = ephemeral_directory / 'ansible-vars.yml'
-    ansible_vars = yaml.safe_load(yaml_file.read_bytes())
-    print(f"[+] read runtime variables from '{yaml_file}'")
-    return ansible_vars
+    yaml_file = get_ansible_vars_file()
+    return yaml.safe_load(yaml_file.read_bytes())
 
 
 ansible_vars = load_ansible_vars()

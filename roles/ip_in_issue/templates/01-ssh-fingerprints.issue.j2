@@ -1,5 +1,5 @@
-{% if ssh_fingerprints is defined and ssh_fingerprints|count > 0 %}
-{% for fingerprint in ssh_fingerprints.values() %}
+{% if ip_in_issue__ssh_fingerprints is defined and ip_in_issue__ssh_fingerprints|count > 0 %}
+{% for fingerprint in ip_in_issue__ssh_fingerprints.values() %}
 {{ fingerprint }}
 {% endfor %}
 

@@ -1,5 +1,10 @@
 ---
 
+# The default demonstration background image and boot splash file is a
+# photo of graffiti found on a roadway underpass not far outside of
+# Geneva, Switzerland. This task file ensures that if the user has not
+# supplied a file to use instead, this image is used.
+#
 # Check to see if a pre-installed `/boot/custom-splash.jpg` file exists
 # on the target. This is the method for customizing the boot splash
 # and desktop background from an image pre-loaded when flashing an SD
@@ -8,23 +13,23 @@
 # If that file exists, move it to `/root/custom-splash.jpg` where it won't take
 # up limited space in the `/boot` partition.
 #
-# If instead the variable `custom_splash` is defined and points to a file on
+# If instead the variable `branding__custom_splash` is defined and points to a file on
 # the controller, it will take precedence. Ensure that file (converting the
 # image format if necessary) exists on the target as `/root/custom-splash.jpg`
 
 - name: Set fact with default splash/background file.
   ansible.builtin.set_fact:
-    custom_splash: '{{ collection_root }}/tasks/files/Hello_World.png'
-  when: custom_splash is not defined
+    branding__custom_splash: '{{ collection_root }}/tasks/files/Hello_World.png'
+  when: branding__custom_splash is not defined
 
 - name: Stat `/boot/custom-splash.jpg`.
   ansible.builtin.stat:
     path: '/boot/custom-splash.jpg'
   become: true
-  register: boot_custom_splash
+  register: branding__boot_custom_splash
 
 - name: Block for processing `boot_custom_splash` file.
-  when: boot_custom_splash.stat.exists
+  when: branding__boot_custom_splash.stat.exists
   become: true
   block:
 
@@ -33,9 +38,9 @@
         src: '/boot/custom-splash.jpg'
         dest: '/root/custom-splash.jpg'
         remote_src: true
-        owner: root
-        group: root
-        mode: 0o644
+        owner: 'root'
+        group: 'root'
+        mode: '0o644'
 
     - name: Ensure `/boot/custom-splash.jpg` is absent.
       ansible.builtin.file:
@@ -43,32 +48,32 @@
         state: absent
 
 - name: Block for handling file specified by `custom_splash` variable.
-  when: custom_splash is defined
+  when: branding__custom_splash is defined
   become: true
   block:
 
     - name: Set fact with basename of `custom_splash` file.
       ansible.builtin.set_fact:
-        custom_splash_basename: '{{ custom_splash | basename }}'
+        branding__custom_splash_basename: '{{ branding__custom_splash | basename }}'
 
     - name: Set fact with file extension of `custom_splash` file.
       ansible.builtin.set_fact:
-        custom_splash_ext: '{{ custom_splash_basename | splitext | last }}'
+        branding__custom_splash_ext: '{{ branding__custom_splash_basename | splitext | last }}'
 
     - name: Ensure `custom_splash` file present in `/root` directory.
       ansible.builtin.copy:
-        src: '{{ custom_splash }}'
-        dest: '/root/custom-splash{{ custom_splash_ext }}'
-        owner: root
-        group: root
-        mode: 0o644
+        src: '{{ branding__custom_splash }}'
+        dest: '/root/custom-splash{{ branding__custom_splash_ext }}'
+        owner: 'root'
+        group: 'root'
+        mode: '0o644'
 
     - name: Ensure file exists in `.jpg` format.
       ansible.builtin.shell: >
-        convert /root/custom-splash{{ custom_splash_ext }} /root/custom-splash.jpg
+        convert /root/custom-splash{{ branding__custom_splash_ext }} /root/custom-splash.jpg
       args:
         executable: /bin/bash
         creates: '/root/custom-splash.jpg'
-      when: "custom_splash_ext != '.jpg'"
+      when: "branding__custom_splash_ext != '.jpg'"
 
 # vim: ft=ansible:

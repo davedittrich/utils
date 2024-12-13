@@ -38,7 +38,8 @@
         content: |
           {{ vars | to_yaml }}
         dest: '{{ molecule_ephemeral_directory }}/ansible-vars.yml'
-        mode: 0o600
+        # Leaving 'owner' and 'group' out on purpose.
+        mode: '0o600'
       changed_when: false
       delegate_to: localhost
 

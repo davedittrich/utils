@@ -1,7 +1,7 @@
 davedittrich.utils.kdmt
 =======================
 
-Version: 0.7.0-rc.105
+Version: 0.7.0-rc.109
 
 This role can be used to configure the system's *keyboard*, *displays*,
 *mouse*, and *trackpad* (hence the acronym *kdmt*).
@@ -74,12 +74,12 @@ Role Variables
 --------------
 
 ! Variable | Type | Purpose |
-| `keyboard_hid_apple` | Boolean | Configure Apple keyboard to enable function keys |
-| `keyboard_hid_apple_iso_layout` | String | ISO keyboard layout setting |
-| `keyboard_hid_apple_fnmode` | String | Function key mode |
-| `keyboard_swapcapslockctrl` | Boolean | Swap Left CapsLock and CTRL keys |
-| `keyboard_visible_bell`| Boolean | Enable visible bell to silence the system's bell |
-| `natural_scrolling` | Boolean | Enable natural scrolling on the mouse and trackpad |
+| `kdmt__keyboard_hid_apple` | Boolean | Configure Apple keyboard to enable function keys |
+| `kdmt__keyboard_hid_apple_iso_layout` | String | ISO keyboard layout setting |
+| `kdmt__keyboard_hid_apple_fnmode` | String | Function key mode |
+| `kdmt__keyboard_swapcapslockctrl` | Boolean | Swap Left CapsLock and CTRL keys |
+| `kdmt__keyboard_visible_bell`| Boolean | Enable visible bell to silence the system's bell |
+| `kdmt__natural_scrolling` | Boolean | Enable natural scrolling on the mouse and trackpad |
 
 Dependencies
 ------------
@@ -93,10 +93,10 @@ This role can be applied as follows:
 
     - hosts: all
       vars:
-        keyboard_hid_apple: true
-        keyboard_swapcapslockctrl: true
-        keyboard_visible_bell: true
-        natural_scrolling: true
+        kdmt__keyboard_hid_apple: true
+        kdmt__keyboard_swapcapslockctrl: true
+        kdmt__keyboard_visible_bell: true
+        kdmt__natural_scrolling: true
       roles:
          - { role: davedittrich.utils.kdmt }
 

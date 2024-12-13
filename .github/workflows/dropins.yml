@@ -23,25 +23,20 @@ jobs:
       fail-fast: true
       matrix:
         molecule_distro:
-          # - { "distro":"centos7", "command":"/usr/sbin/init" }
-          # - { "distro":"centos8", "command":"/usr/sbin/init" }
-          # - { "distro":"fedora33", "command":"/usr/sbin/init" }
-          # - { "distro":"fedora34", "command":"/usr/sbin/init" }
-          # - { "distro":"ubuntu1804", "command":"/lib/systemd/systemd" }
           - { "distro":"ubuntu2004", "command":"/lib/systemd/systemd" }
-          # - { "distro":"ubuntu2204", "command":"/lib/systemd/systemd" }
-          # - { "distro":"debian9", "command":"/lib/systemd/systemd" }
-          - { "distro":"debian10", "command":"/lib/systemd/systemd" }
+          - { "distro":"ubuntu2204", "command":"/lib/systemd/systemd" }
+          - { "distro":"debian11", "command":"/lib/systemd/systemd" }
+          - { "distro":"debian12", "command":"/lib/systemd/systemd" }
         collection_role:
           - dropins
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.11.10
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.11.10
           check-latest: true
 
       - run: python --version
@@ -51,8 +46,7 @@ jobs:
           sudo apt install apt-transport-https ca-certificates curl software-properties-common
           curl -fsSL https://get.docker.com -o get-docker.sh
           sudo sh get-docker.sh
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
+          make install-poetry update-packages
 
       - name: Build the collection
         run: |

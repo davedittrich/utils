@@ -1,9 +1,9 @@
 ---
-keyboard_hid_apple: true
-keyboard_hid_apple_iso_layout: '0'
-keyboard_hid_apple_fnmode: '2'
-keyboard_swapcapslockctrl: true
-keyboard_visible_bell: true
-natural_scrolling: true
+kdmt__keyboard_hid_apple: true
+kdmt__keyboard_hid_apple_iso_layout: '0'
+kdmt__keyboard_hid_apple_fnmode: '2'
+kdmt__keyboard_swapcapslockctrl: true
+kdmt__keyboard_visible_bell: true
+kdmt__natural_scrolling: true
 
 # vim: ft=ansible:

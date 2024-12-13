@@ -17,10 +17,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
+      - name: Determine Python versions available.
+        run: |
+          echo "Available Python versions"
+          echo "----"
+          cd /opt/hostedtoolcache/Python && ls
+          echo "----"
+
+      - name: Set up Python 3.11.10
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: "3.11.10"
           check-latest: true
 
       - run: python --version
@@ -39,13 +46,11 @@ jobs:
           echo 'See: https://docs.github.com/en/actions/learn-github-actions/contexts#example-usage-of-the-github-context'
 
       - name: Install dependencies
+        env:
+          DEB_PYTHON_INSTALL_LAYOUT: deb_system pip install .
         run: |
           python3 -m pip install --upgrade pip
-          echo "Contents of requirements.txt"
-          echo "----"
-          cat requirements.txt
-          echo "----"
-          python3 -m pip install -r requirements.txt
+          make install-poetry update-packages
 
       - name: Move project to Ansible-required location
         run: |
@@ -62,7 +67,7 @@ jobs:
     uses: davedittrich/utils/.github/workflows/publish.yml@develop
     with:
       runs-on: ubuntu-latest
-      python-version: 3.9
+      python-version: "3.11.10"
       ansible_galaxy_server: https://galaxy-dev.ansible.com/
     secrets:
       ansible_galaxy_api_key: ${{secrets.GALAXYDEV_API_KEY}}
@@ -73,7 +78,7 @@ jobs:
     uses: davedittrich/utils/.github/workflows/publish.yml@develop
     with:
       runs-on: ubuntu-latest
-      python-version: 3.9
+      python-version: "3.11.10"
       ansible_galaxy_server: https://galaxy.ansible.com/
     secrets:
       ansible_galaxy_api_key: ${{secrets.GALAXY_API_KEY}}

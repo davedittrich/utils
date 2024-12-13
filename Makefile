@@ -1,16 +1,28 @@
+# Makefile for davedittrich.utils Ansible collection.
+SHELL=/bin/bash
 # The following are inter-related components that form a fragile whole that can
 # easily break when one of the components is updated. This can randomly cause a
 # frustratingly difficult situation to fix to pop up when you least expect it.
-ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule molecule-testinfra molecule-docker pytest-ansible pytest-testinfra pytest testinfra
+ANSIBLE_COMPONENTS=ansible ansible-core ansible-compat ansible-lint molecule-plugins pytest-testinfra pytest
+ANSIBLE_COMMANDS=ansible ansible-lint molecule pytest python python3 pip pip3
 export COLLECTION_NAMESPACE=davedittrich
 DELEGATED_HOST:=none
-export MOLECULE_DISTRO=debian11
+export MOLECULE_DISTRO=debian12
 MOLECULE_DESTROY=never
 PLAYBOOK=playbooks/workstation_setup.yml
 SCENARIO=default
-SHELL=/bin/bash
 USER_ID=$(shell id -u)
 GROUP_ID=$(shell id -g)
+
+# This project uses poetry for managing Python packages.
+# Install poetry into conda environment.
+export POETRY_HOME:=$(CONDA_PREFIX)
+POETRY_INSTALL_URL=https://raw.githubusercontent.com/python-poetry/install.python-poetry.org/refs/heads/main/install-poetry.py
+POETRY_VERSION=1.8.4
+
+# The first rule in Makefile is implicitly the default rule, so make it explicit.
+.PHONY: default
+default: help
 
 .PHONY: help
 help:
@@ -24,19 +36,20 @@ help:
 	@echo "  destroy - destroy and clean up scenario '$(SCENARIO)'"
 	@echo "  flash - flash SD card including latest build artifact"
 	@echo "  flash-none - flash SD card without a build artifact"
-	@echo "  lint - run 'molecule lint'"
+	@echo "  lint - run linting tasks"
 	@echo "  login - connect to '$(SCENARIO)' molecule instance for debugging"
 	@echo "  publish - publish the artifact to Ansible galaxy (default $(ANSIBLE_GALAXY_SERVER))"
 	@echo "  reset - clean up molecule scenario data"
+	@echo "  retest - re-run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO)) without destroying"
 	@echo "  scenario-exists - checks to ensure the scenario (variable 'SCENARIO') exists."
 	@echo "  spotless - clean, then get rid of as much else as possible"
-	@echo "  test - run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO))"
+	@echo "  test - run molecule tests on scenario '$(SCENARIO)' on distro ($(MOLECULE_DISTRO)) after destroying"
 	@echo "  test-all-distros - run molecule tests on all scenarios (fake 'matrix' like GitHub Actions)"
 	@echo "  help-delegated-host - provide help on using the 'delegated' scenario"
 	@echo "  test-delegated - run molecule against delegated host ($(DELEGATED_HOST))"
 	@echo "  verify - run tests on scenario '$(SCENARIO)'"
 	@echo "  version - show the current version number from 'VERSION' file"
-	@echo "  update-requirements - update pip packages defined in requirements.txt"
+	@echo "  update-packages - update Python packages using poetry"
 	@echo ""
 	@echo "Variables:"
 	@echo "  ANSIBLE_GALAXY_SERVER ('$(ANSIBLE_GALAXY_SERVER)' from psec)"
@@ -62,9 +75,28 @@ help:
 	@echo "Examples:"
 	@echo " $$ make SCENARIO=branding test"
 
+.PHONY: install-poetry
+install-poetry:
+	@if [[ "$(shell poetry --version 2>/dev/null)" =~ "$(POETRY_VERSION)" ]]; then \
+		echo "[+] poetry version $(POETRY_VERSION) is already installed"; \
+	else \
+		(curl -sSL $(POETRY_INSTALL_URL) | python - --version $(POETRY_VERSION)); \
+		poetry self add "poetry-dynamic-versioning[plugin]"; \
+	fi
+
+.PHONY: uninstall-poetry
+uninstall-poetry:
+	curl -sSL $(POETRY_INSTALL_URL) | python - --version $(POETRY_VERSION) --uninstall
+
+#HELP update-packages - update dependencies with Poetry
+.PHONY: update-packages
+update-packages: install-poetry
+	poetry update
+	python -m pip uninstall -y pytest-ansible
+
 .PHONY: check-conda
 check-conda:
-	@bash scripts/check-conda.sh
+	@./scripts/check-conda.sh
 
 galaxy.yml:
 	@echo "[+] generating new 'galaxy.yml' file"
@@ -72,7 +104,7 @@ galaxy.yml:
 
 .PHONY: build
 build: check-conda
-	bash scripts/build_artifact.sh
+	./scripts/build_artifact.sh
 
 .PHONY: flash
 flash:
@@ -88,12 +120,19 @@ flash-none:
 clean: clean-artifacts
 	-rm -rf ~/.cache/ansible-compat ~/.cache/molecule ~/.cache/pip
 	-rm -f pytestdebug.log
-	find * -name '*.pyc' -delete || true
-	find * -name __pycache__ -exec rmdir {} ';' || true
+	find * -name '*.pyc' -delete 2>/dev/null || true
+	find * -name __pycache__ -exec rmdir {} ';' 2>/dev/null || true
 
 .PHONY: clean-artifacts
 clean-artifacts:
-	bash scripts/clean_artifacts.sh || true
+	./scripts/clean_artifacts.sh || true
+
+.PHONY: reset-molecule
+reset-molecule:
+	for scenario in default $(shell grep '[-] davedittrich.utils.' molecule/default/converge.yml | cut -d. -f 3); \
+	do \
+		molecule reset -s $$scenario > /dev/null; \
+	done
 
 .PHONY: clean-molecule
 clean-molecule:
@@ -101,6 +140,12 @@ clean-molecule:
 	do \
 		molecule destroy -s $$scenario > /dev/null; \
 	done
+	molecule list
+	for image in $(shell docker images | grep molecule | awk '{ print $$3; }'); \
+	do \
+		echo docker rmi $$image; \
+	done
+
 
 .PHONY: converge
 converge: check-conda scenario-exists galaxy.yml
@@ -116,7 +161,11 @@ verify: check-conda scenario-exists galaxy.yml
 
 .PHONY: lint
 lint: galaxy.yml
-	molecule lint -s $(SCENARIO)
+	make version
+	make dependencies
+	yamllint molecule/ playbooks/ plugins/ roles/ tasks/
+	ruff check -v molecule/shared/tests playbooks/ plugins/ roles/ tasks/
+	ansible-lint --project-dir . -c .ansible-lint molecule/shared/tests playbooks/ plugins/ roles/ tasks/
 
 .PHONY: login
 login: scenario-exists
@@ -126,9 +175,9 @@ login: scenario-exists
 publish: check-conda
 	@if [[ "$(GITHUB_ACTIONS)" == "true" ]]; then \
 		echo '[+] GitHub Actions workflows use GitHub Secrets'; \
-		bash scripts/publish_artifact.sh; \
+		./scripts/publish_artifact.sh; \
 	else \
-		psec -E run -- bash scripts/publish_artifact.sh; \
+		psec -E run -- ./scripts/publish_artifact.sh; \
 	fi
 
 .PHONY: reset
@@ -143,12 +192,28 @@ scenario-exists:
 		exit 1; \
 	fi
 
+.PHONY: scenario-converged
+scenario-converged:
+	if [[ "$(shell molecule list -s $(SCENARIO) -f yaml 2>/dev/null | yq '.[0] | .Converged')" == "false" ]]; then \
+		$(MAKE) converge; \
+	fi
+
 .PHONY: spotless
 spotless: clean clean-molecule
 	-rm -f davedittrich-utils-latest.tar.gz davedittrich-utils-[0-9]*[0-9].tar.gz
 
+.PHONY: test-debug
+test-debug: lint reset
+	$(MAKE) SETVARIABLES=FORDEBUGGING retest
+
 .PHONY: test
-test: check-conda scenario-exists galaxy.yml
+test: lint reset retest
+
+.PHONY: test-no-lint
+test-no-lint: reset retest
+
+.PHONY: retest
+retest: check-conda scenario-exists galaxy.yml
 	@docker info 2>/dev/null | grep -q ID || (echo "[-] docker does not appear to be running" && exit 1)
 	molecule test --destroy=$(MOLECULE_DESTROY) -s $(SCENARIO)
 	@echo '[+] all tests succeeded'
@@ -157,8 +222,8 @@ test: check-conda scenario-exists galaxy.yml
 	fi
 
 .PHONY: test-all-distros
-test-all-distros: scenario-exists galaxy.yml
-	set -e; for distro in debian9 debian10 ubuntu1804 ubuntu2004; do MOLECULE_DISTRO=$$distro molecule test -s $(SCENARIO); done
+test-all-distros: scenario-exists galaxy.yml lint
+	set -e; for distro in debian11 debian12 ubuntu2004 ubuntu2204; do MOLECULE_DISTRO=$$distro molecule test -s $(SCENARIO); done
 
 .PHONY: help-delegated-host
 help-delegated-host:
@@ -191,17 +256,19 @@ test-delegated: galaxy.yml
 .PHONY: version
 version:
 	@echo davedittrich.utils version $(shell cat VERSION)
-	@for component in $(ANSIBLE_COMPONENTS); \
-	 do \
-	 $$component --version 2>/dev/null || \
-	 python3 -m pip freeze | grep "^$$component==" || \
-	 true; \
-	 done
+#	@for component in $(ANSIBLE_COMPONENTS); \
+#	 do \
+#	 $$component --version 2>/dev/null || \
+#	 python -m pip freeze | grep "^$$component==" || \
+#	 true; \
+#	 done
 
 # Use ANSIBLE_VERBOSITY to control whether to run `pipdeptree`.
 .PHONY: dependencies
 dependencies:
-	@pipdeptree -p $(shell sed 's/ /,/g' <<< "$(ANSIBLE_COMPONENTS)") || true
+	pipdeptree -p $(shell sed 's/ /,/g' <<< "$(ANSIBLE_COMPONENTS)") || true
+	for COMMAND in $(ANSIBLE_COMMANDS); do type $$COMMAND; $$COMMAND --version; done
+	@#for PACKAGE in $(ANSIBLE_COMPONENTS); do pipdeptree -p $$PACKAGE; done
 
 .PHONY: setup
 setup: collection-community-docker
@@ -213,14 +280,9 @@ collection-community-docker:
 		ansible-galaxy collection install community.docker; \
 	fi
 
-.PHONY: update-requirements
-update-requirements:
-	python3 -m pip install -U -r requirements.txt
-
 .PHONY: fix-broken-ansible
 fix-broken-ansible:
-	# .tox/lint/bin/python3 -m pip uninstall -y $(ANSIBLE_COMPONENTS)
-	python3 -m pip uninstall -y $(ANSIBLE_COMPONENTS)
+	python -m pip uninstall -y $(ANSIBLE_COMPONENTS)
 	$(MAKE) update-requirements
 
 # EOF

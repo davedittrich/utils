@@ -15,7 +15,8 @@ rules:
   commas:
     max-spaces-after: -1
     level: error
-  comments: disable
+  comments:
+    min-spaces-from-content: 1
   comments-indentation: disable
   document-start: disable
   empty-lines:
@@ -29,5 +30,10 @@ rules:
   new-line-at-end-of-file: disable
   new-lines:
     type: unix
+  # The following 'forbid-*' rules may not mean what you think they mean.
+  # See: https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.octal_values
+  octal-values:
+    forbid-explicit-octal: true
+    forbid-implicit-octal: true
   trailing-spaces: disable
   truthy: disable
